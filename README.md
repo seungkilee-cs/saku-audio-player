@@ -5,6 +5,7 @@
 
 ## To Do
 ### Short Term
+- Player Reposition
 - Deploy the app to be static player
 - Add Time Display (Start, Current, End)
 - Add Volume Control
