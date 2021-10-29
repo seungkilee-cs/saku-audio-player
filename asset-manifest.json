@@ -1,0 +1,43 @@
+{
+  "files": {
+    "main.css": "/saku-audio-player/static/css/main.70a620b7.chunk.css",
+    "main.js": "/saku-audio-player/static/js/main.bc3ace1f.chunk.js",
+    "main.js.map": "/saku-audio-player/static/js/main.bc3ace1f.chunk.js.map",
+    "runtime-main.js": "/saku-audio-player/static/js/runtime-main.320f9d90.js",
+    "runtime-main.js.map": "/saku-audio-player/static/js/runtime-main.320f9d90.js.map",
+    "static/js/2.6005f484.chunk.js": "/saku-audio-player/static/js/2.6005f484.chunk.js",
+    "static/js/2.6005f484.chunk.js.map": "/saku-audio-player/static/js/2.6005f484.chunk.js.map",
+    "index.html": "/saku-audio-player/index.html",
+    "static/css/main.70a620b7.chunk.css.map": "/saku-audio-player/static/css/main.70a620b7.chunk.css.map",
+    "static/js/2.6005f484.chunk.js.LICENSE.txt": "/saku-audio-player/static/js/2.6005f484.chunk.js.LICENSE.txt",
+    "static/media/07. 雨き声残響.b0f516a6.mp3": "/saku-audio-player/static/media/07. 雨き声残響.b0f516a6.mp3",
+    "static/media/08. 無花果.113daf0c.mp3": "/saku-audio-player/static/media/08. 無花果.113daf0c.mp3",
+    "static/media/11. 時の雨、最終戦争.35bb5ba5.mp3": "/saku-audio-player/static/media/11. 時の雨、最終戦争.35bb5ba5.mp3",
+    "static/media/12. 晴天前夜.4dde0387.mp3": "/saku-audio-player/static/media/12. 晴天前夜.4dde0387.mp3",
+    "static/media/Ban.fd795d51.flac": "/saku-audio-player/static/media/Ban.fd795d51.flac",
+    "static/media/Blue Moon Kiss.e4f30029.flac": "/saku-audio-player/static/media/Blue Moon Kiss.e4f30029.flac",
+    "static/media/Naze koi wo shitekonakattandarou .f6e6eed6.flac": "/saku-audio-player/static/media/Naze koi wo shitekonakattandarou .f6e6eed6.flac",
+    "static/media/PLACEBO.15f603ba.flac": "/saku-audio-player/static/media/PLACEBO.15f603ba.flac",
+    "static/media/Peter Pan.361694bb.flac": "/saku-audio-player/static/media/Peter Pan.361694bb.flac",
+    "static/media/Shinigami.532642ef.flac": "/saku-audio-player/static/media/Shinigami.532642ef.flac",
+    "static/media/Yasashii Hito.8aaf6cb5.flac": "/saku-audio-player/static/media/Yasashii Hito.8aaf6cb5.flac",
+    "static/media/ban.b3e93d49.jpg": "/saku-audio-player/static/media/ban.b3e93d49.jpg",
+    "static/media/next.4a088e97.svg": "/saku-audio-player/static/media/next.4a088e97.svg",
+    "static/media/nobodys_fault.db13828b.jpg": "/saku-audio-player/static/media/nobodys_fault.db13828b.jpg",
+    "static/media/pale_blue.7035029d.png": "/saku-audio-player/static/media/pale_blue.7035029d.png",
+    "static/media/pause.fb885480.svg": "/saku-audio-player/static/media/pause.fb885480.svg",
+    "static/media/peter_pan.9dde4f86.jpg": "/saku-audio-player/static/media/peter_pan.9dde4f86.jpg",
+    "static/media/play.751c39f9.svg": "/saku-audio-player/static/media/play.751c39f9.svg",
+    "static/media/prev.d4c47e5b.svg": "/saku-audio-player/static/media/prev.d4c47e5b.svg",
+    "static/media/stray_sheep.c25f945b.png": "/saku-audio-player/static/media/stray_sheep.c25f945b.png",
+    "static/media/wolpis1.5a252fe3.jpg": "/saku-audio-player/static/media/wolpis1.5a252fe3.jpg",
+    "static/media/wolpis2.579acfc5.jpg": "/saku-audio-player/static/media/wolpis2.579acfc5.jpg",
+    "static/media/ウォルピス社-COSMOS.7862935f.mp3": "/saku-audio-player/static/media/ウォルピス社-COSMOS.7862935f.mp3"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.320f9d90.js",
+    "static/js/2.6005f484.chunk.js",
+    "static/css/main.70a620b7.chunk.css",
+    "static/js/main.bc3ace1f.chunk.js"
+  ]
+}
