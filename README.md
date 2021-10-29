@@ -7,20 +7,20 @@
 
 ## To Do
 ### Short Term
-- Player Reposition
+- [ ] Player Reposition
 - [x] ~~Deploy the app to be static player~~
-- Add Time Display (Start, Current, End)
-- Add Volume Control
-- Add Playlist Visibility
-- Add file format display
-- Add True Bit-Rate display
-- Add Header/Footer
+- [ ] Add Time Display (Start, Current, End)
+- [ ] Add Volume Control
+- [ ] Add Playlist Visibility
+- [ ] Add file format display
+- [ ] Add True Bit-Rate display
+- [ ] Add Header/Footer
 
 ### Mid Term
-- Add "Add/Delete Music" Functionality
-- Re-design the UI for web
+- [ ] Add "Add/Delete Music" Functionality
+- [ ] Re-design the UI for web
 
 ### Long Term
-- Add Lyric Display
-- Electron Port
-- Mobile Port
+- [ ] Add Lyric Display
+- [ ] Electron Port
+- [ ] Mobile Port
