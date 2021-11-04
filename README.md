@@ -16,6 +16,7 @@
 - [ ] Add True Bit-Rate display
 - [ ] Add Header/Footer
 - [ ] Add URL Support
+- [ ] Add Download Support
 
 ### Mid Term
 - [ ] Add "Add/Delete Music" Functionality

@@ -15,6 +15,8 @@ const AudioPlayer = ({ tracks }) => {
     const {  title, artist, color, image, audioSrc } = tracks[trackIndex];
 
     // Ref hooks
+    // Audio obj from HTMLAudioElement
+    // https://developer.mozilla.org/en-US/docs/Web/API/HTMLMediaElement
     const audioRef = useRef(new Audio(audioSrc));
     const intervalRef = useRef();
     const isReady = useRef(false);
@@ -44,7 +46,7 @@ const AudioPlayer = ({ tracks }) => {
     };
 
     // set the current time to reflect on the progress when dragged
-    const onScrub = (value) => {
+    const onDrag = (value) => {
         // Clear any timers already running
         clearInterval(intervalRef.current);
         audioRef.current.currentTime = value;
@@ -52,7 +54,7 @@ const AudioPlayer = ({ tracks }) => {
     };
 
     // At the end of dragging, start timer
-    const onScrubEnd = () => {
+    const onDragEnd = () => {
         // If not already playing, start
         if (!isPlaying) {
             setIsPlaying(true);
@@ -141,9 +143,9 @@ const AudioPlayer = ({ tracks }) => {
                     min="0"
                     max={duration ? duration: `${duration}`}
                     className="progress"
-                    onChange={(e) => onScrub(e.target.value)}
-                    onMouseUp={onScrubEnd}
-                    onKeyUp={onScrubEnd}
+                    onChange={(e) => onDrag(e.target.value)}
+                    onMouseUp={onDragEnd}
+                    onKeyUp={onDragEnd}
                     style={{ background: trackStyling }}
                 />
             </div>
