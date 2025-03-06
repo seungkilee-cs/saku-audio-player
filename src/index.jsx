@@ -1,15 +1,31 @@
-import React from "react";
-import ReactDOM from "react-dom";
+import React, { useState, useEffect } from "react";
+import { createRoot } from "react-dom/client";
 import AudioPlayer from "./components/AudioPlayer";
-import tracks from "./assets/meta/tracks";
+import tracksPromise from "./assets/meta/tracks";
 
-// tracks.forEach((track, index) => {
-//   console.log(`Track ${index + 1}:`, track);
-// });
+function App() {
+  const [tracks, setTracks] = useState([]);
 
-ReactDOM.render(
+  useEffect(() => {
+    tracksPromise.then((resolvedTracks) => {
+      setTracks(resolvedTracks);
+      console.log("All tracks:", resolvedTracks);
+      resolvedTracks.forEach((track, index) => {
+        console.log(`Track ${index + 1}:`, track);
+      });
+    });
+  }, []);
+
+  if (tracks.length === 0) {
+    return <div>Loading tracks...</div>;
+  }
+
+  return <AudioPlayer tracks={tracks} />;
+}
+
+const root = createRoot(document.getElementById("root"));
+root.render(
   <React.StrictMode>
-    <AudioPlayer tracks={tracks} />
+    <App />
   </React.StrictMode>,
-  document.getElementById("root"),
 );
