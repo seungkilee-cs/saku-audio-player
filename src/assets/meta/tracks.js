@@ -11,6 +11,11 @@ async function generateTracks() {
       const metadata = await mm.parseBlob(
         await fetch(src).then((res) => res.blob()),
       );
+      const imageData = metadata.common.picture?.[0];
+      const image = imageData
+        ? images[key.toLowerCase()]
+        : `data:${imageData.format};base64,${imageData.data.toString("base64")}` ||
+          defaultImage;
 
       const track = {
         title: metadata.common.title || "Unknown Title",
@@ -18,10 +23,7 @@ async function generateTracks() {
         bitrate: Math.round(metadata.format.bitrate / 1000) || 0,
         length: Math.round(metadata.format.duration) || 0,
         audioSrc: src,
-        image:
-          images[key.toLowerCase()] ||
-          metadata.common.picture?.[0]?.data ||
-          defaultImage,
+        image: image,
         color: getContrastColor(),
       };
 
