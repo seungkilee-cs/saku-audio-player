@@ -13,9 +13,8 @@ async function generateTracks() {
       );
       const imageData = metadata.common.picture?.[0];
       const image = imageData
-        ? images[key.toLowerCase()]
-        : `data:${imageData.format};base64,${imageData.data.toString("base64")}` ||
-          defaultImage;
+        ? `data:${imageData.format};base64,${imageData.data.toString("base64")}`
+        : images[key.toLowerCase()] || defaultImage;
 
       const track = {
         title: metadata.common.title || "Unknown Title",
