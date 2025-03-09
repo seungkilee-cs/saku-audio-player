@@ -10,7 +10,7 @@ const AudioPlayer = ({ tracks }) => {
   const [volume, setVolume] = useState(1);
   const [userInteracted, setUserInteracted] = useState(false);
 
-  const { title, artist, color, image, audioSrc, bitrate, length } =
+  const { title, artist, album, color, image, audioSrc, bitrate, length } =
     tracks[trackIndex];
 
   const audioRef = useRef(new Audio(audioSrc));
@@ -124,6 +124,7 @@ const AudioPlayer = ({ tracks }) => {
         )}
         <h2 className="title">{title}</h2>
         <h3 className="artist">{artist}</h3>
+        <h5 className="album">{album}</h5>
         <div className="track-info-extra">
           <span className="bitrate">Bitrate: {bitrate} kbps</span>
           <span className="length">Length: {formatTime(length)}</span>

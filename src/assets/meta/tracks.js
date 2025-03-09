@@ -11,7 +11,9 @@ async function generateTracks() {
       const metadata = await mm.parseBlob(
         await fetch(src).then((res) => res.blob()),
       );
-      const imageData = metadata.common.picture?.[0];
+      // Need different way of getting image
+      // const imageData = metadata.common.picture?.[0];
+      const imageData = metadata.common.picture[0];
       const image = imageData
         ? `data:${imageData.format};base64,${imageData.data.toString("base64")}`
         : images[key.toLowerCase()] || defaultImage;
@@ -19,6 +21,7 @@ async function generateTracks() {
       const track = {
         title: metadata.common.title || "Unknown Title",
         artist: metadata.common.artist || "Unknown Artist",
+        album: metadata.common.album || "Unknown Album",
         bitrate: Math.round(metadata.format.bitrate / 1000) || 0,
         length: Math.round(metadata.format.duration) || 0,
         audioSrc: src,
