@@ -1,3 +1,4 @@
+// Need to fix the state discrepency when next track is invoked
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import AudioControls from "./AudioControls";
 import Backdrop from "./Backdrop";
@@ -26,9 +27,9 @@ const AudioPlayer = ({ tracks }) => {
     -webkit-gradient(linear, 0% 0%, 100% 0%, color-stop(${currentPercentage}, #fff), color-stop(${currentPercentage}, #777))
   `;
 
+  // Start the timer for progress updates
   const startTimer = useCallback(() => {
     clearInterval(intervalRef.current);
-
     intervalRef.current = setInterval(() => {
       if (audioRef.current.ended) {
         toNextTrack();
@@ -38,60 +39,60 @@ const AudioPlayer = ({ tracks }) => {
     }, 1000);
   }, []);
 
-  const onDrag = useCallback((value) => {
-    clearInterval(intervalRef.current);
-    audioRef.current.currentTime = value;
-    setTrackProgress(value);
-  }, []);
-
-  const onDragEnd = useCallback(() => {
-    if (!isPlaying) {
-      setIsPlaying(true);
+  // Handle safe playback with error handling
+  const handlePlayback = useCallback(async () => {
+    try {
+      if (isPlaying) {
+        await audioRef.current.pause();
+      } else {
+        await audioRef.current.play();
+      }
+    } catch (error) {
+      console.error("Playback error:", error);
+      setIsPlaying(false); // Ensure playback state is consistent
     }
-    startTimer();
-  }, [isPlaying, startTimer]);
+  }, [isPlaying]);
 
-  const toPrevTrack = useCallback(() => {
-    setTrackIndex(
-      (prevIndex) => (prevIndex - 1 + tracks.length) % tracks.length,
-    );
-  }, [tracks.length]);
-
-  const toNextTrack = useCallback(() => {
-    setTrackIndex((prevIndex) => (prevIndex + 1) % tracks.length);
-  }, [tracks.length]);
-
-  const togglePlayPause = useCallback(() => {
-    setIsPlaying((prev) => !prev);
-  }, []);
-
+  // Update play/pause behavior
   useEffect(() => {
-    if (isPlaying) {
-      audioRef.current.play();
-      startTimer();
-    } else {
+    if (!userInteracted) return;
+
+    handlePlayback().then(() => {
+      if (isPlaying) startTimer();
+      else clearInterval(intervalRef.current);
+    });
+  }, [isPlaying, userInteracted, handlePlayback, startTimer]);
+
+  // Handle track change behavior
+  useEffect(() => {
+    const playAfterInteraction = async () => {
       audioRef.current.pause();
-    }
-  }, [isPlaying, startTimer]);
+      audioRef.current = new Audio(audioSrc);
+      audioRef.current.volume = volume;
+      setTrackProgress(0);
 
-  useEffect(() => {
-    audioRef.current.pause();
-    audioRef.current = new Audio(audioSrc);
-    setTrackProgress(audioRef.current.currentTime);
-
-    if (isReady.current) {
-      audioRef.current.play();
-      setIsPlaying(true);
-      startTimer();
-    } else {
+      if (isReady.current && userInteracted) {
+        try {
+          await audioRef.current.play();
+          setIsPlaying(true);
+          startTimer();
+        } catch (error) {
+          console.error("Autoplay blocked:", error);
+          setIsPlaying(false);
+        }
+      }
       isReady.current = true;
-    }
-  }, [audioSrc, startTimer]);
+    };
 
+    playAfterInteraction();
+  }, [audioSrc, userInteracted, startTimer, volume]);
+
+  // Update volume when it changes
   useEffect(() => {
     audioRef.current.volume = volume;
   }, [volume]);
 
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       audioRef.current.pause();
@@ -99,18 +100,49 @@ const AudioPlayer = ({ tracks }) => {
     };
   }, []);
 
+  // Handle user interaction for play/pause
   const handleUserInteraction = useCallback(() => {
     if (!userInteracted) {
-      setUserInteracted(true);
+      setUserInteracted(true); // Mark that the user has interacted
     }
-    togglePlayPause();
-  }, [userInteracted, togglePlayPause]);
+    setIsPlaying((prev) => !prev); // Toggle play/pause state
+  }, [userInteracted]);
 
-  const formatTime = useCallback((time) => {
+  // Format time for display
+  const formatTime = (time) => {
     const minutes = Math.floor(time / 60);
     const seconds = Math.floor(time % 60);
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  }, []);
+  };
+
+  // Navigate to the previous track
+  const toPrevTrack = () => {
+    setTrackIndex((prevIndex) =>
+      prevIndex - 1 < 0 ? tracks.length - 1 : prevIndex - 1,
+    );
+  };
+
+  // Navigate to the next track
+  const toNextTrack = () => {
+    setTrackIndex((prevIndex) =>
+      prevIndex < tracks.length - 1 ? prevIndex + 1 : 0,
+    );
+  };
+
+  // Handle progress bar drag
+  const onDrag = (value) => {
+    clearInterval(intervalRef.current);
+    audioRef.current.currentTime = value;
+    setTrackProgress(value);
+  };
+
+  // Resume playback after dragging progress bar
+  const onDragEnd = () => {
+    if (!isPlaying) {
+      setIsPlaying(true);
+    }
+    startTimer();
+  };
 
   return (
     <div className="audio-player">
@@ -140,7 +172,7 @@ const AudioPlayer = ({ tracks }) => {
           value={trackProgress}
           step="1"
           min="0"
-          max={duration || 0}
+          max={duration || `${duration}`}
           className="progress"
           onChange={(e) => onDrag(parseFloat(e.target.value))}
           onMouseUp={onDragEnd}
@@ -160,7 +192,7 @@ const AudioPlayer = ({ tracks }) => {
           />
         </div>
         <p className="time">
-          {formatTime(trackProgress)} / {formatTime(duration || 0)}
+          {formatTime(trackProgress)} / {formatTime(duration || "0")}
         </p>
       </div>
       <Backdrop

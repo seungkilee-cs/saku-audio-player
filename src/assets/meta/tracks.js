@@ -1,7 +1,7 @@
 import * as mm from "music-metadata";
 import images from "../img";
 import audio from "../audio";
-import defaultImage from "../img/pale_blue.png"; // Import a default image
+import defaultImage from "../img/pale_blue.png";
 
 async function generateTracks() {
   const tracks = [];
@@ -11,9 +11,9 @@ async function generateTracks() {
       const metadata = await mm.parseBlob(
         await fetch(src).then((res) => res.blob()),
       );
-      // Need different way of getting image
-      // const imageData = metadata.common.picture?.[0];
-      const imageData = metadata.common.picture[0];
+
+      // Safely handle image extraction
+      const imageData = metadata.common.picture?.[0];
       const image = imageData
         ? `data:${imageData.format};base64,${imageData.data.toString("base64")}`
         : images[key.toLowerCase()] || defaultImage;
