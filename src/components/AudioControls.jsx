@@ -25,7 +25,7 @@ const AudioControls = ({
       <button
         type="button"
         className="pause"
-        onClick={() => onPlayPauseClick(false)}
+        onClick={onPlayPauseClick}
         aria-label="Pause"
       >
         <Pause />
@@ -34,7 +34,7 @@ const AudioControls = ({
       <button
         type="button"
         className="play"
-        onClick={() => onPlayPauseClick(true)}
+        onClick={onPlayPauseClick}
         aria-label="Play"
       >
         <Play />

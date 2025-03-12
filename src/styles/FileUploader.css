@@ -1,0 +1,7 @@
+.file-uploader {
+    margin: 20px;
+}
+
+.file-uploader input[type="file"] {
+    display: block;
+}
