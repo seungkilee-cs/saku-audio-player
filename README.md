@@ -1,35 +1,12 @@
-# [咲く] Saku Audio Player
-咲く: Let the Sound Bloom
+# React + Vite
 
-![咲く](./misc/sample1.jpg)
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-[Demo Here](https://seungkilee-cs.github.io/saku-audio-player/)
+Currently, two official plugins are available:
 
-## To Do
-### Short Term
-- [ ] Player Reposition
-- [x] ~~Deploy the app to be static player~~
-- [ ] Add Time Display (Start, Current, End)
-- [ ] Add Volume Control
-- [ ] Add Playlist Visibility
-- [ ] Add file format display
-- [ ] Add True Bit-Rate display
-- [ ] Add Header/Footer
-- [ ] Add URL Support
-- [ ] Add Download Support
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
 
-### Mid Term
-- [ ] Add "Add/Delete Music" Functionality
-- [ ] Re-design the UI for web
-- [ ] Add Library Feature
-- [ ] Electron Port
-- [ ] React Native Port
-- [ ] Add a Minimized View
-- [ ] Cache and Clear Optimization
+## Expanding the ESLint configuration
 
-### Long Term
-- [ ] Add PEQ feature
-- [ ] Add EQ Preset feature
-- [ ] Add EQ Import / Export
-- [ ] Add Lyric Display
-- [ ] Add Spectrum Analyzer
+If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.

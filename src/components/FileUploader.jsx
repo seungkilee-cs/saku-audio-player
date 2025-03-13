@@ -1,26 +1,37 @@
-import React from "react";
-import generateTracks from "../services/generateTracks";
+import React, { useState } from "react";
 
-const FileUploader = ({ onTracksAdded }) => {
-  const handleFileChange = async (event) => {
-    const selectedFiles = Array.from(event.target.files); // Convert FileList to array
-    const newTracks = await generateTracks(selectedFiles); // Generate track objects
-    onTracksAdded(newTracks); // Pass new tracks to parent component
+const FileUploader = ({ onFileUpload }) => {
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    setSelectedFile(file);
+  };
+
+  const handleUpload = async () => {
+    if (selectedFile) {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      try {
+        // Here you would typically send the file to a server
+        // For this example, we'll simulate an upload
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        onFileUpload(URL.createObjectURL(selectedFile));
+        alert("File uploaded successfully!");
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        alert("Error uploading file");
+      }
+    }
   };
 
   return (
     <div className="file-uploader">
-      <label htmlFor="file-upload" className="file-upload-label">
-        Upload Audio Files
-      </label>
-      <input
-        id="file-upload"
-        type="file"
-        accept="audio/*"
-        multiple
-        onChange={handleFileChange}
-        className="file-upload-input"
-      />
+      <input type="file" accept="audio/*" onChange={handleFileChange} />
+      <button onClick={handleUpload} disabled={!selectedFile}>
+        Upload
+      </button>
     </div>
   );
 };

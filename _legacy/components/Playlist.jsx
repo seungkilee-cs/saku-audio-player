@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import "../styles/Playlist.css";
 
 const Playlist = ({ tracks, currentTrackIndex, onTrackSelect }) => {
   return (
@@ -11,7 +12,7 @@ const Playlist = ({ tracks, currentTrackIndex, onTrackSelect }) => {
             className={index === currentTrackIndex ? "active" : ""}
             onClick={() => onTrackSelect(index)}
           >
-            {track.name}
+            {track.title} - {track.artist}
           </li>
         ))}
       </ul>
