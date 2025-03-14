@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import AudioPlayer from "./components/AudioPlayer";
 import Playlist from "./components/Playlist";
 import FileUploader from "./components/FileUploader";
+import "./styles/App.css";
 
 function App() {
   const [tracks, setTracks] = useState([]);
