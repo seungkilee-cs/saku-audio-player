@@ -1,26 +1,31 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import { createRoot } from "react-dom/client";
 import AudioPlayer from "./components/AudioPlayer";
 import tracksPromise from "./assets/meta/tracks";
 
 function App() {
   const [tracks, setTracks] = useState([]);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    tracksPromise.then((resolvedTracks) => {
-      setTracks(resolvedTracks);
-      console.log("All tracks:", resolvedTracks);
-      resolvedTracks.forEach((track, index) => {
-        console.log(`Track ${index + 1}:`, track);
-      });
+    startTransition(() => {
+      tracksPromise
+        .then((resolvedTracks) => {
+          setTracks(resolvedTracks);
+        })
+        .catch((error) => console.error("Failed loading tracks:", error));
     });
   }, []);
 
   if (tracks.length === 0) {
-    return <div>Loading tracks...</div>;
+    return <div>{isPending ? "Loading tracks..." : "No tracks available"}</div>;
   }
 
-  return <AudioPlayer tracks={tracks} />;
+  return (
+    <React.Fragment>
+      <AudioPlayer tracks={tracks} />
+    </React.Fragment>
+  );
 }
 
 const root = createRoot(document.getElementById("root"));
