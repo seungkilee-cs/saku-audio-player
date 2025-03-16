@@ -1,7 +1,10 @@
-// Need to fix the state discrepency when next track is invoked
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import AudioControls from "./AudioControls";
 import Backdrop from "./Backdrop";
+import TrackInfo from "./TrackInfo";
+import VolumeControl from "./VolumeControl";
+import ProgressBar from "./ProgressBar";
+import { formatTime } from "../../util/timeUtils";
 import "../styles/AudioPlayer.css";
 
 const AudioPlayer = ({ tracks }) => {
@@ -16,15 +19,9 @@ const AudioPlayer = ({ tracks }) => {
   const audioRef = useRef(new Audio(audioSrc));
   const intervalRef = useRef();
   const isReady = useRef(false);
+  const progressBarRef = useRef();
 
   const { duration } = audioRef.current;
-
-  const currentPercentage = duration
-    ? `${(trackProgress / duration) * 100}%`
-    : "0%";
-  const trackStyling = `
-    -webkit-gradient(linear, 0% 0%, 100% 0%, color-stop(${currentPercentage}, #fff), color-stop(${currentPercentage}, #777))
-  `;
 
   const startTimer = useCallback(() => {
     clearInterval(intervalRef.current);
@@ -76,12 +73,6 @@ const AudioPlayer = ({ tracks }) => {
     };
   }, []);
 
-  const formatTime = (time) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  };
-
   const toPrevTrack = () => {
     setTrackIndex((prevIndex) =>
       prevIndex - 1 < 0 ? tracks.length - 1 : prevIndex - 1,
@@ -109,55 +100,31 @@ const AudioPlayer = ({ tracks }) => {
 
   return (
     <div className="audio-player">
-      <div className="track-info">
-        {image && (
-          <img
-            className="artwork"
-            src={image}
-            alt={`track artwork for ${title} by ${artist}`}
-          />
-        )}
-        <h2 className="title">{title}</h2>
-        <h3 className="artist">{artist}</h3>
-        <h5 className="album">{album}</h5>
-        <div className="track-info-extra">
-          <span className="bitrate">Bitrate: {bitrate} kbps</span>
-          <span className="length">Length: {formatTime(length)}</span>
-        </div>
-        <AudioControls
-          isPlaying={isPlaying}
-          onPrevClick={toPrevTrack}
-          onNextClick={toNextTrack}
-          onPlayPauseClick={handlePlayPause}
-        />
-        <input
-          type="range"
-          value={trackProgress}
-          step="1"
-          min="0"
-          max={duration || `${duration}`}
-          className="progress"
-          onChange={(e) => onDrag(parseFloat(e.target.value))}
-          onMouseUp={onDragEnd}
-          onKeyUp={onDragEnd}
-          style={{ background: trackStyling }}
-        />
-        <div className="volume-control">
-          <label htmlFor="volume">Volume:</label>
-          <input
-            id="volume"
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={volume}
-            onChange={(e) => setVolume(parseFloat(e.target.value))}
-          />
-        </div>
-        <p className="time">
-          {formatTime(trackProgress)} / {formatTime(duration || 0)}
-        </p>
-      </div>
+      <TrackInfo
+        title={title}
+        artist={artist}
+        album={album}
+        image={image}
+        bitrate={bitrate}
+        length={length}
+        formatTime={formatTime}
+      />
+      <AudioControls
+        isPlaying={isPlaying}
+        onPrevClick={toPrevTrack}
+        onNextClick={toNextTrack}
+        onPlayPauseClick={handlePlayPause}
+      />
+      <ProgressBar
+        trackProgress={trackProgress}
+        duration={duration}
+        onDrag={onDrag}
+        onDragEnd={onDragEnd}
+        progressBarRef={progressBarRef}
+        audioRef={audioRef}
+        formatTime={formatTime}
+      />
+      <VolumeControl volume={volume} onVolumeChange={setVolume} />
       <Backdrop
         trackIndex={trackIndex}
         activeColor={color}
