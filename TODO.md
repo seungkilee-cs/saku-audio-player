@@ -1,0 +1,31 @@
+## Implemented Features
+- [x] Play/pause functionality
+- [x] Next and previous track navigation
+- [x] Progress bar with seek functionality
+- [x] Volume control
+- [x] Track information display (title, artist, album)
+- [x] Album artwork display
+- [x] Responsive design
+
+## TODO Features
+- [ ] Playlist support
+- [ ] Equalizer with presets and custom settings
+- [ ] Lyrics display and support
+- [ ] Dark mode or theme customization options
+- [ ] Crossfade between tracks
+- [ ] Sleep timer functionality
+- [ ] Playlist import/export capabilities
+- [ ] Search function with autocomplete
+- [ ] Audio format support for various file types (e.g., MP3, FLAC, WAV)
+- [ ] Customizable widgets for home screen
+- [ ] Audio visualization effects
+- [ ] Automatic start/stop when headphones are connected/disconnected
+- [ ] Ability to "like" or favorite songs
+- [ ] Smart playlist creation based on listening habits or genres
+- [ ] Audio speed adjustment options
+- [ ] Offline mode for downloaded tracks
+- [ ] Integration with cloud storage services for music files
+- [ ] Backup and restore functionality for playlists and settings
+- [ ] Multi-language support
+- [ ] Audio trimming or ringtone creation tool
+- [ ] Accessibility features, such as screen reader support and transcripts for audio content

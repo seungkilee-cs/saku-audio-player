@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useTransition } from "react";
 import { createRoot } from "react-dom/client";
 import AudioPlayer from "./components/AudioPlayer";
+import Playlist from "./components/Playlist";
 import tracksPromise from "./assets/meta/tracks";
+import "./App.css";
 
 function App() {
   const [tracks, setTracks] = useState([]);
@@ -22,9 +24,13 @@ function App() {
   }
 
   return (
-    <React.Fragment>
+    <div className="audio-app-container">
       <AudioPlayer tracks={tracks} />
-    </React.Fragment>
+      <Playlist tracks={tracks} />
+    </div>
+    // <React.Fragment>
+    //   <AudioPlayer tracks={tracks} />
+    // </React.Fragment>
   );
 }
 
