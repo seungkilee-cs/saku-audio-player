@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import "../styles/Playlist.css";
 
 const Playlist = ({ tracks, currentTrackIndex, onTrackSelect }) => {
@@ -9,9 +9,10 @@ const Playlist = ({ tracks, currentTrackIndex, onTrackSelect }) => {
         {tracks.map((track, index) => (
           <li
             key={index}
-            className={index === currentTrackIndex ? "active" : ""}
+            className={currentTrackIndex === index ? "active" : ""}
             onClick={() => onTrackSelect(index)}
           >
+            <span className="track-number">{index + 1}.</span>
             {track.title} - {track.artist}
           </li>
         ))}

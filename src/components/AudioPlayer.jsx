@@ -7,14 +7,13 @@ import ProgressBar from "./ProgressBar";
 import { formatTime } from "../../util/timeUtils";
 import "../styles/AudioPlayer.css";
 
-const AudioPlayer = ({ tracks }) => {
-  const [trackIndex, setTrackIndex] = useState(0);
+const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
   const [trackProgress, setTrackProgress] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
 
   const { title, artist, album, color, image, audioSrc, bitrate, length } =
-    tracks[trackIndex];
+    tracks[currentTrackIndex];
 
   const audioRef = useRef(new Audio(audioSrc));
   const intervalRef = useRef();
@@ -27,12 +26,14 @@ const AudioPlayer = ({ tracks }) => {
     clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
       if (audioRef.current.ended) {
-        toNextTrack();
+        onTrackChange(
+          currentTrackIndex < tracks.length - 1 ? currentTrackIndex + 1 : 0,
+        );
       } else {
         setTrackProgress(audioRef.current.currentTime);
       }
     }, 1000);
-  }, []);
+  }, [currentTrackIndex, onTrackChange, tracks.length]);
 
   const handlePlayPause = useCallback(() => {
     setIsPlaying((prevIsPlaying) => {
@@ -74,14 +75,14 @@ const AudioPlayer = ({ tracks }) => {
   }, []);
 
   const toPrevTrack = () => {
-    setTrackIndex((prevIndex) =>
-      prevIndex - 1 < 0 ? tracks.length - 1 : prevIndex - 1,
+    onTrackChange(
+      currentTrackIndex - 1 < 0 ? tracks.length - 1 : currentTrackIndex - 1,
     );
   };
 
   const toNextTrack = () => {
-    setTrackIndex((prevIndex) =>
-      prevIndex < tracks.length - 1 ? prevIndex + 1 : 0,
+    onTrackChange(
+      currentTrackIndex < tracks.length - 1 ? currentTrackIndex + 1 : 0,
     );
   };
 
@@ -126,7 +127,7 @@ const AudioPlayer = ({ tracks }) => {
       />
       <VolumeControl volume={volume} onVolumeChange={setVolume} />
       <Backdrop
-        trackIndex={trackIndex}
+        trackIndex={currentTrackIndex}
         activeColor={color}
         isPlaying={isPlaying}
       />

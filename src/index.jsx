@@ -7,6 +7,7 @@ import "./App.css";
 
 function App() {
   const [tracks, setTracks] = useState([]);
+  const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
@@ -19,18 +20,27 @@ function App() {
     });
   }, []);
 
+  const handleTrackSelect = (index) => {
+    setCurrentTrackIndex(index);
+  };
+
   if (tracks.length === 0) {
     return <div>{isPending ? "Loading tracks..." : "No tracks available"}</div>;
   }
 
   return (
     <div className="audio-app-container">
-      <AudioPlayer tracks={tracks} />
-      <Playlist tracks={tracks} />
+      <AudioPlayer
+        tracks={tracks}
+        currentTrackIndex={currentTrackIndex}
+        onTrackChange={handleTrackSelect}
+      />
+      <Playlist
+        tracks={tracks}
+        currentTrackIndex={currentTrackIndex}
+        onTrackSelect={handleTrackSelect}
+      />
     </div>
-    // <React.Fragment>
-    //   <AudioPlayer tracks={tracks} />
-    // </React.Fragment>
   );
 }
 
