@@ -15,39 +15,43 @@ html {
 }
 
 .audio-player {
-    width: 350px;
-    padding: 24px;
-    border-radius: 20px;
-    box-shadow: 0 28px 28px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 25rem; /* 350px converted to rem */
+    height: 90%;
+    padding: 1.5rem; /* 24px converted to rem */
+    border-radius: 1.25rem; /* 20px converted to rem */
+    box-shadow: 0 1.75rem 1.75rem rgba(0, 0, 0, 0.2); /* Shadow values in rem */
     color: var(--white);
     backdrop-filter: blur(10px);
     background-color: rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
 }
 
 .artwork {
     border-radius: 50%;
     display: block;
     margin: auto;
-    height: 200px;
-    width: 200px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    height: 12.5rem; /* 200px converted to rem */
+    width: 12.5rem; /* Same as height */
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3); /* Shadow values in rem */
 }
 
 .track-info {
     text-align: center;
     z-index: 1;
     position: relative;
-    margin-top: 20px;
+    margin-top: 1.25rem; /* 20px converted to rem */
 }
 
 .title {
-    font-weight: 700;
-    margin-bottom: 4px;
+    font-weight: bold;
+    margin-bottom: 0.25rem; /* 4px converted to rem */
     font-size: 1.2em;
 }
 
 .artist {
-    font-weight: 300;
+    font-weight: lighter;
     margin-top: 0;
     font-size: 0.9em;
     opacity: 0.8;
@@ -57,7 +61,7 @@ html {
     display: flex;
     justify-content: space-between;
     width: 75%;
-    margin: 20px auto;
+    margin: 1.25rem auto; /* Margin of 20px converted to rem */
 }
 
 .audio-controls button {
@@ -73,14 +77,14 @@ html {
 
 .audio-controls .prev svg,
 .audio-controls .next svg {
-    width: 30px;
-    height: 30px;
+    width: 1.875rem; /* 30px converted to rem */
+    height: 1.875rem; /* Same as width */
 }
 
 .audio-controls .play svg,
 .audio-controls .pause svg {
-    height: 40px;
-    width: 40px;
+    height: 2.5rem; /* 40px converted to rem */
+    width: 2.5rem; /* Same as height */
 }
 
 .audio-controls path {
@@ -90,67 +94,32 @@ html {
 input[type="range"] {
     -webkit-appearance: none;
     width: 100%;
-    height: 5px;
-    border-radius: 5px;
-    background: rgba(255, 255, 255, 0.3);
+    height: 0.3125rem; /* Height of range bar (5px converted to rem) */
+    border-radius: 0.3125rem; /* Border radius matches height (5px in rem) */
+    background-color: rgba(255, 255, 255, 0.3);
     outline: none;
-    transition: background 0.2s ease;
+    transition: background-color 0.2s ease;
 }
 
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 15px;
-    height: 15px;
+    width: 0.9375rem; /* Thumb width (15px in rem) */
+    height: 0.9375rem; /* Thumb height matches width */
     border-radius: 50%;
-    background: var(--white);
+    background-color: var(--white);
     cursor: pointer;
 }
 
 .volume-control {
     display: flex;
     align-items: center;
-    margin-top: 15px;
+    margin-top: 0.9375rem; /* Margin of volume control (15px in rem) */
 }
 
 .volume-control input[type="range"] {
-    width: 100px;
-    margin-left: 10px;
+    width: calc(6.25rem + .625em); /* Width of volume slider (100px in rem) */
+  	margin-left :10 px
 }
-
-.track-info-extra {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8em;
-    opacity: 0.7;
-    margin-top: 15px;
-}
-
-.color-backdrop {
-    background: linear-gradient(
-            45deg,
-            var(--active-color) 20%,
-            transparent 100%
-        )
-        no-repeat;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: -1;
-    opacity: 0.8;
-}
-
-.color-backdrop.playing {
-    animation: colorChange 20s alternate infinite;
-}
-
-@keyframes colorChange {
-    from {
-        filter: hue-rotate(0deg);
-    }
-    to {
-        filter: hue-rotate(360deg);
-    }
-}
+.track-info-extra{
+flex

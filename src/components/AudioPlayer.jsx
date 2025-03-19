@@ -12,8 +12,22 @@ const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
 
-  const { title, artist, album, color, image, audioSrc, bitrate, length } =
-    tracks[currentTrackIndex];
+  const {
+    title,
+    artist,
+    album,
+    color,
+    image,
+    audioSrc,
+    bitrate,
+    length,
+    container,
+    codec,
+    fileExtension,
+    bitsPerSample,
+    sampleRate,
+    detailedBitSampleInfo,
+  } = tracks[currentTrackIndex];
 
   const audioRef = useRef(new Audio(audioSrc));
   const intervalRef = useRef();
@@ -109,6 +123,10 @@ const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
         bitrate={bitrate}
         length={length}
         formatTime={formatTime}
+        container={container}
+        codec={codec}
+        fileExtension={fileExtension}
+        detailedBitSampleInfo={detailedBitSampleInfo}
       />
       <AudioControls
         isPlaying={isPlaying}

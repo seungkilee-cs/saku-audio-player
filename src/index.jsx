@@ -25,7 +25,8 @@ function App() {
   };
 
   if (tracks.length === 0) {
-    return <div>{isPending ? "Loading tracks..." : "No tracks available"}</div>;
+    // return <div>{isPending ? "Loading tracks..." : "No tracks available"}</div>;
+    return <div>{"Loading Tracks..."}</div>;
   }
 
   return (

@@ -2,6 +2,7 @@ import * as mm from "music-metadata";
 import images from "../img";
 import audio from "../audio";
 import defaultImage from "../img/pale_blue.png";
+// import path from "path";
 
 async function generateTracks() {
   const tracks = [];
@@ -18,6 +19,17 @@ async function generateTracks() {
         ? `data:${imageData.format};base64,${imageData.data.toString("base64")}`
         : images[key.toLowerCase()] || defaultImage;
 
+      const bitsPerSample =
+        metadata.format.bitsPerSample || "Unknown Bit Depth";
+      const sampleRate = metadata.format.sampleRate
+        ? `${metadata.format.sampleRate / 1000} kHz`
+        : "Unknown Sample Rate";
+
+      // Combine details for display
+      const detailedBitSampleInfo = `${sampleRate}`;
+
+      // const fileExtension = path.extname(filePath).substring(1).toLowerCase(); // Removes the dot and converts to uppercase
+
       const track = {
         title: metadata.common.title || "Unknown Title",
         artist: metadata.common.artist || "Unknown Artist",
@@ -27,6 +39,13 @@ async function generateTracks() {
         audioSrc: src,
         image: image,
         color: getContrastColor(),
+        container: metadata.format.container || "Unknown Container",
+        code: metadata.format.codec || "Unknown Audio Codec",
+        // fileExtension: fileExtension || "Unknown File Format",
+        bitsPerSample: bitsPerSample,
+        sampleRate:
+          `${metadata.format.sampleRate / 1000} kHz` || "Unknown Sample Rate",
+        detailedBitSampleInfo: detailedBitSampleInfo,
       };
 
       tracks.push(track);

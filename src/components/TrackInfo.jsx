@@ -9,6 +9,12 @@ const TrackInfo = ({
   bitrate,
   length,
   formatTime,
+  container,
+  fileExtension,
+  codec,
+  bitsPerSample,
+  sampleRate,
+  detailedBitSampleInfo,
 }) => (
   <div className="track-info">
     {image && (
@@ -22,8 +28,9 @@ const TrackInfo = ({
     <h3 className="artist">{artist}</h3>
     <h5 className="album">{album}</h5>
     <div className="track-info-extra">
-      <span className="bitrate">Bitrate: {bitrate} kbps</span>
-      <span className="length">Length: {formatTime(length)}</span>
+      <span className="format">{container} | </span>
+      <span className="bitrate"> {bitrate} kbps </span>
+      <span className="detailedBitSampleInfo"> | {detailedBitSampleInfo}</span>
     </div>
   </div>
 );

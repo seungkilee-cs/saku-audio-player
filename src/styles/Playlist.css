@@ -1,16 +1,20 @@
 .playlist {
-    width: 350px;
-    padding: 24px;
-    border-radius: 20px;
-    box-shadow: 0 28px 28px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 21.875rem; /* 350px converted to rem */
+    height: 90%;
+    padding: 1.5rem; /* 24px converted to rem */
+    border-radius: 1.25rem; /* 20px converted to rem */
+    box-shadow: 0 1.75rem 1.75rem rgba(0, 0, 0, 0.2); /* Shadow values in rem */
     color: var(--white);
     backdrop-filter: blur(10px);
     background-color: rgba(255, 255, 255, 0.1);
+    display: flex;
+    flex-direction: column;
 }
 
 .playlist h2 {
     margin-top: 0;
-    margin-bottom: 15px;
+    margin-bottom: 0.9375rem; /* 15px converted to rem */
     font-size: 1.2em;
     text-align: center;
 }
@@ -19,14 +23,14 @@
     list-style-type: none;
     padding: 0;
     margin: 0;
-    max-height: 300px;
+    flex-grow: 1;
     overflow-y: auto;
 }
 
 .playlist li {
-    padding: 10px;
-    margin-bottom: 5px;
-    border-radius: 5px;
+    padding: 0.625rem; /* 10px converted to rem */
+    margin-bottom: 0.3125rem; /* 5px converted to rem */
+    border-radius: 0.3125rem; /* Same as margin-bottom for consistency */
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
@@ -38,30 +42,4 @@
 .playlist li.active {
     background-color: rgba(255, 255, 255, 0.2);
     font-weight: bold;
-}
-
-.playlist .track-info {
-    display: flex;
-    align-items: center;
-}
-
-.playlist .track-info img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    margin-right: 10px;
-}
-
-.playlist .track-details {
-    flex-grow: 1;
-}
-
-.playlist .track-title {
-    font-weight: 600;
-    margin-bottom: 2px;
-}
-
-.playlist .track-artist {
-    font-size: 0.8em;
-    opacity: 0.8;
 }
