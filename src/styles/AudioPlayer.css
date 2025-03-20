@@ -122,4 +122,5 @@ input[type="range"]::-webkit-slider-thumb {
   	margin-left :10 px
 }
 .track-info-extra{
-flex
+    flex
+}
