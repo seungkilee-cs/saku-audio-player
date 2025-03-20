@@ -28,7 +28,7 @@ const TrackInfo = ({
     <h3 className="artist">{artist}</h3>
     <h5 className="album">{album}</h5>
     <div className="track-info-extra">
-      <span className="format">{container} | </span>
+      <span className="format">{fileExtension} | </span>
       <span className="bitrate"> {bitrate} kbps </span>
       <span className="detailedBitSampleInfo"> | {detailedBitSampleInfo}</span>
     </div>
