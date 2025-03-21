@@ -36,6 +36,7 @@ const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
 
   const { duration } = audioRef.current;
 
+  // Start timer for progress bar updates
   const startTimer = useCallback(() => {
     clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
@@ -47,8 +48,9 @@ const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
         setTrackProgress(audioRef.current.currentTime);
       }
     }, 1000);
-  }, [currentTrackIndex, onTrackChange, tracks.length]);
+  }, [currentTrackIndex, onTrackChange]);
 
+  // Handle play/pause toggle
   const handlePlayPause = useCallback(() => {
     setIsPlaying((prevIsPlaying) => {
       if (!prevIsPlaying) {
@@ -62,10 +64,11 @@ const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
     });
   }, [startTimer]);
 
+  // Load new track when track changes
   useEffect(() => {
     audioRef.current.pause();
-    audioRef.current = new Audio(audioSrc);
-    audioRef.current.volume = volume;
+    audioRef.current = new Audio(audioSrc); // Only recreate when track changes
+    audioRef.current.volume = volume; // Set volume for new track
     setTrackProgress(0);
 
     if (isReady.current) {
@@ -75,12 +78,16 @@ const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
     } else {
       isReady.current = true;
     }
-  }, [audioSrc, volume, startTimer]);
+  }, [audioSrc, startTimer]);
 
+  // Update volume without recreating audio element
   useEffect(() => {
-    audioRef.current.volume = volume;
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
   }, [volume]);
 
+  // Cleanup on component unmount
   useEffect(() => {
     return () => {
       audioRef.current.pause();
@@ -88,18 +95,21 @@ const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
     };
   }, []);
 
+  // Navigate to previous track
   const toPrevTrack = () => {
     onTrackChange(
       currentTrackIndex - 1 < 0 ? tracks.length - 1 : currentTrackIndex - 1,
     );
   };
 
+  // Navigate to next track
   const toNextTrack = () => {
     onTrackChange(
       currentTrackIndex < tracks.length - 1 ? currentTrackIndex + 1 : 0,
     );
   };
 
+  // Handle progress bar drag
   const onDrag = (value) => {
     clearInterval(intervalRef.current);
     audioRef.current.currentTime = value;

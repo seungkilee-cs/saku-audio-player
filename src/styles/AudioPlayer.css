@@ -118,9 +118,6 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .volume-control input[type="range"] {
-    width: calc(6.25rem + .625em); /* Width of volume slider (100px in rem) */
-  	margin-left :10 px
-}
-.track-info-extra{
-    flex
+    width: calc(6.25rem + 0.625em); /* Width of volume slider (100px in rem) */
+    margin-left: 10 px;
 }
