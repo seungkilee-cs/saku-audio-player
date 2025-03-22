@@ -123,6 +123,18 @@ const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
     startTimer();
   };
 
+  // Moving within audio
+  const onForward10Click = () => {
+    audioRef.current.currentTime += 10;
+  };
+
+  const onBackward10Click = () => {
+    audioRef.current.currentTime = Math.max(
+      audioRef.current.currentTime - 10,
+      0,
+    );
+  };
+
   return (
     <div className="audio-player">
       <TrackInfo
@@ -143,6 +155,8 @@ const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
         onPrevClick={toPrevTrack}
         onNextClick={toNextTrack}
         onPlayPauseClick={handlePlayPause}
+        onForward10Click={onForward10Click}
+        onBackward10Click={onBackward10Click}
       />
       <ProgressBar
         trackProgress={trackProgress}

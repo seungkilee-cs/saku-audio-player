@@ -3,15 +3,18 @@ import Play from "../assets/img/play.svg?react";
 import Pause from "../assets/img/pause.svg?react";
 import Next from "../assets/img/next.svg?react";
 import Prev from "../assets/img/prev.svg?react";
+import Forward10 from "../assets/img/forward10.svg?react";
+import Backward10 from "../assets/img/backward10.svg?react";
 
 const AudioControls = ({
   isPlaying,
   onPlayPauseClick,
   onPrevClick,
   onNextClick,
+  onForward10Click,
+  onBackward10Click,
 }) => (
   <div className="audio-controls">
-    {/* Prev Button */}
     <button
       type="button"
       className="prev"
@@ -20,7 +23,14 @@ const AudioControls = ({
     >
       <Prev />
     </button>
-    {/* Play/Pause Button */}
+    <button
+      type="button"
+      className="backward-10"
+      aria-label="Backward 10 seconds"
+      onClick={onBackward10Click}
+    >
+      <Backward10 />
+    </button>
     {isPlaying ? (
       <button
         type="button"
@@ -40,7 +50,14 @@ const AudioControls = ({
         <Play />
       </button>
     )}
-    {/* Next Button */}
+    <button
+      type="button"
+      className="forward-10"
+      aria-label="Forward 10 seconds"
+      onClick={onForward10Click}
+    >
+      <Forward10 />
+    </button>
     <button
       type="button"
       className="next"
