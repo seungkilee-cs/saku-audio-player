@@ -168,6 +168,8 @@ const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
         formatTime={formatTime}
       />
       <VolumeControl volume={volume} onVolumeChange={setVolume} />
+      {/* <div className="progress-volume-container">
+      </div> */}
       <Backdrop
         trackIndex={currentTrackIndex}
         activeColor={color}
