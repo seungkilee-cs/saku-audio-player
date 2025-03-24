@@ -28,6 +28,7 @@ const VolumeControl = ({ volume, onVolumeChange }) => {
 
   return (
     <div className="volume-control" ref={containerRef} onClick={handleClick}>
+      <span className="volume-percentage">{Math.round(volume * 100)}%</span>
       <div className="volume-bar">
         <div
           className="volume-fill"
@@ -35,14 +36,15 @@ const VolumeControl = ({ volume, onVolumeChange }) => {
         ></div>
         <div className="volume-100-mark"></div>
       </div>
-      <div className="volume-percentage">{Math.round(volume * 100)}%</div>
-      {volume === 0 ? (
-        <IoMdVolumeOff size={25} />
-      ) : volume < 0.5 ? (
-        <IoMdVolumeLow size={25} />
-      ) : (
-        <IoMdVolumeHigh size={25} />
-      )}
+      <div className="volume-icon">
+        {volume === 0 ? (
+          <IoMdVolumeOff size={25} />
+        ) : volume < 0.5 ? (
+          <IoMdVolumeLow size={25} />
+        ) : (
+          <IoMdVolumeHigh size={25} />
+        )}
+      </div>
     </div>
   );
 };
