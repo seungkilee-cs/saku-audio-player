@@ -1,18 +1,36 @@
+:root {
+    --primary-color: #667eea;
+    --secondary-color: #764ba2;
+    --text-color: #ffffff;
+    --button-bg-color: rgba(255, 255, 255, 0.1);
+    --button-hover-bg-color: rgba(255, 255, 255, 0.2);
+    --font-family: "Roboto", sans-serif;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --shadow-hover-color: rgba(0, 0, 0, 0.15);
+}
+
+body {
+    font-family: var(--font-family);
+    background: linear-gradient(
+        135deg,
+        var(--primary-color) 0%,
+        var(--secondary-color) 100%
+    );
+}
+
 .home-page {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100vh;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    font-family: "Roboto", sans-serif;
 }
 
 h1 {
     font-size: 3rem;
-    color: #ffffff;
+    color: var(--text-color);
     margin-bottom: 2rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    text-shadow: 2px 2px 4px var(--shadow-color);
 }
 
 .button-container {
@@ -24,23 +42,23 @@ button {
     padding: 0.8rem 1.5rem;
     font-size: 1rem;
     font-weight: 500;
-    color: #ffffff;
-    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-color);
+    background-color: var(--button-bg-color);
     border: none;
     border-radius: 25px;
     cursor: pointer;
     transition: all 0.3s ease;
     backdrop-filter: blur(5px);
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px var(--shadow-color);
 }
 
 button:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: var(--button-hover-bg-color);
     transform: translateY(-2px);
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 6px 8px var(--shadow-hover-color);
 }
 
 button:active {
     transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px var(--shadow-color);
 }

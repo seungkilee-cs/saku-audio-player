@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import AudioPlayer from "./AudioPlayer";
 import Playlist from "./Playlist";
 import tracksPromise from "../assets/meta/tracks";
-// import "../App.css";
+import "../styles/TestPlayer.css";
 
 const TestPlayer = () => {
   const [tracks, setTracks] = useState([]);
@@ -25,7 +25,7 @@ const TestPlayer = () => {
   }
 
   return (
-    <div className="audio-app-container">
+    <div className="test-player-container">
       <AudioPlayer
         tracks={tracks}
         currentTrackIndex={currentTrackIndex}

@@ -1,30 +1,13 @@
-:root {
-    --white: #fff;
-    --active-color: #00aeb0;
-    --player-button-width: 3em;
-}
-
-* {
-    box-sizing: border-box;
-}
-
-html {
-    font-family: "Roboto", Arial, sans-serif;
-    height: 100%;
-    background: var(--active-color);
-    transition: background 0.4s ease;
-}
-
 .audio-player {
     width: 100%;
     max-width: 25rem;
-    height: 90%;
-    padding: 1.5rem;
+    height: 70%;
+    padding: 1.9rem;
     border-radius: 1.25rem;
-    box-shadow: 0 1.75rem 1.75rem rgba(0, 0, 0, 0.2);
-    color: var(--white);
+    box-shadow: 0 1.75rem 1.75rem var(--shadow-color);
+    color: var(--text-color);
     backdrop-filter: blur(10px);
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--button-bg-color);
     display: flex;
     flex-direction: column;
 }
@@ -35,7 +18,7 @@ html {
     margin: auto;
     height: 12.5rem;
     width: 12.5rem;
-    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0.5rem 1rem var(--shadow-color);
 }
 
 .track-info {
@@ -78,30 +61,28 @@ html {
 
 .audio-controls .prev svg,
 .audio-controls .next svg {
-    width: 1.875rem;
-    height: 1.875rem;
+    width: 1.5rem;
+    height: 1.5rem;
 }
 
 .audio-controls .play svg,
 .audio-controls .pause svg {
-    height: 2.5rem;
-    width: 2.5rem;
+    height: 1.5rem;
+    width: 1.5rem;
 }
 
 .audio-controls path {
-    fill: var(--white);
+    fill: var(--text-color);
 }
 
 .progress-volume-container {
     display: flex;
-    /* width: 155%; */
     align-items: center;
     margin-top: 0.9375rem;
 }
 
 .progress-volume-container .progress-bar {
     flex-grow: 1;
-    /* width: 100%; */
     flex-basis: 80%;
     margin-right: 1rem;
 }
@@ -116,7 +97,7 @@ input[type="range"] {
     width: 100%;
     height: 0.3125rem;
     border-radius: 0.3125rem;
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: var(--button-hover-bg-color);
     outline: none;
     transition: background-color 0.2s ease;
 }
@@ -127,7 +108,7 @@ input[type="range"]::-webkit-slider-thumb {
     width: 0.9375rem;
     height: 0.9375rem;
     border-radius: 50%;
-    background-color: var(--white);
+    background-color: var(--text-color);
     cursor: pointer;
 }
 

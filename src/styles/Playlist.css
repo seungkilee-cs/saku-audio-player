@@ -1,20 +1,20 @@
 .playlist {
     width: 100%;
-    max-width: 21.875rem; /* 350px converted to rem */
-    height: 90%;
-    padding: 1.5rem; /* 24px converted to rem */
-    border-radius: 1.25rem; /* 20px converted to rem */
-    box-shadow: 0 1.75rem 1.75rem rgba(0, 0, 0, 0.2); /* Shadow values in rem */
-    color: var(--white);
-    backdrop-filter: blur(10px);
-    background-color: rgba(255, 255, 255, 0.1);
+    max-width: 21.875rem;
+    height: 75%;
+    padding: 1.75rem;
+    border-radius: 1.35rem;
+    box-shadow: 0 1.75rem 1.75rem var(--shadow-color);
+    color: var(--text-color);
+    /* backdrop-filter: blur(10px); */
+    background-color: var(--button-bg-color);
     display: flex;
     flex-direction: column;
 }
 
 .playlist h2 {
     margin-top: 0;
-    margin-bottom: 0.9375rem; /* 15px converted to rem */
+    margin-bottom: 0.9375rem;
     font-size: 1.2em;
     text-align: center;
 }
@@ -28,18 +28,18 @@
 }
 
 .playlist li {
-    padding: 0.625rem; /* 10px converted to rem */
-    margin-bottom: 0.3125rem; /* 5px converted to rem */
-    border-radius: 0.3125rem; /* Same as margin-bottom for consistency */
+    padding: 0.625rem;
+    margin-bottom: 0.3125rem;
+    border-radius: 0.3125rem;
     cursor: pointer;
     transition: background-color 0.2s ease;
 }
 
 .playlist li:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: var(--button-hover-bg-color);
 }
 
 .playlist li.active {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: var(--button-hover-bg-color);
     font-weight: bold;
 }
