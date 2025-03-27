@@ -1,7 +1,7 @@
 .test-player-container {
     display: flex;
     gap: 1rem; /* Adds space between the AudioPlayer and Playlist */
-    justify-content: space-between; /* Ensures proper spacing */
+    justify-content: center; /* Ensures proper spacing */
     align-items: flex-start; /* Aligns components at the top */
     padding: 1rem; /* Adds padding around the container */
 }
