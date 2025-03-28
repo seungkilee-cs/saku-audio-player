@@ -1,5 +1,6 @@
 import React from "react";
 import { formatTime } from "../../util/timeUtils";
+import "../styles/ProgressBar.css";
 
 const ProgressBar = ({
   trackProgress,

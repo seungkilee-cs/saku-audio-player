@@ -1,0 +1,16 @@
+.progress-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.progress {
+    flex-grow: 1;
+    margin-right: 10px;
+}
+
+.time {
+    font-size: 0.8em;
+    white-space: nowrap;
+    color: var(--text-color);
+}
