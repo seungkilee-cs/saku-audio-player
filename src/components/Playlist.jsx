@@ -5,7 +5,7 @@ const Playlist = ({ tracks, currentTrackIndex, onTrackSelect }) => {
   return (
     <div className="playlist">
       <h2>Playlist</h2>
-      <ul>
+      <ul className="playlist-body">
         {tracks.map((track, index) => (
           <li
             key={index}

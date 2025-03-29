@@ -1,7 +1,8 @@
 .playlist {
     width: 100%;
-    max-width: 21.875rem;
-    height: 75%;
+    max-width: 23rem;
+    height: 100%;
+    max-height: 35rem;
     padding: 1.75rem;
     border-radius: 1.35rem;
     box-shadow: 0 1.75rem 1.75rem var(--shadow-color);
@@ -10,7 +11,13 @@
     background-color: var(--button-bg-color);
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
 }
+
+/* .playlist-body {
+    padding: 0.5rem;
+    margin-top: 10.5rem;
+} */
 
 .playlist h2 {
     margin-top: 0;

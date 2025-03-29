@@ -1,8 +1,10 @@
 .audio-player {
     width: 100%;
     max-width: 25rem;
-    height: 70%;
-    padding: 1.9rem;
+    height: 35rem;
+    /* height: 100%;
+    max-height: 35rem; */
+    padding: 1.8rem;
     border-radius: 1.25rem;
     box-shadow: 0 1.75rem 1.75rem var(--shadow-color);
     color: var(--text-color);
