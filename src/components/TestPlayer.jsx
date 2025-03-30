@@ -26,16 +26,21 @@ const TestPlayer = () => {
 
   return (
     <div className="test-player-container">
-      <AudioPlayer
-        tracks={tracks}
-        currentTrackIndex={currentTrackIndex}
-        onTrackChange={handleTrackSelect}
-      />
-      <Playlist
-        tracks={tracks}
-        currentTrackIndex={currentTrackIndex}
-        onTrackSelect={handleTrackSelect}
-      />
+      <div className="header">
+        <h3>Default Audio Player</h3>
+      </div>
+      <div className="player-content">
+        <AudioPlayer
+          tracks={tracks}
+          currentTrackIndex={currentTrackIndex}
+          onTrackChange={handleTrackSelect}
+        />
+        <Playlist
+          tracks={tracks}
+          currentTrackIndex={currentTrackIndex}
+          onTrackSelect={handleTrackSelect}
+        />
+      </div>
     </div>
   );
 };

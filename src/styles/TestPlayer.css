@@ -1,9 +1,25 @@
 .test-player-container {
+    margin-top: 1rem;
     display: flex;
-    gap: 1rem; /* Adds space between the AudioPlayer and Playlist */
+    flex-direction: column;
+    gap: 1.5rem;
     justify-content: center; /* Ensures proper spacing */
-    align-items: flex-start; /* Aligns components at the top */
+    align-items: center; /* Aligns components at the top */
     padding: 1rem; /* Adds padding around the container */
+    height: 100vh;
+}
+
+.header h3 {
+    color: var(--text-color); /* Ensures the text is white */
+    text-align: center; /* Centers the header text */
+    font-size: 1.5rem; /* Adjust size as needed */
+}
+
+.player-content {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    align-items: flex-start;
 }
 
 .audio-player {
