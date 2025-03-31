@@ -150,14 +150,16 @@ const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
         fileExtension={fileExtension}
         detailedBitSampleInfo={detailedBitSampleInfo}
       />
-      <AudioControls
-        isPlaying={isPlaying}
-        onPrevClick={toPrevTrack}
-        onNextClick={toNextTrack}
-        onPlayPauseClick={handlePlayPause}
-        onForward10Click={onForward10Click}
-        onBackward10Click={onBackward10Click}
-      />
+      <div className="audio-contols">
+        <AudioControls
+          isPlaying={isPlaying}
+          onPrevClick={toPrevTrack}
+          onNextClick={toNextTrack}
+          onPlayPauseClick={handlePlayPause}
+          onForward10Click={onForward10Click}
+          onBackward10Click={onBackward10Click}
+        />
+      </div>
       <ProgressBar
         trackProgress={trackProgress}
         duration={duration}

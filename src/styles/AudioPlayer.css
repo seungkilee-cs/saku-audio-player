@@ -12,6 +12,7 @@
     background-color: var(--button-bg-color);
     display: flex;
     flex-direction: column;
+    /* align-items: center; */
 }
 
 .artwork {
@@ -46,7 +47,7 @@
 .audio-controls {
     display: flex;
     justify-content: space-between;
-    width: 75%;
+    width: 95%;
     margin: 1.25rem auto;
 }
 
@@ -63,14 +64,14 @@
 
 .audio-controls .prev svg,
 .audio-controls .next svg {
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1.2rem;
+    height: 1.2rem;
 }
 
 .audio-controls .play svg,
 .audio-controls .pause svg {
-    height: 1.5rem;
-    width: 1.5rem;
+    height: 1.2rem;
+    width: 1.2rem;
 }
 
 .audio-controls path {
