@@ -1,6 +1,6 @@
 :root {
     --primary-color: #667eea;
-    --secondary-color: #764ba2;
+    --secondary-color: #ffb7c5;
     --text-color: #ffffff;
     --button-bg-color: rgba(255, 255, 255, 0.1);
     --button-hover-bg-color: rgba(255, 255, 255, 0.2);
@@ -28,9 +28,16 @@ body {
 
 h1 {
     font-size: 3rem;
+    font-family: "Courier New", Courier, monospace;
     color: var(--text-color);
-    margin-bottom: 2rem;
     text-shadow: 2px 2px 4px var(--shadow-color);
+}
+
+h5 {
+    font-family: "Courier New", Courier, monospace;
+    color: var(--text-color);
+    text-shadow: 2px 2px 4px var(--shadow-color);
+    margin-bottom: 2rem;
 }
 
 .button-container {
@@ -41,6 +48,7 @@ h1 {
 button {
     padding: 0.8rem 1.5rem;
     font-size: 1rem;
+    font-family: "Courier New", Courier, monospace;
     font-weight: 500;
     color: var(--text-color);
     background-color: var(--button-bg-color);
