@@ -6,7 +6,7 @@
     justify-content: center; /* Ensures proper spacing */
     align-items: center; /* Aligns components at the top */
     padding: 1rem; /* Adds padding around the container */
-    height: 100vh;
+    height: 90vh;
     font-family: "Courier New", Courier, monospace;
 }
 
@@ -24,9 +24,11 @@
 }
 
 .audio-player {
-    flex: 1; /* Makes AudioPlayer take up more space */
+  height: 90%;
+  flex: 1; /* Makes AudioPlayer take up more space */
 }
 
 .playlist {
+  height: 90%;
     flex: 1; /* Makes Playlist take up less space */
 }
