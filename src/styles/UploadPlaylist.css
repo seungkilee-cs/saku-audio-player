@@ -1,0 +1,22 @@
+
+.upload-playlist-container {
+    background-color: var(--button-bg-color); /* Use the same button background color */
+    color: var(--text-color); /* Inherit text color */
+    font-family: var(--font-family); /* Inherit font styling */
+    padding: 1rem; /* Add some spacing */
+    border-radius: 0.5rem; /* Optional: Rounded corners for consistency */
+    box-shadow: 0 4px 6px var(--shadow-color); /* Consistent shadow styling */
+    font-family: "Courier New", Courier, monospace; /* Match header styling in App.css */
+}
+
+.upload-playlist-container h2 {
+    font-size: 1.8rem;
+    color: var(--text-color);
+    text-shadow: 2px 2px 4px var(--shadow-color);
+    margin-bottom: 1rem;
+}
+
+.upload-playlist-container p {
+    font-size: 1rem;
+    color: var(--text-color);
+}

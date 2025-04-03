@@ -1,9 +1,9 @@
 import React from "react";
-// import "../App.css";
+import "../styles/UploadPlaylist.css";
 
 const UploadPlaylist = () => {
   return (
-    <div>
+    <div className="upload-playlist-container">
       <h2>Upload Playlist</h2>
       <p>This feature is currently under development.</p>
     </div>
