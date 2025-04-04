@@ -3,10 +3,12 @@ import AudioPlayer from "./AudioPlayer";
 import Playlist from "./Playlist";
 import tracksPromise from "../assets/meta/tracks";
 import "../styles/TestPlayer.css";
+import { useNavigate } from "react-router-dom";
 
 const TestPlayer = () => {
   const [tracks, setTracks] = useState([]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     tracksPromise
@@ -16,6 +18,9 @@ const TestPlayer = () => {
       .catch((error) => console.error("Failed loading tracks:", error));
   }, []);
 
+  const handleGoHome = () => {
+    navigate("/");
+  };
   const handleTrackSelect = (index) => {
     setCurrentTrackIndex(index);
   };
@@ -40,6 +45,11 @@ const TestPlayer = () => {
           currentTrackIndex={currentTrackIndex}
           onTrackSelect={handleTrackSelect}
         />
+      </div>
+      <div className="home-btn">
+        <button onClick={handleGoHome} className="btn-home">
+          Go Back
+        </button>
       </div>
     </div>
   );
