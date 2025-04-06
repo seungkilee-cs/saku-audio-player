@@ -1,34 +1,34 @@
 .test-player-container {
-    margin-top: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-    justify-content: center; /* Ensures proper spacing */
-    align-items: center; /* Aligns components at the top */
-    padding: 1rem; /* Adds padding around the container */
-    height: 90vh;
-    font-family: "Courier New", Courier, monospace;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  justify-content: center; /* Ensures proper spacing */
+  align-items: center; /* Aligns components at the top */
+  padding: 1rem; /* Adds padding around the container */
+  /* height: 90vh; */
+  font-family: "Courier New", Courier, monospace;
 }
 
 .header h3 {
-    color: var(--text-color); /* Ensures the text is white */
-    text-align: center; /* Centers the header text */
-    font-size: 1.5rem;
+  color: var(--text-color); /* Ensures the text is white */
+  text-align: center; /* Centers the header text */
+  font-size: 1.5rem;
 }
 
 .player-content {
-    display: flex;
-    gap: 1.5rem;
-    justify-content: center;
-    align-items: flex-start;
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 .audio-player {
-  height: 90%;
+  /* height: 90%; */
   flex: 1; /* Makes AudioPlayer take up more space */
 }
 
 .playlist {
-  height: 90%;
-    flex: 1; /* Makes Playlist take up less space */
+  /* height: 90%; */
+  flex: 1; /* Makes Playlist take up less space */
 }

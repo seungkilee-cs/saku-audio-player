@@ -1,22 +1,73 @@
+/* UploadPlaylist.css */
+.upload-playlist-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  background: linear-gradient(
+    135deg,
+    var(--primary-color) 0%,
+    var(--secondary-color) 100%
+  );
+}
 
 .upload-playlist-container {
-    background-color: var(--button-bg-color); /* Use the same button background color */
-    color: var(--text-color); /* Inherit text color */
-    font-family: var(--font-family); /* Inherit font styling */
-    padding: 1rem; /* Add some spacing */
-    border-radius: 0.5rem; /* Optional: Rounded corners for consistency */
-    box-shadow: 0 4px 6px var(--shadow-color); /* Consistent shadow styling */
-    font-family: "Courier New", Courier, monospace; /* Match header styling in App.css */
+  background: var(--button-bg-color);
+  padding: 2.5rem;
+  border-radius: 1.25rem;
+  box-shadow: 0 1.75rem 1.75rem var(--shadow-color);
+  text-align: center;
+  max-width: 30rem;
+  width: 100%;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .upload-playlist-container h2 {
-    font-size: 1.8rem;
-    color: var(--text-color);
-    text-shadow: 2px 2px 4px var(--shadow-color);
-    margin-bottom: 1rem;
+  color: var(--text-color);
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  font-family: "Courier New", Courier, monospace;
+  text-shadow: 2px 2px 4px var(--shadow-color);
 }
 
 .upload-playlist-container p {
-    font-size: 1rem;
-    color: var(--text-color);
+  color: var(--text-color);
+  /* font-family: var(--font-family); */
+  font-family: "Courier New", Courier, monospace;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+
+.home-btn {
+  margin-top: 2rem;
+}
+
+.btn-home {
+  padding: 0.8rem 2rem;
+  font-size: 1rem;
+  font-family: "Courier New", Courier, monospace;
+  color: var(--text-color);
+  background: var(--button-bg-color);
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(5px);
+  box-shadow: 0 4px 6px var(--shadow-color);
+}
+
+.btn-home:hover {
+  background: var(--button-hover-bg-color);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px var(--shadow-hover-color);
+}
+
+.btn-home:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px var(--shadow-color);
 }
