@@ -31,9 +31,6 @@ const TestPlayer = () => {
 
   return (
     <div className="test-player-container">
-      {/* <div className="header">
-        <h3>Default Audio Player</h3>
-      </div> */}
       <div className="player-content">
         <AudioPlayer
           tracks={tracks}

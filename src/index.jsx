@@ -8,7 +8,7 @@ import UploadPlaylist from "./components/UploadPlaylist";
 
 function App() {
   return (
-    <Router basename="/saku-audio-player">
+    <Router basename="/saku-audio-player/">
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/player" element={<TestPlayer />} />

@@ -1,12 +1,15 @@
 .test-player-container {
-  margin-top: 1rem;
+  margin-top: 1rem auto 0;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
   justify-content: center; /* Ensures proper spacing */
   align-items: center; /* Aligns components at the top */
   padding: 1rem; /* Adds padding around the container */
-  /* height: 90vh; */
+  min-height: 80vh;
+  /* max-height: 90vh; */
+  max-width: 90vw;
+  box-sizing: border-box;
   font-family: "Courier New", Courier, monospace;
 }
 
@@ -21,6 +24,9 @@
   gap: 1.5rem;
   justify-content: center;
   align-items: flex-start;
+  width: 100%;
+  max-width: 60rem;
+  margin: 0 auto;
 }
 
 .audio-player {
@@ -31,4 +37,9 @@
 .playlist {
   /* height: 90%; */
   flex: 1; /* Makes Playlist take up less space */
+}
+
+.home-btn {
+  margin-top: auto;
+  padding: 1rem 0;
 }
