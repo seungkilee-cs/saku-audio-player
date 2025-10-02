@@ -34,7 +34,11 @@ const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
   const isReady = useRef(false);
   const progressBarRef = useRef();
 
-  const { duration } = audioRef.current;
+  const rawDuration = audioRef.current.duration;
+  const duration = Number.isFinite(rawDuration) ? rawDuration : 0;
+  const progressPercent = duration > 0 ? (trackProgress / duration) * 100 : 0;
+  const clampedPercent = Math.min(Math.max(progressPercent, 0), 100);
+  const trackStyling = `linear-gradient(to right, #fff ${clampedPercent}%, rgba(255,255,255,0.3) ${clampedPercent}%)`;
 
   // Start timer for progress bar updates
   const startTimer = useCallback(() => {
@@ -166,7 +170,7 @@ const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
         onDrag={onDrag}
         onDragEnd={onDragEnd}
         progressBarRef={progressBarRef}
-        audioRef={audioRef}
+        trackStyling={trackStyling}
         formatTime={formatTime}
       />
       <VolumeControl volume={volume} onVolumeChange={setVolume} />

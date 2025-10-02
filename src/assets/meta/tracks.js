@@ -4,62 +4,89 @@ import audio from "../audio";
 import defaultImage from "../img/pale_blue.png";
 
 async function generateTracks() {
-  const tracks = [];
+  const entries = Object.entries(audio);
 
-  for (const [key, src] of Object.entries(audio)) {
+  const trackPromises = entries.map(async ([key, src]) => {
     try {
-      const metadata = await mm.parseBlob(
-        await fetch(src).then((res) => res.blob()),
-      );
+      const response = await fetch(src);
+      const blob = await response.blob();
+      const metadata = await mm.parseBlob(blob);
 
-      // Safely handle image extraction
       const imageData = metadata.common.picture?.[0];
       const image = imageData
-        ? `data:${imageData.format};base64,${imageData.data.toString("base64")}`
+        ? `data:${imageData.format};base64,${arrayBufferToBase64(imageData.data)}`
         : images[key.toLowerCase()] || defaultImage;
 
-      const bitsPerSample =
-        metadata.format.bitsPerSample || "Unknown Bit Depth";
-      const sampleRate = metadata.format.sampleRate
-        ? `${metadata.format.sampleRate / 1000} kHz`
+      const bitrateKbps = metadata.format.bitrate
+        ? Math.round(metadata.format.bitrate / 1000)
+        : undefined;
+      const durationSeconds = metadata.format.duration
+        ? Math.round(metadata.format.duration)
+        : undefined;
+      const sampleRateValue = metadata.format.sampleRate;
+      const sampleRateDisplay = sampleRateValue
+        ? `${stripTrailingZero((sampleRateValue / 1000).toFixed(1))} kHz`
         : "Unknown Sample Rate";
+      const bitsPerSample = metadata.format.bitsPerSample
+        ? `${metadata.format.bitsPerSample}-bit`
+        : undefined;
 
-      // Combine details for display
-      const detailedBitSampleInfo = `${sampleRate}`;
+      const detailedBitSampleInfo = [sampleRateDisplay, bitsPerSample]
+        .filter(Boolean)
+        .join(" • ");
 
-      const fileExtension = src.split(".").pop().toLowerCase();
+      const fileExtension = src.split(".").pop()?.toLowerCase() ?? "";
 
-      const track = {
+      return {
         title: metadata.common.title || "Unknown Title",
         artist: metadata.common.artist || "Unknown Artist",
         album: metadata.common.album || "Unknown Album",
-        bitrate: Math.round(metadata.format.bitrate / 1000) || 0,
-        length: Math.round(metadata.format.duration) || 0,
+        bitrate: bitrateKbps ?? 0,
+        length: durationSeconds ?? 0,
         audioSrc: src,
-        image: image,
+        image,
         color: getContrastColor(),
         container: metadata.format.container || "Unknown Container",
-        code: metadata.format.codec || "Unknown Audio Codec",
-        bitsPerSample: bitsPerSample,
-        sampleRate:
-          `${metadata.format.sampleRate / 1000} kHz` || "Unknown Sample Rate",
-        detailedBitSampleInfo: detailedBitSampleInfo,
-        fileExtension: fileExtension,
+        codec: metadata.format.codec || "Unknown Audio Codec",
+        bitsPerSample: bitsPerSample || "Unknown Bit Depth",
+        sampleRate: sampleRateDisplay,
+        detailedBitSampleInfo: detailedBitSampleInfo || sampleRateDisplay,
+        fileExtension,
       };
-
-      tracks.push(track);
     } catch (error) {
       console.error(`Error parsing metadata for ${key}:`, error.message);
+      return null;
     }
+  });
+
+  const tracks = await Promise.all(trackPromises);
+  return tracks.filter(Boolean);
+}
+
+function arrayBufferToBase64(buffer) {
+  if (!buffer) {
+    return "";
   }
 
-  return tracks;
+  const uint8Array = buffer instanceof Uint8Array ? buffer : new Uint8Array(buffer);
+  let binary = "";
+  const chunkSize = 0x8000;
+  for (let i = 0; i < uint8Array.length; i += chunkSize) {
+    const chunk = uint8Array.subarray(i, i + chunkSize);
+    binary += String.fromCharCode.apply(null, chunk);
+  }
+
+  return btoa(binary);
+}
+
+function stripTrailingZero(value) {
+  return value.endsWith(".0") ? value.slice(0, -2) : value;
 }
 
 function getContrastColor() {
   const hue = Math.floor(Math.random() * 360);
-  const saturation = 70 + Math.random() * 30; // 70-100%
-  const lightness = 30 + Math.random() * 40; // 30-70%
+  const saturation = 70 + Math.random() * 30;
+  const lightness = 30 + Math.random() * 40;
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 

@@ -1,22 +1,9 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { IoMdVolumeHigh, IoMdVolumeOff, IoMdVolumeLow } from "react-icons/io";
 import "../styles/VolumeControl.css";
 
 const VolumeControl = ({ volume, onVolumeChange }) => {
   const containerRef = useRef(null);
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "ArrowUp") {
-        onVolumeChange(Math.min(volume + 0.1, 1));
-      } else if (e.key === "ArrowDown") {
-        onVolumeChange(Math.max(volume - 0.1, 0));
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [volume, onVolumeChange]);
 
   const handleClick = (e) => {
     const rect = containerRef.current.getBoundingClientRect();
@@ -26,8 +13,29 @@ const VolumeControl = ({ volume, onVolumeChange }) => {
     onVolumeChange(Math.max(0, Math.min(1, newVolume)));
   };
 
+  const handleKeyDown = (event) => {
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      onVolumeChange(Math.min(volume + 0.1, 1));
+    } else if (event.key === "ArrowDown") {
+      event.preventDefault();
+      onVolumeChange(Math.max(volume - 0.1, 0));
+    }
+  };
+
   return (
-    <div className="volume-control" ref={containerRef} onClick={handleClick}>
+    <div
+      className="volume-control"
+      ref={containerRef}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      tabIndex={0}
+      role="slider"
+      aria-label="Volume"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(volume * 100)}
+    >
       <span className="volume-percentage">{Math.round(volume * 100)}%</span>
       <div className="volume-bar">
         <div

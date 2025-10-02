@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import Play from "../assets/img/play.svg?react";
 import Pause from "../assets/img/pause.svg?react";
 import Next from "../assets/img/next.svg?react";
@@ -14,24 +14,32 @@ const AudioControls = ({
   onForward10Click,
   onBackward10Click,
 }) => {
+  const containerRef = useRef(null);
+
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === "ArrowRight") {
+    const handleKeyDown = (event) => {
+      const isWithinContainer = containerRef.current?.contains(document.activeElement);
+      if (!isWithinContainer) {
+        return;
+      }
+
+      if (event.key === "ArrowRight") {
         onForward10Click();
-      } else if (e.key === "ArrowLeft") {
+      } else if (event.key === "ArrowLeft") {
         onBackward10Click();
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
+    const container = containerRef.current;
+    container?.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener("keydown", handleKeyDown);
+      container?.removeEventListener("keydown", handleKeyDown);
     };
   }, [onForward10Click, onBackward10Click]);
 
   return (
-    <div className="audio-controls">
+    <div className="audio-controls" ref={containerRef} tabIndex={0}>
       <button
         type="button"
         className="prev"
