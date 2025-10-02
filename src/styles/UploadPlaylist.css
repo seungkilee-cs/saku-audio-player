@@ -25,6 +25,12 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.upload-playlist-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 .upload-playlist-container h2 {
   color: var(--text-color);
   font-size: 2rem;
@@ -45,6 +51,70 @@
 
 .home-btn {
   margin-top: 2rem;
+}
+
+.file-uploader {
+  position: relative;
+  border: 2px dashed rgba(255, 255, 255, 0.6);
+  border-radius: 1rem;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.08);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.file-uploader.dragging {
+  border-color: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.file-uploader input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.file-uploader-instructions {
+  margin: 0;
+  color: var(--text-color);
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.95rem;
+  pointer-events: none;
+}
+
+.upload-meta {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.8);
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.9rem;
+}
+
+.upload-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: var(--text-color);
+  font-family: "Courier New", Courier, monospace;
+}
+
+.upload-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.upload-actions .btn-home[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.upload-status.loading {
+  opacity: 0.85;
+}
+
+.upload-status.error {
+  color: #ffb7c5;
 }
 
 .btn-home {

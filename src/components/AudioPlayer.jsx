@@ -7,10 +7,14 @@ import ProgressBar from "./ProgressBar";
 import { formatTime } from "../../util/timeUtils";
 import "../styles/AudioPlayer.css";
 
-const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
+const AudioPlayer = ({ tracks = [], currentTrackIndex, onTrackChange, onNext, onPrevious }) => {
   const [trackProgress, setTrackProgress] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
+
+  const trackList = Array.isArray(tracks) ? tracks : [];
+  const trackCount = trackList.length;
+  const currentTrack = trackList[currentTrackIndex] || null;
 
   const {
     title,
@@ -27,14 +31,14 @@ const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
     bitsPerSample,
     sampleRate,
     detailedBitSampleInfo,
-  } = tracks[currentTrackIndex];
+  } = currentTrack || {};
 
-  const audioRef = useRef(new Audio(audioSrc));
+  const audioRef = useRef(new Audio(audioSrc || ""));
   const intervalRef = useRef();
   const isReady = useRef(false);
   const progressBarRef = useRef();
 
-  const rawDuration = audioRef.current.duration;
+  const rawDuration = audioRef.current?.duration;
   const duration = Number.isFinite(rawDuration) ? rawDuration : 0;
   const progressPercent = duration > 0 ? (trackProgress / duration) * 100 : 0;
   const clampedPercent = Math.min(Math.max(progressPercent, 0), 100);
@@ -45,14 +49,16 @@ const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
     clearInterval(intervalRef.current);
     intervalRef.current = setInterval(() => {
       if (audioRef.current.ended) {
-        onTrackChange(
-          currentTrackIndex < tracks.length - 1 ? currentTrackIndex + 1 : 0,
-        );
+        if (onNext) {
+          onNext();
+        } else if (trackCount > 0 && typeof onTrackChange === "function") {
+          onTrackChange(currentTrackIndex < trackCount - 1 ? currentTrackIndex + 1 : 0);
+        }
       } else {
         setTrackProgress(audioRef.current.currentTime);
       }
     }, 1000);
-  }, [currentTrackIndex, onTrackChange]);
+  }, [currentTrackIndex, onTrackChange, onNext, trackCount]);
 
   // Handle play/pause toggle
   const handlePlayPause = useCallback(() => {
@@ -70,19 +76,33 @@ const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
 
   // Load new track when track changes
   useEffect(() => {
+    if (!audioSrc) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+      setTrackProgress(0);
+      return;
+    }
+
     audioRef.current.pause();
-    audioRef.current = new Audio(audioSrc); // Only recreate when track changes
-    audioRef.current.volume = volume; // Set volume for new track
+    audioRef.current = new Audio(audioSrc);
+    audioRef.current.volume = volume;
     setTrackProgress(0);
 
     if (isReady.current) {
-      audioRef.current.play();
-      setIsPlaying(true);
-      startTimer();
+      audioRef.current
+        .play()
+        .then(() => {
+          setIsPlaying(true);
+          startTimer();
+        })
+        .catch((error) => {
+          console.warn("Autoplay prevented", error);
+          setIsPlaying(false);
+        });
     } else {
       isReady.current = true;
     }
-  }, [audioSrc, startTimer]);
+  }, [audioSrc, startTimer, volume]);
 
   // Update volume without recreating audio element
   useEffect(() => {
@@ -101,16 +121,21 @@ const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
 
   // Navigate to previous track
   const toPrevTrack = () => {
-    onTrackChange(
-      currentTrackIndex - 1 < 0 ? tracks.length - 1 : currentTrackIndex - 1,
-    );
+    if (onPrevious) {
+      onPrevious();
+    } else if (typeof onTrackChange === "function" && trackCount > 0) {
+      onTrackChange(currentTrackIndex - 1 < 0 ? trackCount - 1 : currentTrackIndex - 1);
+    }
   };
 
   // Navigate to next track
   const toNextTrack = () => {
-    onTrackChange(
-      currentTrackIndex < tracks.length - 1 ? currentTrackIndex + 1 : 0,
-    );
+    if (onNext) {
+      onNext();
+    } else if (typeof onTrackChange === "function") {
+      const nextIndex = trackCount > 0 ? (currentTrackIndex + 1) % trackCount : 0;
+      onTrackChange(nextIndex);
+    }
   };
 
   // Handle progress bar drag
@@ -141,19 +166,26 @@ const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
 
   return (
     <div className="audio-player">
-      <TrackInfo
-        title={title}
-        artist={artist}
-        album={album}
-        image={image}
-        bitrate={bitrate}
-        length={length}
-        formatTime={formatTime}
-        container={container}
-        codec={codec}
-        fileExtension={fileExtension}
-        detailedBitSampleInfo={detailedBitSampleInfo}
-      />
+      {currentTrack ? (
+        <TrackInfo
+          title={title}
+          artist={artist}
+          album={album}
+          image={image}
+          bitrate={bitrate}
+          length={length}
+          formatTime={formatTime}
+          container={container}
+          codec={codec}
+          fileExtension={fileExtension}
+          detailedBitSampleInfo={detailedBitSampleInfo}
+        />
+      ) : (
+        <div className="track-info">
+          <h2 className="title">No track selected</h2>
+          <p className="artist">Upload audio files or select from the playlist.</p>
+        </div>
+      )}
       <div className="audio-contols">
         <AudioControls
           isPlaying={isPlaying}
@@ -178,7 +210,7 @@ const AudioPlayer = ({ tracks, currentTrackIndex, onTrackChange }) => {
       </div> */}
       <Backdrop
         trackIndex={currentTrackIndex}
-        activeColor={color}
+        activeColor={color || "rgba(0,0,0,0.4)"}
         isPlaying={isPlaying}
       />
     </div>

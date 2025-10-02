@@ -3,64 +3,95 @@ import images from "../img";
 import audio from "../audio";
 import defaultImage from "../img/pale_blue.png";
 
-async function generateTracks() {
+export async function loadBundledTracks() {
   const entries = Object.entries(audio);
-
-  const trackPromises = entries.map(async ([key, src]) => {
-    try {
-      const response = await fetch(src);
-      const blob = await response.blob();
-      const metadata = await mm.parseBlob(blob);
-
-      const imageData = metadata.common.picture?.[0];
-      const image = imageData
-        ? `data:${imageData.format};base64,${arrayBufferToBase64(imageData.data)}`
-        : images[key.toLowerCase()] || defaultImage;
-
-      const bitrateKbps = metadata.format.bitrate
-        ? Math.round(metadata.format.bitrate / 1000)
-        : undefined;
-      const durationSeconds = metadata.format.duration
-        ? Math.round(metadata.format.duration)
-        : undefined;
-      const sampleRateValue = metadata.format.sampleRate;
-      const sampleRateDisplay = sampleRateValue
-        ? `${stripTrailingZero((sampleRateValue / 1000).toFixed(1))} kHz`
-        : "Unknown Sample Rate";
-      const bitsPerSample = metadata.format.bitsPerSample
-        ? `${metadata.format.bitsPerSample}-bit`
-        : undefined;
-
-      const detailedBitSampleInfo = [sampleRateDisplay, bitsPerSample]
-        .filter(Boolean)
-        .join(" • ");
-
-      const fileExtension = src.split(".").pop()?.toLowerCase() ?? "";
-
-      return {
-        title: metadata.common.title || "Unknown Title",
-        artist: metadata.common.artist || "Unknown Artist",
-        album: metadata.common.album || "Unknown Album",
-        bitrate: bitrateKbps ?? 0,
-        length: durationSeconds ?? 0,
-        audioSrc: src,
-        image,
-        color: getContrastColor(),
-        container: metadata.format.container || "Unknown Container",
-        codec: metadata.format.codec || "Unknown Audio Codec",
-        bitsPerSample: bitsPerSample || "Unknown Bit Depth",
-        sampleRate: sampleRateDisplay,
-        detailedBitSampleInfo: detailedBitSampleInfo || sampleRateDisplay,
-        fileExtension,
-      };
-    } catch (error) {
-      console.error(`Error parsing metadata for ${key}:`, error.message);
-      return null;
-    }
-  });
+  const trackPromises = entries.map(async ([key, src]) =>
+    parseSource({
+      key,
+      src,
+      blobResolver: () => fetch(src).then((response) => response.blob()),
+      fallbackImage: images[key.toLowerCase()] || defaultImage,
+      sourceType: "bundled",
+    }),
+  );
 
   const tracks = await Promise.all(trackPromises);
   return tracks.filter(Boolean);
+}
+
+export async function parseAudioFiles(fileList) {
+  const files = Array.from(fileList || []);
+  if (files.length === 0) {
+    return [];
+  }
+
+  const trackPromises = files.map((file) =>
+    parseSource({
+      key: file.name,
+      src: URL.createObjectURL(file),
+      blobResolver: () => file,
+      fallbackImage: defaultImage,
+      sourceType: "uploaded",
+    }),
+  );
+
+  const tracks = await Promise.all(trackPromises);
+  return tracks.filter(Boolean);
+}
+
+async function parseSource({ key, src, blobResolver, fallbackImage, sourceType }) {
+  try {
+    const blob = await blobResolver();
+    const metadata = await mm.parseBlob(blob);
+
+    const imageData = metadata.common.picture?.[0];
+    const image = imageData
+      ? `data:${imageData.format};base64,${arrayBufferToBase64(imageData.data)}`
+      : fallbackImage;
+
+    const bitrateKbps = metadata.format.bitrate
+      ? Math.round(metadata.format.bitrate / 1000)
+      : undefined;
+    const durationSeconds = metadata.format.duration
+      ? Math.round(metadata.format.duration)
+      : undefined;
+    const sampleRateValue = metadata.format.sampleRate;
+    const sampleRateDisplay = sampleRateValue
+      ? `${stripTrailingZero((sampleRateValue / 1000).toFixed(1))} kHz`
+      : "Unknown Sample Rate";
+    const bitsPerSample = metadata.format.bitsPerSample
+      ? `${metadata.format.bitsPerSample}-bit`
+      : undefined;
+
+    const detailedBitSampleInfo = [sampleRateDisplay, bitsPerSample]
+      .filter(Boolean)
+      .join(" • ");
+
+    const fileExtension = src.split(".").pop()?.toLowerCase() ?? "";
+
+    return {
+      id: generateTrackId(key),
+      title: metadata.common.title || key,
+      artist: metadata.common.artist || "Unknown Artist",
+      album: metadata.common.album || "Unknown Album",
+      bitrate: bitrateKbps ?? 0,
+      length: durationSeconds ?? 0,
+      audioSrc: src,
+      image,
+      color: getContrastColor(),
+      container: metadata.format.container || "Unknown Container",
+      codec: metadata.format.codec || "Unknown Audio Codec",
+      bitsPerSample: bitsPerSample || "Unknown Bit Depth",
+      sampleRate: sampleRateDisplay,
+      detailedBitSampleInfo: detailedBitSampleInfo || sampleRateDisplay,
+      fileExtension,
+      sourceType,
+      objectUrl: sourceType === "uploaded" ? src : undefined,
+    };
+  } catch (error) {
+    console.error(`Error parsing metadata for ${key}:`, error.message);
+    return null;
+  }
 }
 
 function arrayBufferToBase64(buffer) {
@@ -90,4 +121,9 @@ function getContrastColor() {
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 }
 
-export default generateTracks();
+function generateTrackId(seed) {
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}-${seed
+    .toString()
+    .replace(/\s+/g, "-")
+    .toLowerCase()}`;
+}

@@ -1,26 +1,61 @@
-import React, { useState } from "react";
-import generateTracks from "../assets/meta/tracks";
+import React, { useRef, useState } from "react";
+import "../styles/UploadPlaylist.css";
 
-const FileUploader = ({ onTracksAdded }) => {
-  const [files, setFiles] = useState([]);
+const FileUploader = ({ onFilesSelected, disabled = false }) => {
+  const inputRef = useRef(null);
+  const [isDragging, setIsDragging] = useState(false);
 
-  const handleFileChange = async (event) => {
-    const selectedFiles = Array.from(event.target.files);
-    setFiles(selectedFiles);
+  const handleFiles = (fileList) => {
+    if (disabled || !onFilesSelected) {
+      return;
+    }
+    onFilesSelected(fileList);
+    if (inputRef.current) {
+      inputRef.current.value = "";
+    }
+  };
 
-    // Generate tracks from uploaded files
-    const newTracks = await generateTracks(selectedFiles);
-    onTracksAdded(newTracks); // Pass new tracks to parent component
+  const handleFileChange = (event) => {
+    handleFiles(event.target.files);
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+    if (!disabled) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (event) => {
+    event.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (event) => {
+    event.preventDefault();
+    setIsDragging(false);
+    handleFiles(event.dataTransfer.files);
   };
 
   return (
-    <div className="file-uploader">
+    <div
+      className={`file-uploader ${isDragging ? "dragging" : ""}`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <input
+        ref={inputRef}
         type="file"
         accept="audio/*"
         multiple
         onChange={handleFileChange}
+        disabled={disabled}
+        aria-label="Upload audio files"
       />
+      <p className="file-uploader-instructions">
+        Drag and drop your audio files here, or click to browse.
+      </p>
     </div>
   );
 };

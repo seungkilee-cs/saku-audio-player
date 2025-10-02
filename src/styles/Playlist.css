@@ -13,38 +13,44 @@
   overflow-y: auto;
 }
 
-/* .playlist-body {
-    padding: 0.5rem;
-    margin-top: 10.5rem;
-} */
-
-.playlist h2 {
-  margin-top: 0;
-  margin-bottom: 0.9375rem;
-  font-size: 1.2em;
-  text-align: center;
+.playlist-body li .track-number {
+  color: rgba(255, 255, 255, 0.7);
+  font-family: "Courier New", Courier, monospace;
+  width: 1.5rem;
+  flex-shrink: 0;
 }
 
-.playlist ul {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
-  flex-grow: 1;
-  overflow-y: auto;
+.playlist-body li .track-title {
+  color: var(--text-color);
+  font-weight: 600;
+  flex: 1;
+  font-family: "Courier New", Courier, monospace;
 }
 
-.playlist li {
-  padding: 0.625rem;
-  margin-bottom: 0.3125rem;
-  border-radius: 0.3125rem;
+.playlist-body li .track-artist {
+  color: rgba(255, 255, 255, 0.75);
+  font-family: "Courier New", Courier, monospace;
+}
+
+.playlist-body li .track-length {
+  margin-left: auto;
+  font-family: "Courier New", Courier, monospace;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.playlist-body li {
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background 0.2s ease;
 }
 
 .playlist li:hover {
   background-color: var(--button-hover-bg-color);
 }
-
 .playlist li.active {
   background-color: var(--button-hover-bg-color);
   font-weight: bold;
