@@ -2,7 +2,7 @@
 
 # Vite
 dist
-
+exclude/
 
 # dependencies
 /node_modules

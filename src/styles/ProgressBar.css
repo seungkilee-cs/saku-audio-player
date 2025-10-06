@@ -1,16 +1,97 @@
 .progress-container {
-    display: flex;
-    align-items: center;
-    width: 100%;
+  display: grid;
+  gap: 0.45rem;
+  width: 100%;
 }
 
-.progress {
-    flex-grow: 1;
-    margin-right: 10px;
+.progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: rgba(238, 244, 255, 0.65);
 }
 
-.time {
-    font-size: 0.8em;
-    white-space: nowrap;
-    color: var(--text-color);
+.progress-label {
+  font-weight: 500;
+}
+
+.progress-time {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.progress-time__current {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.progress-time__divider,
+.progress-time__duration {
+  color: rgba(224, 231, 255, 0.55);
+}
+
+.progress-slider {
+  position: relative;
+  width: 100%;
+}
+
+.progress-slider__input {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 0.48rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.25);
+  overflow: hidden;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease;
+}
+
+.progress-slider__input:hover {
+  box-shadow: inset 0 0 0 1px rgba(236, 233, 254, 0.6);
+}
+
+.progress-slider__input:focus-visible {
+  outline: 3px solid rgba(236, 233, 254, 0.65);
+  outline-offset: 4px;
+}
+
+.progress-slider__input::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.95), rgba(211, 226, 255, 0.65));
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.45);
+  border: none;
+}
+
+.progress-slider__input::-moz-range-thumb {
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.95), rgba(211, 226, 255, 0.65));
+  border: none;
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.45);
+}
+
+.progress-slider__input::-moz-range-track {
+  height: 0.48rem;
+  border-radius: 999px;
+  background: transparent;
+}
+
+@media (max-width: 640px) {
+  .progress-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
 }

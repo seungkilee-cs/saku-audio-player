@@ -13,13 +13,13 @@ const UploadPlaylist = () => {
 
   const statusClassName = useMemo(() => {
     if (status === "error") {
-      return "upload-status error";
+      return "upload-status upload-status--error";
     }
     if (status === "loading") {
-      return "upload-status loading";
+      return "upload-status upload-status--loading";
     }
     if (status === "success") {
-      return "upload-status";
+      return "upload-status upload-status--success";
     }
     return "upload-status";
   }, [status]);
@@ -68,35 +68,87 @@ const UploadPlaylist = () => {
   };
 
   return (
-    <div className="upload-playlist-wrapper">
-      <div className="upload-playlist-container">
-        <div className="upload-playlist-content">
-          <div>
-            <h2>Upload Playlist</h2>
-            <p>
-              Select audio files from your device to build a playlist instantly. We'll parse the
-              metadata and send you to the player.
-            </p>
-          </div>
+    <div className="upload-playlist upload-playlist--flux">
+      <div className="upload-playlist__backdrop" aria-hidden="true">
+        <span className="upload-playlist__orb upload-playlist__orb--one" />
+        <span className="upload-playlist__orb upload-playlist__orb--two" />
+        <span className="upload-playlist__orb upload-playlist__orb--three" />
+      </div>
+
+      <header className="upload-playlist__masthead">
+        <div className="upload-playlist__masthead-copy">
+          <span className="pill-chip">Flux Submission Studio</span>
+          <h1 className="upload-playlist__title">Plant a new bloom.</h1>
+          <p className="upload-playlist__subtitle">
+            Drag stems, craft metadata, and dispatch them into the listening gallery. Saku Flux wraps
+            each waveform in kinetic gradients automatically.
+          </p>
+        </div>
+        <div className="upload-playlist__controls">
+          <button
+            type="button"
+            className="upload-playlist__btn kinetic-pad"
+            onClick={() => navigate("/player")}
+          >
+            <span>Open Player</span>
+          </button>
+          <button
+            type="button"
+            className="upload-playlist__btn"
+            onClick={handleResetToDefault}
+            disabled={status === "loading"}
+          >
+            Reset to Demo Tracks
+          </button>
+          <button
+            type="button"
+            className="upload-playlist__btn upload-playlist__btn--ghost"
+            onClick={() => navigate("/")}
+          >
+            Return to Lobby
+          </button>
+        </div>
+      </header>
+
+      <div className="upload-playlist__grid">
+        <section className="upload-panel upload-panel--intake glass-card glass-card--noisy">
+          <header className="upload-panel__header">
+            <h2 className="upload-panel__title">Gallery intake</h2>
+            <span className="upload-panel__badge">Step 01</span>
+          </header>
+          <p className="upload-panel__copy">
+            Drop audio stems or browse your device. We trace metadata, craft cover petals, and stage them
+            for the listening room.
+          </p>
           <FileUploader onFilesSelected={handleFilesSelected} disabled={status === "loading"} />
+          <p className="upload-panel__hint">Supported: WAV, MP3, FLAC, AIFF.</p>
+        </section>
+
+        <section className="upload-panel upload-panel--status glass-card glass-card--noisy">
+          <header className="upload-panel__header">
+            <h2 className="upload-panel__title">Submission status</h2>
+            <span className="upload-panel__badge">Step 02</span>
+          </header>
+          <p className="upload-panel__copy">
+            Watch the bloom materialize as we analyze your files. When complete, the gallery seamlessly
+            switches to your installation.
+          </p>
           {message && <div className={statusClassName}>{message}</div>}
-          <div className="upload-actions">
-            <button onClick={() => navigate("/player")} className="btn-home">
-              Open Player
-            </button>
-            <button onClick={handleResetToDefault} className="btn-home" disabled={status === "loading"}>
-              Reset to Demo Tracks
-            </button>
-          </div>
+          <ul className="upload-timeline" role="list">
+            <li className={`upload-timeline__item ${status !== "idle" ? "upload-timeline__item--active" : ""}`}>
+              <span className="upload-timeline__dot" />Queued for analysis
+            </li>
+            <li className={`upload-timeline__item ${status === "loading" ? "upload-timeline__item--active" : ""}`}>
+              <span className="upload-timeline__dot" />Parsing metadata &amp; artwork
+            </li>
+            <li className={`upload-timeline__item ${status === "success" ? "upload-timeline__item--active" : ""}`}>
+              <span className="upload-timeline__dot" />Gallery synchronized
+            </li>
+          </ul>
           <p className="upload-meta">
             Current source: <strong>{activeSource === "uploaded" ? "Your uploads" : "Demo playlist"}</strong>
           </p>
-        </div>
-      </div>
-      <div className="home-btn">
-        <button onClick={() => navigate("/")} className="btn-home">
-          Go Home
-        </button>
+        </section>
       </div>
     </div>
   );

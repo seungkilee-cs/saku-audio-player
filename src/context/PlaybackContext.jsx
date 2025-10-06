@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components -- Context provider exports hooks intentionally */
 import React, {
   createContext,
   useCallback,
@@ -28,9 +29,9 @@ function sanitizeTracks(tracks) {
 export const PlaybackProvider = ({ children }) => {
   const [tracks, setTracks] = useState([]);
   const [currentTrackIndex, setCurrentTrackIndex] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [activeSource, setActiveSource] = useState("bundled");
+  const [activeSource, setActiveSource] = useState("none");
   const objectUrlsRef = useRef([]);
 
   const cleanupObjectUrls = useCallback((urls) => {
@@ -42,24 +43,39 @@ export const PlaybackProvider = ({ children }) => {
   }, []);
 
   const applyTracks = useCallback(
-    (incomingTracks, { startIndex = 0 } = {}) => {
+    (incomingTracks, { startIndex = 0, mode = "replace" } = {}) => {
       if (!incomingTracks || incomingTracks.length === 0) {
         setError("No playable tracks were provided.");
         return false;
       }
 
-      cleanupObjectUrls(objectUrlsRef.current);
+      let nextTrackList = [];
+      let nextObjectUrls = [];
+
+      if (mode === "append" && tracks.length > 0) {
+        nextTrackList = [...tracks];
+        nextObjectUrls = [...objectUrlsRef.current];
+      }
+
+      if (mode !== "append") {
+        cleanupObjectUrls(objectUrlsRef.current);
+      }
+
       const { sanitized, objectUrls } = sanitizeTracks(incomingTracks);
 
-      objectUrlsRef.current = objectUrls;
-      setTracks(sanitized);
-      setCurrentTrackIndex(Math.min(Math.max(startIndex, 0), sanitized.length - 1));
-      setActiveSource(sanitized[0]?.sourceType ?? "unknown");
+      nextTrackList = [...nextTrackList, ...sanitized];
+      nextObjectUrls = [...nextObjectUrls, ...objectUrls];
+
+      objectUrlsRef.current = nextObjectUrls;
+      setTracks(nextTrackList);
+      const safeIndex = Math.min(Math.max(startIndex, 0), nextTrackList.length - 1);
+      setCurrentTrackIndex(safeIndex);
+      setActiveSource(nextTrackList[safeIndex]?.sourceType ?? "unknown");
       setError(null);
       setLoading(false);
       return true;
     },
-    [cleanupObjectUrls],
+    [cleanupObjectUrls, tracks],
   );
 
   const initialize = useCallback(async () => {
@@ -72,15 +88,13 @@ export const PlaybackProvider = ({ children }) => {
       console.error("Failed to load bundled tracks", err);
       setError("Failed to load bundled tracks.");
       setTracks([]);
+      setActiveSource("none");
     } finally {
       setLoading(false);
     }
   }, [applyTracks]);
 
-  useEffect(() => {
-    initialize();
-    return () => cleanupObjectUrls(objectUrlsRef.current);
-  }, [cleanupObjectUrls, initialize]);
+  useEffect(() => () => cleanupObjectUrls(objectUrlsRef.current), [cleanupObjectUrls]);
 
   const playTrackAt = useCallback(
     (nextIndex) => {
@@ -103,7 +117,14 @@ export const PlaybackProvider = ({ children }) => {
 
   const replaceTracks = useCallback(
     async (newTracks, options = {}) => {
-      return applyTracks(newTracks, options);
+      return applyTracks(newTracks, { ...options, mode: "replace" });
+    },
+    [applyTracks],
+  );
+
+  const appendTracks = useCallback(
+    async (newTracks, options = {}) => {
+      return applyTracks(newTracks, { ...options, mode: "append" });
     },
     [applyTracks],
   );
@@ -120,10 +141,12 @@ export const PlaybackProvider = ({ children }) => {
       error,
       activeSource,
       replaceTracks,
+      appendTracks,
       playTrackAt,
       playNext,
       playPrevious,
       resetToDefault,
+      loadDemoPlaylist: initialize,
       setCurrentTrackIndex: playTrackAt,
     }),
     [

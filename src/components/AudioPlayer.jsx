@@ -1,219 +1,294 @@
+// src/components/AudioPlayer.jsx
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import AudioControls from "./AudioControls";
-import Backdrop from "./Backdrop";
-import TrackInfo from "./TrackInfo";
+import Play from "../assets/img/play.svg?react";
+import Pause from "../assets/img/pause.svg?react";
+import Next from "../assets/img/next.svg?react";
+import Prev from "../assets/img/prev.svg?react";
+import Forward10 from "../assets/img/forward10.svg?react";
+import Backward10 from "../assets/img/backward10.svg?react";
 import VolumeControl from "./VolumeControl";
 import ProgressBar from "./ProgressBar";
 import { formatTime } from "../../util/timeUtils";
 import "../styles/AudioPlayer.css";
 
-const AudioPlayer = ({ tracks = [], currentTrackIndex, onTrackChange, onNext, onPrevious }) => {
+const AudioPlayer = ({
+  tracks = [],
+  currentTrackIndex = 0,
+  onTrackChange,
+  onNext,
+  onPrevious,
+  sourceLabel,
+  extraActions,
+}) => {
   const [trackProgress, setTrackProgress] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
+  const volumeRef = useRef(1);
 
   const trackList = Array.isArray(tracks) ? tracks : [];
   const trackCount = trackList.length;
   const currentTrack = trackList[currentTrackIndex] || null;
+  const { title, artist, album, audioSrc, image, codec, bitrate } = currentTrack ?? {};
 
-  const {
-    title,
-    artist,
-    album,
-    color,
-    image,
-    audioSrc,
-    bitrate,
-    length,
-    container,
-    codec,
-    fileExtension,
-    bitsPerSample,
-    sampleRate,
-    detailedBitSampleInfo,
-  } = currentTrack || {};
-
-  const audioRef = useRef(new Audio(audioSrc || ""));
-  const intervalRef = useRef();
+  const audioRef = useRef(new Audio());
+  const intervalRef = useRef(null);
   const isReady = useRef(false);
-  const progressBarRef = useRef();
+  const isPlayingRef = useRef(false);
+  const progressBarRef = useRef(null);
 
-  const rawDuration = audioRef.current?.duration;
-  const duration = Number.isFinite(rawDuration) ? rawDuration : 0;
+  const duration = Number.isFinite(audioRef.current?.duration) ? audioRef.current.duration : 0;
   const progressPercent = duration > 0 ? (trackProgress / duration) * 100 : 0;
   const clampedPercent = Math.min(Math.max(progressPercent, 0), 100);
-  const trackStyling = `linear-gradient(to right, #fff ${clampedPercent}%, rgba(255,255,255,0.3) ${clampedPercent}%)`;
+  const progressBackground = `linear-gradient(90deg, var(--accent-color, #2563eb) ${clampedPercent}%, rgba(226, 232, 240, 0.85) ${clampedPercent}%)`;
 
-  // Start timer for progress bar updates
+  const stopTimer = useCallback(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  }, []);
+
   const startTimer = useCallback(() => {
-    clearInterval(intervalRef.current);
+    stopTimer();
     intervalRef.current = setInterval(() => {
-      if (audioRef.current.ended) {
+      const audio = audioRef.current;
+      if (!audio) {
+        return;
+      }
+
+      if (audio.ended) {
+        stopTimer();
+        if (trackCount === 0) {
+          setIsPlaying(false);
+          isPlayingRef.current = false;
+          return;
+        }
+
         if (onNext) {
           onNext();
-        } else if (trackCount > 0 && typeof onTrackChange === "function") {
-          onTrackChange(currentTrackIndex < trackCount - 1 ? currentTrackIndex + 1 : 0);
+        } else if (typeof onTrackChange === "function") {
+          const nextIndex = currentTrackIndex < trackCount - 1 ? currentTrackIndex + 1 : 0;
+          onTrackChange(nextIndex);
         }
       } else {
-        setTrackProgress(audioRef.current.currentTime);
+        setTrackProgress(audio.currentTime);
       }
     }, 1000);
-  }, [currentTrackIndex, onTrackChange, onNext, trackCount]);
+  }, [currentTrackIndex, onNext, onTrackChange, stopTimer, trackCount]);
 
-  // Handle play/pause toggle
-  const handlePlayPause = useCallback(() => {
-    setIsPlaying((prevIsPlaying) => {
-      if (!prevIsPlaying) {
-        audioRef.current.play();
+  const pauseAudio = useCallback(() => {
+    stopTimer();
+    audioRef.current.pause();
+    isPlayingRef.current = false;
+    setIsPlaying(false);
+  }, [stopTimer]);
+
+  const playAudio = useCallback(() => {
+    if (!currentTrack || !audioRef.current.src) {
+      return;
+    }
+    isPlayingRef.current = true;
+    audioRef.current
+      .play()
+      .then(() => {
+        setIsPlaying(true);
         startTimer();
-      } else {
-        audioRef.current.pause();
-        clearInterval(intervalRef.current);
-      }
-      return !prevIsPlaying;
-    });
-  }, [startTimer]);
+      })
+      .catch((error) => {
+        console.warn("Autoplay prevented", error);
+        isPlayingRef.current = false;
+        setIsPlaying(false);
+      });
+  }, [currentTrack, startTimer]);
 
-  // Load new track when track changes
+  const handlePlayPause = useCallback(() => {
+    if (!currentTrack || !audioRef.current.src) {
+      return;
+    }
+    if (isPlayingRef.current) {
+      pauseAudio();
+    } else {
+      playAudio();
+    }
+  }, [currentTrack, pauseAudio, playAudio]);
+
   useEffect(() => {
+    const audio = audioRef.current;
+
+    stopTimer();
+    audio.pause();
+
     if (!audioSrc) {
-      audioRef.current.pause();
-      setIsPlaying(false);
+      audio.removeAttribute("src");
+      audio.load();
       setTrackProgress(0);
+      setIsPlaying(false);
+      isPlayingRef.current = false;
       return;
     }
 
-    audioRef.current.pause();
-    audioRef.current = new Audio(audioSrc);
-    audioRef.current.volume = volume;
+    audio.src = audioSrc;
+    audio.load();
+    audio.volume = volumeRef.current;
+    audio.currentTime = 0;
     setTrackProgress(0);
 
-    if (isReady.current) {
-      audioRef.current
-        .play()
-        .then(() => {
-          setIsPlaying(true);
-          startTimer();
-        })
-        .catch((error) => {
-          console.warn("Autoplay prevented", error);
-          setIsPlaying(false);
-        });
-    } else {
-      isReady.current = true;
-    }
-  }, [audioSrc, startTimer, volume]);
+    const handleCanPlay = () => {
+      if (isReady.current && isPlayingRef.current) {
+        playAudio();
+      }
+    };
 
-  // Update volume without recreating audio element
-  useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
+    audio.addEventListener("canplay", handleCanPlay);
+
+    if (!isReady.current) {
+      isReady.current = true;
+    } else if (isPlayingRef.current) {
+      playAudio();
+    } else {
+      setIsPlaying(false);
     }
+
+    return () => {
+      audio.removeEventListener("canplay", handleCanPlay);
+    };
+  }, [audioSrc, playAudio, stopTimer]);
+
+  useEffect(() => {
+    volumeRef.current = volume;
+    audioRef.current.volume = volume;
   }, [volume]);
 
-  // Cleanup on component unmount
-  useEffect(() => {
-    return () => {
-      audioRef.current.pause();
-      clearInterval(intervalRef.current);
-    };
-  }, []);
+  useEffect(() => pauseAudio, [pauseAudio]);
 
-  // Navigate to previous track
   const toPrevTrack = () => {
+    if (trackCount === 0) return;
     if (onPrevious) {
       onPrevious();
-    } else if (typeof onTrackChange === "function" && trackCount > 0) {
-      onTrackChange(currentTrackIndex - 1 < 0 ? trackCount - 1 : currentTrackIndex - 1);
+    } else if (typeof onTrackChange === "function") {
+      const previousIndex = currentTrackIndex - 1 < 0 ? trackCount - 1 : currentTrackIndex - 1;
+      onTrackChange(previousIndex);
     }
   };
 
-  // Navigate to next track
   const toNextTrack = () => {
+    if (trackCount === 0) return;
     if (onNext) {
       onNext();
     } else if (typeof onTrackChange === "function") {
-      const nextIndex = trackCount > 0 ? (currentTrackIndex + 1) % trackCount : 0;
+      const nextIndex = (currentTrackIndex + 1) % trackCount;
       onTrackChange(nextIndex);
     }
   };
 
-  // Handle progress bar drag
   const onDrag = (value) => {
-    clearInterval(intervalRef.current);
+    stopTimer();
     audioRef.current.currentTime = value;
     setTrackProgress(value);
   };
 
   const onDragEnd = () => {
-    if (!isPlaying) {
-      setIsPlaying(true);
-    }
-    startTimer();
+    if (!isPlayingRef.current) return;
+    playAudio();
   };
 
-  // Moving within audio
   const onForward10Click = () => {
-    audioRef.current.currentTime += 10;
+    const audio = audioRef.current;
+    if (!audio) return;
+    const nextTime = Math.min(audio.currentTime + 10, duration || audio.duration || 0);
+    audio.currentTime = nextTime;
+    setTrackProgress(nextTime);
   };
 
   const onBackward10Click = () => {
-    audioRef.current.currentTime = Math.max(
-      audioRef.current.currentTime - 10,
-      0,
-    );
+    const audio = audioRef.current;
+    if (!audio) return;
+    const nextTime = Math.max(audio.currentTime - 10, 0);
+    audio.currentTime = nextTime;
+    setTrackProgress(nextTime);
   };
 
+  const currentTimeLabel = formatTime(Math.min(trackProgress, duration || 0));
+  const totalTimeLabel = duration ? formatTime(duration) : "—";
+  const displayTitle = title || "Awaiting your first track";
+  const displayArtist = artist || "Upload audio to begin.";
+  const metaSummary = [album, codec, bitrate ? `${bitrate} kbps` : null].filter(Boolean).join(" • ");
+  const isControlsDisabled = !currentTrack;
+
   return (
-    <div className="audio-player">
-      {currentTrack ? (
-        <TrackInfo
-          title={title}
-          artist={artist}
-          album={album}
-          image={image}
-          bitrate={bitrate}
-          length={length}
-          formatTime={formatTime}
-          container={container}
-          codec={codec}
-          fileExtension={fileExtension}
-          detailedBitSampleInfo={detailedBitSampleInfo}
-        />
-      ) : (
-        <div className="track-info">
-          <h2 className="title">No track selected</h2>
-          <p className="artist">Upload audio files or select from the playlist.</p>
+    <section className="audio-player" aria-label="Audio player">
+      <div className="audio-player__card">
+        {(sourceLabel || extraActions) && (
+          <div className="audio-player__topbar">
+            {sourceLabel ? <span className="audio-player__source">{sourceLabel}</span> : null}
+            {extraActions ? <div className="audio-player__extra-actions">{extraActions}</div> : null}
+          </div>
+        )}
+        <div className="audio-player__header">
+          <div className="audio-player__art">
+            {image ? (
+              <img src={image} alt={`Album art for ${displayTitle}`} />
+            ) : (
+              <div className="audio-player__art-placeholder" aria-hidden="true">
+                <span>U</span>
+              </div>
+            )}
+          </div>
+          <div className="audio-player__info">
+            <h2 className="audio-player__title">{displayTitle}</h2>
+            <p className="audio-player__artist">{displayArtist}</p>
+            {metaSummary ? <p className="audio-player__meta">{metaSummary}</p> : null}
+          </div>
         </div>
-      )}
-      <div className="audio-contols">
-        <AudioControls
-          isPlaying={isPlaying}
-          onPrevClick={toPrevTrack}
-          onNextClick={toNextTrack}
-          onPlayPauseClick={handlePlayPause}
-          onForward10Click={onForward10Click}
-          onBackward10Click={onBackward10Click}
-        />
+
+        <div className="audio-player__controls" role="group" aria-label="Playback controls">
+          <button type="button" onClick={toPrevTrack} aria-label="Previous track" disabled={isControlsDisabled}>
+            <Prev />
+          </button>
+          <button type="button" onClick={onBackward10Click} aria-label="Rewind 10 seconds" disabled={isControlsDisabled}>
+            <Backward10 />
+          </button>
+          <button
+            type="button"
+            className={`audio-player__play ${isPlaying ? "is-playing" : ""}`}
+            onClick={handlePlayPause}
+            aria-pressed={isPlaying}
+            aria-label={isPlaying ? "Pause" : "Play"}
+            disabled={isControlsDisabled}
+          >
+            {isPlaying ? <Pause /> : <Play />}
+          </button>
+          <button type="button" onClick={onForward10Click} aria-label="Forward 10 seconds" disabled={isControlsDisabled}>
+            <Forward10 />
+          </button>
+          <button type="button" onClick={toNextTrack} aria-label="Next track" disabled={isControlsDisabled}>
+            <Next />
+          </button>
+        </div>
+
+        <div className="audio-player__progress">
+          <ProgressBar
+            trackProgress={trackProgress}
+            duration={duration}
+            onDrag={onDrag}
+            onDragEnd={onDragEnd}
+            progressBarRef={progressBarRef}
+            trackStyling={progressBackground}
+            formatTime={formatTime}
+            showMeta={false}
+          />
+          <div className="audio-player__time" aria-live="polite">
+            <span>{currentTimeLabel}</span>
+            <span aria-hidden="true">/</span>
+            <span>{totalTimeLabel}</span>
+          </div>
+        </div>
+
+        <div className="audio-player__footer">
+          <VolumeControl volume={volume} onVolumeChange={setVolume} />
+        </div>
       </div>
-      <ProgressBar
-        trackProgress={trackProgress}
-        duration={duration}
-        onDrag={onDrag}
-        onDragEnd={onDragEnd}
-        progressBarRef={progressBarRef}
-        trackStyling={trackStyling}
-        formatTime={formatTime}
-      />
-      <VolumeControl volume={volume} onVolumeChange={setVolume} />
-      {/* <div className="progress-volume-container">
-      </div> */}
-      <Backdrop
-        trackIndex={currentTrackIndex}
-        activeColor={color || "rgba(0,0,0,0.4)"}
-        isPlaying={isPlaying}
-      />
-    </div>
+    </section>
   );
 };
 

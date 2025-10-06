@@ -30,7 +30,7 @@ export async function parseAudioFiles(fileList) {
       key: file.name,
       src: URL.createObjectURL(file),
       blobResolver: () => file,
-      fallbackImage: defaultImage,
+      fallbackImage: null,
       sourceType: "uploaded",
     }),
   );

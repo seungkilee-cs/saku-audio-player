@@ -6,7 +6,7 @@ const HomePage = () => {
   const navigate = useNavigate();
 
   const handleUploadPlaylist = () => {
-    navigate("/upload-playlist");
+    navigate("/player");
   };
 
   const handleTestItOut = () => {
@@ -15,7 +15,7 @@ const HomePage = () => {
 
   return (
     <div className="home-page">
-      <h1>Saku 咲く</h1>
+      <h1>Saku </h1>
       <h5>Let your music bloom</h5>
       <div className="button-container">
         <button onClick={handleUploadPlaylist}>Upload Playlist</button>

@@ -1,0 +1,219 @@
+.flux-studio {
+  position: relative;
+  display: grid;
+  gap: clamp(1rem, 2.5vw, 1.8rem);
+  padding: clamp(1.6rem, 4.5vw, 3.2rem) clamp(0.9rem, 4vw, 2.8rem) clamp(1.8rem, 4.5vw, 3.2rem);
+  min-height: 100vh;
+  color: var(--color-text-dark);
+}
+
+.flux-studio__header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(0.85rem, 2.5vw, 1.75rem);
+}
+
+.flux-studio__header-copy {
+  display: grid;
+  gap: var(--space-sm);
+  max-width: 52ch;
+}
+
+.flux-studio__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(1.8rem, 4.5vw, 2.4rem);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.flux-studio__subtitle {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(31, 41, 55, 0.6);
+}
+
+.flux-studio__status {
+  display: grid;
+  gap: 0.25rem;
+  padding: 0.9rem 1.6rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.68);
+  box-shadow: 0 24px 40px rgba(79, 70, 229, 0.18);
+}
+
+.flux-studio__status-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(31, 41, 55, 0.55);
+}
+
+.flux-studio__status-value {
+  font-family: var(--font-heading);
+  font-size: 1.2rem;
+  letter-spacing: 0.08em;
+}
+
+.flux-studio__hero {
+  display: grid;
+  gap: var(--space-sm);
+}
+
+.flux-studio__layout {
+  display: grid;
+  gap: clamp(0.35rem, 1.2vw, 0.75rem);
+  grid-template-columns: minmax(0, 2.35fr) minmax(0, 0.9fr);
+  align-items: stretch;
+}
+
+.flux-studio__layout--sidebar-hidden {
+  grid-template-columns: 1fr;
+}
+
+.flux-studio__sidebar {
+  width: min(100%, 280px);
+  justify-self: stretch;
+}
+
+.flux-studio__toggle-playlist {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: rgba(15, 23, 42, 0.7);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.1rem 0;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.flux-studio__toggle-playlist:hover,
+.flux-studio__toggle-playlist:focus-visible {
+  color: rgba(37, 99, 235, 0.9);
+}
+
+.flux-studio__toggle-icon {
+  font-size: 0.9rem;
+  line-height: 1;
+}
+.flux-studio__card-heading {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.flux-studio__action-btn--ghost {
+  background: transparent;
+  box-shadow: 0 18px 32px rgba(79, 70, 229, 0.16);
+}
+
+.flux-studio__card {
+  display: grid;
+  gap: var(--space-sm);
+  padding: clamp(1rem, 2.5vw, 1.4rem);
+  border-radius: var(--radius-md);
+}
+
+.flux-studio__card--main {
+  display: grid;
+  grid-template-rows: auto 1fr;
+}
+
+.flux-studio__panel {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: var(--space-sm);
+  padding: clamp(0.9rem, 2.2vw, 1.3rem);
+  border-radius: var(--radius-md);
+}
+
+.flux-studio__panel-section {
+  display: grid;
+  gap: var(--space-sm);
+  min-height: 0;
+}
+
+.flux-studio__panel-section--upload {
+  border-top: 1px solid rgba(255, 255, 255, 0.4);
+  padding-top: var(--space-sm);
+}
+
+.flux-studio__panel .playlist {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.flux-studio__panel .playlist__grid,
+.flux-studio__panel .playlist__card {
+  gap: var(--space-xs);
+}
+
+.flux-studio__panel .playlist__card-body {
+  gap: var(--space-2xs);
+}
+
+.flux-studio__panel .playlist__card {
+  padding: var(--space-xs) var(--space-sm);
+}
+
+.flux-studio__placeholder {
+  padding: clamp(0.95rem, 2.5vw, 1.4rem);
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  color: rgba(31, 41, 55, 0.65);
+  text-align: center;
+  font-size: 1rem;
+}
+
+.flux-studio__uploader-status {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(31, 41, 55, 0.55);
+}
+
+.flux-studio__uploader-status--loading {
+  color: rgba(79, 70, 229, 0.8);
+}
+
+.flux-studio__uploader-status--error {
+  color: #991b1b;
+}
+
+.flux-studio__uploader-status--success {
+  color: #166534;
+}
+
+@media (max-width: 1080px) {
+  .flux-studio__layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .flux-studio {
+    padding: clamp(1.7rem, 9vw, 3.2rem) clamp(1rem, 7vw, 2.6rem) clamp(2rem, 9vw, 3.4rem);
+  }
+
+  .flux-studio__hero-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .flux-studio__action-btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  .flux-studio__card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
