@@ -304,9 +304,11 @@ const AudioPlayer = ({
             />
           ) : null}
           <div className="audio-player__time" aria-live="polite">
-            <span>{currentTimeLabel}</span>
-            <span aria-hidden="true">/</span>
-            <span>{totalTimeLabel}</span>
+            <span className="audio-player__time-current">{currentTimeLabel}</span>
+            <span className="audio-player__time-divider" aria-hidden="true">
+              /
+            </span>
+            <span className="audio-player__time-total">{totalTimeLabel}</span>
           </div>
         </div>
 

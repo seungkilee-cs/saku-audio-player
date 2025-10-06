@@ -20,8 +20,8 @@
 .waveform__loading {
   position: absolute;
   inset: 0;
-  background: linear-gradient(145deg, rgba(200, 225, 255, 0.35), rgba(248, 215, 248, 0.35));
-  animation: waveform-loading var(--duration-ambient, 12s) linear infinite;
+  background: linear-gradient(145deg, rgba(200, 225, 255, 0.55), rgba(248, 215, 248, 0.5));
+  animation: waveform-loading 6s linear infinite;
 }
 
 @keyframes waveform-loading {

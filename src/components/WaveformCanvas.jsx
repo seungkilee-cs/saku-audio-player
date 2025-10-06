@@ -19,7 +19,7 @@ function sanitizeColor(color, fallback = "#f472b6") {
   try {
     colorTestContext.fillStyle = trimmed;
     return colorTestContext.fillStyle || fallback;
-  } catch (err) {
+  } catch {
     return fallback;
   }
 }
@@ -46,6 +46,20 @@ function toRgba(color, alpha, fallback = "rgba(244, 114, 182, 0.25)") {
   }
 
   return fallback;
+}
+
+function generatePlaceholderPeaks(count = 96) {
+  const peaks = new Float32Array(count);
+  let value = 0.35 + Math.random() * 0.15;
+
+  for (let i = 0; i < count; i += 1) {
+    const delta = (Math.random() - 0.5) * 0.24;
+    value = value * 0.72 + (value + delta) * 0.28;
+    value = Math.min(0.92, Math.max(0.08, value));
+    peaks[i] = value;
+  }
+
+  return peaks;
 }
 
 function getAudioContext() {
@@ -78,8 +92,8 @@ function extractPeaks(audioBuffer, buckets = 160) {
   for (let i = 0; i < buckets; i += 1) {
     const start = i * sampleSize;
     const end = Math.min(start + sampleSize, audioBuffer.length);
-    let min = 1;
-    let max = -1;
+    let sumSquares = 0;
+    let count = 0;
 
     for (let j = start; j < end; j += 1) {
       let value = 0;
@@ -87,11 +101,11 @@ function extractPeaks(audioBuffer, buckets = 160) {
         value += channelData[channel][j] || 0;
       }
       value /= channelData.length || 1;
-      min = Math.min(min, value);
-      max = Math.max(max, value);
+      sumSquares += value * value;
+      count += 1;
     }
-    const amplitude = Math.max(Math.abs(min), Math.abs(max));
-    peaks[i] = amplitude;
+    const rms = count > 0 ? Math.sqrt(sumSquares / count) : 0;
+    peaks[i] = rms;
   }
 
   return peaks;
@@ -105,7 +119,11 @@ function normalizePeaks(peaks) {
   if (!Number.isFinite(max) || max === 0) {
     return Array.from(peaks).map(() => 0.1);
   }
-  return Array.from(peaks).map((value) => value / max);
+  return Array.from(peaks).map((value) => {
+    const normalized = value / max;
+    const shaped = Math.pow(normalized, 1.3);
+    return Math.min(1, Math.max(0, shaped));
+  });
 }
 
 export default function WaveformCanvas({
@@ -125,6 +143,7 @@ export default function WaveformCanvas({
   const [isPointerActive, setIsPointerActive] = useState(false);
   const [scrubValue, setScrubValue] = useState(progress);
 
+  const placeholderPeaks = useMemo(() => generatePlaceholderPeaks(), [src]);
   const tint = useMemo(() => sanitizeColor(accentColor, "#f472b6"), [accentColor]);
   const glowColor = useMemo(() => toRgba(tint, 0.27), [tint]);
   const activeProgress = isPointerActive ? scrubValue : progress;
@@ -225,8 +244,9 @@ export default function WaveformCanvas({
     context.scale(dpr, dpr);
     context.clearRect(0, 0, width, height);
 
-    const barCount = peaks.length || 96;
-    const effectivePeaks = peaks.length ? peaks : new Array(barCount).fill(0.2);
+    const basePeaks = peaks.length ? peaks : placeholderPeaks;
+    const barCount = basePeaks.length;
+    const effectivePeaks = basePeaks;
     const barWidth = Math.max(2, width / (barCount * 1.15));
     const gap = barWidth * 0.25;
     const centerY = height / 2;
@@ -275,7 +295,7 @@ export default function WaveformCanvas({
     }
 
     context.restore();
-  }, [containerWidth, peaks, progressRatio, tint, glowColor, showGlow, prefersReducedMotion, isPointerActive]);
+  }, [containerWidth, peaks, placeholderPeaks, progressRatio, tint, glowColor, showGlow, prefersReducedMotion, isPointerActive]);
 
   const updateScrub = useCallback(
     (clientX) => {

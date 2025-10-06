@@ -26,7 +26,6 @@ const FluxStudio = () => {
     appendTracks,
     resetToDefault,
     visualSettings,
-    toggleVisualSetting,
   } = usePlayback();
 
   const [isPlaylistOpen, setIsPlaylistOpen] = useState(true);
@@ -116,7 +115,7 @@ const FluxStudio = () => {
                       {isPlaylistOpen ? "▾" : "▸"}
                     </span>
                   </button>
-                  <div className="flux-studio__visual-toggle" role="group" aria-label="Visual settings">
+                  {/* <div className="flux-studio__visual-toggle" role="group" aria-label="Visual settings">
                     <label>
                       <input
                         type="checkbox"
@@ -141,7 +140,7 @@ const FluxStudio = () => {
                       />
                       Petals
                     </label>
-                  </div>
+                  </div> */}
                 </div>
               }
             />
