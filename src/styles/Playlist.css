@@ -1,10 +1,8 @@
-@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Space+Grotesk:wght@400;600;700&display=swap");
-
 .playlist {
   display: grid;
   gap: 1.2rem;
   color: #111827;
-  font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-family: var(--font-body);
 }
 
 .playlist__card {
@@ -141,48 +139,46 @@
   border-radius: 999px;
 }
 
-.playlist__scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.playlist__file-input {
-  position: absolute;
-  width: 0;
-  height: 0;
-  opacity: 0;
-  pointer-events: none;
-}
-
 .playlist__item {
   display: grid;
   grid-template-columns: auto 1fr auto;
+  gap: 0.75rem;
   align-items: center;
-  padding: 0.7rem 0.9rem;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(226, 232, 240, 0.5);
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  padding: 0.75rem 0.85rem;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(226, 232, 240, 0.7);
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.12);
+  transition:
+    transform var(--duration-sm) var(--easing-soft),
+    box-shadow var(--duration-sm) var(--easing-soft),
+    border-color var(--duration-sm) var(--easing-soft),
+    filter var(--duration-sm) var(--easing-soft);
+  transform-style: preserve-3d;
 }
 
 .playlist__item:hover,
 .playlist__item:focus-visible {
-  transform: translateY(-2px);
-  border-color: rgba(37, 99, 235, 0.4);
-  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.1);
+  transform: translateY(-4px) rotateX(4deg) rotateY(-4deg);
+  box-shadow: 0 22px 60px rgba(37, 99, 235, 0.18);
+  border-color: rgba(148, 163, 184, 0.55);
+  filter: saturate(1.05);
+}
+
+.playlist__item:active {
+  transform: translateY(-1px);
 }
 
 .playlist__item.is-active {
   border-color: #2563eb;
-  box-shadow: 0 20px 44px rgba(37, 99, 235, 0.18);
-  background: linear-gradient(135deg, rgba(219, 234, 254, 0.75), rgba(221, 214, 254, 0.85));
+  box-shadow: 0 24px 62px rgba(37, 99, 235, 0.28);
+  background: linear-gradient(135deg, rgba(219, 234, 254, 0.78), rgba(221, 214, 254, 0.9));
 }
 
 .playlist__item-index {
   font-size: 0.78rem;
   font-weight: 600;
-  color: rgba(71, 85, 105, 0.65);
-  font-family: "IBM Plex Mono", "Space Grotesk", monospace;
+  font-family: var(--font-mono);
 }
 
 .playlist__item-title {
@@ -202,7 +198,7 @@
   font-size: 0.8rem;
   color: rgba(71, 85, 105, 0.55);
   font-variant-numeric: tabular-nums;
-  font-family: "IBM Plex Mono", "Space Grotesk", monospace;
+  font-family: var(--font-mono);
 }
 
 .playlist__empty {

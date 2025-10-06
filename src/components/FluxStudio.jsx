@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import AudioPlayer from "./AudioPlayer";
+import PetalField from "./PetalField";
 import Playlist from "./Playlist";
 import "../styles/FluxStudio.css";
 import { usePlayback } from "../context/PlaybackContext";
@@ -24,11 +25,13 @@ const FluxStudio = () => {
     replaceTracks,
     appendTracks,
     resetToDefault,
+    visualSettings,
+    toggleVisualSetting,
   } = usePlayback();
 
+  const [isPlaylistOpen, setIsPlaylistOpen] = useState(true);
   const [uploadState, setUploadState] = useState("idle");
   const [uploadMessage, setUploadMessage] = useState("Drop audio files here or use the add button.");
-  const [isPlaylistOpen, setIsPlaylistOpen] = useState(true);
 
   const displaySource = sourceLabels[activeSource] ?? sourceLabels.default;
 
@@ -87,18 +90,71 @@ const FluxStudio = () => {
               onNext={playNext}
               onPrevious={playPrevious}
               sourceLabel={`Source · ${displaySource}`}
+              showAmbientGlow={visualSettings.showBloomMeter || visualSettings.showPetals}
+              showWaveform={visualSettings.showWaveform}
+              renderBloomMeter={({ progress, isPlaying }) =>
+                visualSettings.showBloomMeter ? (
+                  <div
+                    className={isPlaying ? "flux-studio__bloom-meter is-playing" : "flux-studio__bloom-meter"}
+                    style={{ "--bloom-progress": progress }}
+                    aria-hidden="true"
+                  >
+                    <div className="flux-studio__bloom-meter-track" />
+                    <div className="flux-studio__bloom-meter-progress" />
+                  </div>
+                ) : null
+              }
+              renderOverlay={({ progress, isPlaying, currentTrack }) =>
+                visualSettings.showPetals ? (
+                  <PetalField
+                    isPlaying={isPlaying}
+                    progress={progress}
+                    intensity={0.6 + progress * 0.4}
+                    petalCount={currentTrack ? 18 : 12}
+                    tintColor={currentTrack?.color}
+                  />
+                ) : null
+              }
               extraActions={
-                <button
-                  type="button"
-                  className="flux-studio__toggle-playlist"
-                  onClick={togglePlaylist}
-                  aria-expanded={isPlaylistOpen}
-                >
-                  <span className="flux-studio__toggle-label">Playlist</span>
-                  <span aria-hidden="true" className="flux-studio__toggle-icon">
-                    {isPlaylistOpen ? "▾" : "▸"}
-                  </span>
-                </button>
+                <div className="flux-studio__extra-actions">
+                  <button
+                    type="button"
+                    className="flux-studio__toggle-playlist"
+                    onClick={togglePlaylist}
+                    aria-expanded={isPlaylistOpen}
+                  >
+                    <span className="flux-studio__toggle-label">Playlist</span>
+                    <span aria-hidden="true" className="flux-studio__toggle-icon">
+                      {isPlaylistOpen ? "▾" : "▸"}
+                    </span>
+                  </button>
+                  <div className="flux-studio__visual-toggle" role="group" aria-label="Visual settings">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={visualSettings.showWaveform}
+                        onChange={() => toggleVisualSetting("showWaveform")}
+                      />
+                      Waveform
+                    </label>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={visualSettings.showBloomMeter}
+                        onChange={() => toggleVisualSetting("showBloomMeter")}
+                      />
+                      Bloom
+                    </label>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={visualSettings.showPetals}
+                        onChange={() => toggleVisualSetting("showPetals")}
+                      />
+                      Petals
+                    </label>
+                  </div>
+                </div>
               }
             />
           )}

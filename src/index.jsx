@@ -2,6 +2,8 @@ import React from "react";
 import { createRoot } from "react-dom/client";
 import { PlaybackProvider } from "./context/PlaybackContext";
 import FluxStudio from "./components/FluxStudio";
+import "./styles/theme.css";
+import "./App.css";
 
 function App() {
   return (

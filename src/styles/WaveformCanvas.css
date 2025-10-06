@@ -1,0 +1,46 @@
+.waveform {
+  position: relative;
+  width: 100%;
+  height: clamp(110px, 16vw, 150px);
+  margin-bottom: 0.9rem;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.55), rgba(209, 250, 229, 0.35));
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.waveform__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.waveform__loading {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(145deg, rgba(200, 225, 255, 0.35), rgba(248, 215, 248, 0.35));
+  animation: waveform-loading var(--duration-ambient, 12s) linear infinite;
+}
+
+@keyframes waveform-loading {
+  0% {
+    transform: translateX(-30%);
+  }
+  50% {
+    transform: translateX(30%);
+  }
+  100% {
+    transform: translateX(-30%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .waveform {
+    backdrop-filter: none;
+  }
+  .waveform__loading {
+    animation: none;
+  }
+}

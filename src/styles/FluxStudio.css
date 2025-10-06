@@ -105,6 +105,40 @@
   font-size: 0.9rem;
   line-height: 1;
 }
+
+.flux-studio__extra-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.flux-studio__visual-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.6rem;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(15, 23, 42, 0.6);
+}
+
+.flux-studio__visual-toggle label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+}
+
+.flux-studio__visual-toggle input {
+  accent-color: #6366f1;
+  width: 0.85rem;
+  height: 0.85rem;
+}
 .flux-studio__card-heading {
   display: grid;
   gap: var(--space-xs);
@@ -118,8 +152,12 @@
 .flux-studio__card {
   display: grid;
   gap: var(--space-sm);
-  padding: clamp(1rem, 2.5vw, 1.4rem);
-  border-radius: var(--radius-md);
+  padding: clamp(1.1rem, 2.8vw, 1.6rem);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(24px);
+  box-shadow: 0 28px 60px rgba(79, 70, 229, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.55);
 }
 
 .flux-studio__card--main {
@@ -131,8 +169,12 @@
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   gap: var(--space-sm);
-  padding: clamp(0.9rem, 2.2vw, 1.3rem);
-  border-radius: var(--radius-md);
+  padding: clamp(0.95rem, 2.4vw, 1.4rem);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 24px 54px rgba(79, 70, 229, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.45);
 }
 
 .flux-studio__panel-section {
@@ -164,10 +206,40 @@
   padding: var(--space-xs) var(--space-sm);
 }
 
+.flux-studio__bloom-meter {
+  position: relative;
+  height: 0.55rem;
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  background: rgba(148, 163, 184, 0.24);
+  transition: box-shadow var(--duration-sm) var(--easing-soft);
+}
+
+.flux-studio__bloom-meter.is-playing {
+  box-shadow: 0 0 22px rgba(236, 72, 153, 0.25);
+}
+
+.flux-studio__bloom-meter-track {
+  position: absolute;
+  inset: 0;
+  background: rgba(148, 163, 184, 0.2);
+}
+
+.flux-studio__bloom-meter-progress {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(244, 114, 182, 0.9), rgba(129, 140, 248, 0.85));
+  transform-origin: left center;
+  transform: scaleX(var(--bloom-progress, 0));
+  transition: transform var(--duration-sm) var(--easing-soft);
+}
+
 .flux-studio__placeholder {
   padding: clamp(0.95rem, 2.5vw, 1.4rem);
   border-radius: var(--radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(18px);
   color: rgba(31, 41, 55, 0.65);
   text-align: center;
   font-size: 1rem;

@@ -1,0 +1,137 @@
+@import url("https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;600&display=swap");
+
+/*
+  Pastel Bloom design tokens.
+  These variables centralize the sakura-inspired palette, typography, shadows,
+  radii, spacing and motion primitives used across the application.
+*/
+
+:root {
+  color-scheme: light;
+  accent-color: #f9a8d4;
+
+  /* Typography */
+  --font-heading: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", "Space Grotesk", SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  --font-ui: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+
+  /* Sakura palette */
+  --color-sakura-50: #fdf7fb;
+  --color-sakura-100: #fbe7f1;
+  --color-sakura-200: #f7d0e4;
+  --color-sakura-300: #f0b1d2;
+  --color-sakura-400: #e68fc0;
+  --color-sakura-500: #d26aa8;
+  --color-sakura-600: #b74d8b;
+
+  --color-mint-200: #d9f7ef;
+  --color-sky-200: #d5ecff;
+  --color-dusk-400: #b3b5ff;
+  --color-plum-500: #6d4bc3;
+
+  /* Legacy aliases retained for compatibility */
+  --color-primary: #a5b4fc;
+  --color-secondary: #f9a8d4;
+  --color-accent-1: #c4f1f9;
+  --color-accent-2: #fde68a;
+  --color-accent-3: #fbcfe8;
+  --color-surface: rgba(255, 255, 255, 0.85);
+  --color-surface-muted: rgba(255, 255, 255, 0.65);
+  --color-text-dark: #1f2937;
+  --color-text-light: #f9fafb;
+  --color-text-muted: rgba(31, 41, 55, 0.7);
+  --color-deep-iris: #4338ca;
+  --color-night-petal: #0f172a;
+  --color-ink-soft: rgba(15, 23, 42, 0.78);
+
+  /* Gradients */
+  --gradient-iris: linear-gradient(135deg, rgba(165, 180, 252, 0.9), rgba(236, 72, 153, 0.75));
+  --gradient-petal: linear-gradient(140deg, rgba(251, 207, 232, 0.85), rgba(187, 247, 208, 0.75));
+  --gradient-night: linear-gradient(160deg, rgba(15, 23, 42, 0.95), rgba(76, 29, 149, 0.82));
+  --gradient-bloom: linear-gradient(145deg, rgba(247, 208, 224, 0.86), rgba(181, 213, 255, 0.78));
+  --gradient-skyline: radial-gradient(120% 90% at 15% 15%, rgba(213, 230, 255, 0.55), transparent 70%),
+    radial-gradient(130% 110% at 85% 10%, rgba(249, 205, 235, 0.55), transparent 75%);
+
+  /* Shadows */
+  --shadow-soft: 0 18px 35px rgba(79, 70, 229, 0.18);
+  --shadow-soft-hover: 0 20px 40px rgba(236, 72, 153, 0.22);
+  --shadow-ambient: 0 60px 120px rgba(79, 70, 229, 0.25);
+  --shadow-card: 0 28px 55px rgba(79, 70, 229, 0.18);
+  --shadow-kinetic: 0 35px 60px rgba(15, 23, 42, 0.28);
+  --shadow-glow: 0 0 40px rgba(249, 168, 212, 0.35);
+
+  /* Radii */
+  --radius-pill: 999px;
+  --radius-lg: 1.5rem;
+  --radius-md: 1rem;
+  --radius-sm: 0.75rem;
+  --radius-xs: 0.5rem;
+
+  /* Spacing */
+  --space-3xs: 0.2rem;
+  --space-2xs: 0.35rem;
+  --space-xs: 0.5rem;
+  --space-sm: 0.75rem;
+  --space-md: 1.25rem;
+  --space-lg: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: clamp(3.5rem, 8vw, 5.5rem);
+  --space-fluid: clamp(1.5rem, 4vw, 3rem);
+
+  /* Motion */
+  --duration-xxs: 100ms;
+  --duration-xs: 160ms;
+  --duration-sm: 220ms;
+  --duration-md: 360ms;
+  --duration-lg: 560ms;
+  --duration-xl: 900ms;
+  --duration-ambient: 12s;
+
+  --easing-soft: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --easing-soft-snap: cubic-bezier(0.33, 1, 0.68, 1);
+  --easing-glide: cubic-bezier(0.45, 0, 0.1, 1);
+  --easing-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Textures */
+  --noise-texture-strong: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.8' stitchTiles='stitch' type='fractalNoise' numOctaves='5'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.12'/%3E%3C/svg%3E");
+  --grain-texture: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E");
+
+  /* Z-index */
+  --z-base: 0;
+  --z-overlay: 10;
+  --z-petal-layer: 20;
+  --z-toast: 30;
+  --z-modal: 40;
+}
+
+[data-theme="flux-night"] {
+  color-scheme: dark;
+  --color-surface: rgba(15, 23, 42, 0.72);
+  --color-surface-muted: rgba(15, 23, 42, 0.58);
+  --color-text-dark: #e2e8f0;
+  --color-text-light: #f8fafc;
+  --color-text-muted: rgba(226, 232, 240, 0.7);
+  --shadow-card: 0 30px 65px rgba(12, 10, 29, 0.6);
+  --shadow-ambient: 0 70px 110px rgba(12, 10, 29, 0.65);
+  --gradient-iris: linear-gradient(145deg, rgba(139, 92, 246, 0.95), rgba(236, 72, 153, 0.85));
+  --gradient-petal: linear-gradient(160deg, rgba(14, 165, 233, 0.35), rgba(15, 23, 42, 0.9));
+  --gradient-night: linear-gradient(165deg, rgba(15, 23, 42, 0.92), rgba(55, 48, 163, 0.88));
+  --shadow-glow: 0 0 48px rgba(139, 92, 246, 0.45);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-xxs: 1ms;
+    --duration-xs: 1ms;
+    --duration-sm: 1ms;
+    --duration-md: 1ms;
+    --duration-lg: 1ms;
+    --duration-xl: 1ms;
+    --duration-ambient: 1ms;
+    --easing-soft: linear;
+    --easing-soft-snap: linear;
+    --easing-glide: linear;
+    --easing-bounce: linear;
+  }
+}

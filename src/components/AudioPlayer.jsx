@@ -8,6 +8,7 @@ import Forward10 from "../assets/img/forward10.svg?react";
 import Backward10 from "../assets/img/backward10.svg?react";
 import VolumeControl from "./VolumeControl";
 import ProgressBar from "./ProgressBar";
+import WaveformCanvas from "./WaveformCanvas";
 import { formatTime } from "../../util/timeUtils";
 import "../styles/AudioPlayer.css";
 
@@ -19,6 +20,10 @@ const AudioPlayer = ({
   onPrevious,
   sourceLabel,
   extraActions,
+  showAmbientGlow = false,
+  renderBloomMeter,
+  renderOverlay,
+  showWaveform = true,
 }) => {
   const [trackProgress, setTrackProgress] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -37,7 +42,8 @@ const AudioPlayer = ({
   const progressBarRef = useRef(null);
 
   const duration = Number.isFinite(audioRef.current?.duration) ? audioRef.current.duration : 0;
-  const progressPercent = duration > 0 ? (trackProgress / duration) * 100 : 0;
+  const progressRatio = duration > 0 ? trackProgress / duration : 0;
+  const progressPercent = duration > 0 ? progressRatio * 100 : 0;
   const clampedPercent = Math.min(Math.max(progressPercent, 0), 100);
   const progressBackground = `linear-gradient(90deg, var(--accent-color, #2563eb) ${clampedPercent}%, rgba(226, 232, 240, 0.85) ${clampedPercent}%)`;
 
@@ -224,6 +230,7 @@ const AudioPlayer = ({
             {extraActions ? <div className="audio-player__extra-actions">{extraActions}</div> : null}
           </div>
         )}
+        {showAmbientGlow ? <div className="audio-player__ambient-glow" aria-hidden="true" /> : null}
         <div className="audio-player__header">
           <div className="audio-player__art">
             {image ? (
@@ -233,6 +240,11 @@ const AudioPlayer = ({
                 <span>U</span>
               </div>
             )}
+            {renderOverlay ? (
+              <div className="audio-player__art-overlay">
+                {renderOverlay({ currentTrack, progress: progressRatio, isPlaying })}
+              </div>
+            ) : null}
           </div>
           <div className="audio-player__info">
             <h2 className="audio-player__title">{displayTitle}</h2>
@@ -240,6 +252,15 @@ const AudioPlayer = ({
             {metaSummary ? <p className="audio-player__meta">{metaSummary}</p> : null}
           </div>
         </div>
+        {typeof renderBloomMeter === "function" ? (
+          <div className="audio-player__bloom-meter" style={{ "--bloom-progress": progressRatio }} aria-hidden="true">
+            {renderBloomMeter({
+              currentTrack,
+              progress: progressRatio,
+              isPlaying,
+            })}
+          </div>
+        ) : null}
 
         <div className="audio-player__controls" role="group" aria-label="Playback controls">
           <button type="button" onClick={toPrevTrack} aria-label="Previous track" disabled={isControlsDisabled}>
@@ -267,6 +288,9 @@ const AudioPlayer = ({
         </div>
 
         <div className="audio-player__progress">
+          {currentTrack && showWaveform ? (
+            <WaveformCanvas src={audioSrc} progress={progressRatio} accentColor={currentTrack?.color} />
+          ) : null}
           <ProgressBar
             trackProgress={trackProgress}
             duration={duration}

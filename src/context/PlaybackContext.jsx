@@ -123,9 +123,7 @@ export const PlaybackProvider = ({ children }) => {
   );
 
   const appendTracks = useCallback(
-    async (newTracks, options = {}) => {
-      return applyTracks(newTracks, { ...options, mode: "append" });
-    },
+    async (newTracks, options = {}) => applyTracks(newTracks, { ...options, mode: "append" }),
     [applyTracks],
   );
 
@@ -133,33 +131,51 @@ export const PlaybackProvider = ({ children }) => {
     initialize();
   }, [initialize]);
 
+  const [visualSettings, setVisualSettings] = useState({
+    showPetals: true,
+    showBloomMeter: true,
+    showWaveform: true,
+  });
+
+  const toggleVisualSetting = useCallback((key) => {
+    setVisualSettings((previous) => ({
+      ...previous,
+      [key]: !previous[key],
+    }));
+  }, []);
+
   const value = useMemo(
     () => ({
-      tracks,
       currentTrackIndex,
-      loading,
-      error,
-      activeSource,
+      setCurrentTrackIndex,
+      tracks,
+      setTracks,
       replaceTracks,
       appendTracks,
-      playTrackAt,
-      playNext,
-      playPrevious,
-      resetToDefault,
-      loadDemoPlaylist: initialize,
-      setCurrentTrackIndex: playTrackAt,
-    }),
-    [
-      tracks,
-      currentTrackIndex,
+      visualSettings,
+      toggleVisualSetting,
       loading,
       error,
       activeSource,
-      replaceTracks,
       playTrackAt,
       playNext,
       playPrevious,
       resetToDefault,
+    }),
+    [
+      appendTracks,
+      currentTrackIndex,
+      playNext,
+      playPrevious,
+      playTrackAt,
+      replaceTracks,
+      resetToDefault,
+      tracks,
+      visualSettings,
+      toggleVisualSetting,
+      loading,
+      error,
+      activeSource,
     ],
   );
 
