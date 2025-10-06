@@ -1,23 +1,25 @@
+
 .petal-field {
   position: absolute;
-  inset: 0;
-  overflow: hidden;
+  inset: -25% -30% -35% -30%;
+  overflow: visible;
   pointer-events: none;
   z-index: var(--z-petal-layer, 10);
 }
 
 .petal-field__petal {
   position: absolute;
-  top: -10%;
+  top: 0;
   left: var(--petal-horizontal, 50%);
   width: var(--petal-size, 0.9rem);
   height: var(--petal-size, 0.9rem);
   border-radius: 60% 40% 60% 40%;
   background:
     radial-gradient(60% 80% at 50% 35%, var(--petal-accent, rgba(249, 206, 229, 0.92)) 0%, transparent 70%),
-    linear-gradient(145deg, rgba(249, 206, 229, 0.85), rgba(181, 213, 255, 0.6));
+    linear-gradient(145deg, rgba(249, 206, 229, 0.88), rgba(181, 213, 255, 0.65));
   transform-origin: center;
-  filter: drop-shadow(0 4px 10px rgba(249, 168, 212, 0.35));
+  filter: drop-shadow(0 6px 12px rgba(249, 168, 212, 0.4));
+  opacity: 0;
   animation:
     petal-fall var(--petal-duration, 12s) var(--easing-glide, ease-in-out) infinite,
     petal-drift var(--petal-duration, 12s) ease-in-out infinite,
@@ -27,39 +29,45 @@
 
 @keyframes petal-fall {
   0% {
-    transform: translate(-50%, -15%) rotate(var(--petal-rotation, 0deg));
+    transform:
+      translate3d(-50%, var(--petal-start-y, -40%), 0)
+      rotate(var(--petal-rotation, 0deg))
+      scale(var(--petal-scale, 1));
     opacity: 0;
   }
   10% {
-    opacity: 1;
+    opacity: 0.9;
   }
   100% {
-    transform: translate(-50%, 115%) rotate(calc(var(--petal-rotation, 0deg) + 90deg));
+    transform:
+      translate3d(calc(-50% + var(--petal-sway, 0%)), var(--petal-end-y, 120%), 0)
+      rotate(calc(var(--petal-rotation, 0deg) + 120deg))
+      scale(var(--petal-scale, 1));
     opacity: 0;
   }
 }
 
 @keyframes petal-drift {
   0% {
-    margin-left: 0;
+    transform: translateX(0);
   }
   50% {
-    margin-left: 8%;
+    transform: translateX(calc(var(--petal-sway, 0%) * 0.4));
   }
   100% {
-    margin-left: 0;
+    transform: translateX(0);
   }
 }
 
 @keyframes petal-tilt {
   0% {
-    transform: rotate(0deg);
+    rotate: -6deg;
   }
   50% {
-    transform: rotate(12deg);
+    rotate: 10deg;
   }
   100% {
-    transform: rotate(0deg);
+    rotate: -6deg;
   }
 }
 

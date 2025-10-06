@@ -133,8 +133,8 @@ export const PlaybackProvider = ({ children }) => {
 
   const [visualSettings, setVisualSettings] = useState({
     showPetals: true,
-    showBloomMeter: true,
     showWaveform: true,
+    showAmbientGlow: true,
   });
 
   const toggleVisualSetting = useCallback((key) => {

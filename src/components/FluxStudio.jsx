@@ -90,20 +90,8 @@ const FluxStudio = () => {
               onNext={playNext}
               onPrevious={playPrevious}
               sourceLabel={`Source · ${displaySource}`}
-              showAmbientGlow={visualSettings.showBloomMeter || visualSettings.showPetals}
+              showAmbientGlow={visualSettings.showAmbientGlow || visualSettings.showPetals}
               showWaveform={visualSettings.showWaveform}
-              renderBloomMeter={({ progress, isPlaying }) =>
-                visualSettings.showBloomMeter ? (
-                  <div
-                    className={isPlaying ? "flux-studio__bloom-meter is-playing" : "flux-studio__bloom-meter"}
-                    style={{ "--bloom-progress": progress }}
-                    aria-hidden="true"
-                  >
-                    <div className="flux-studio__bloom-meter-track" />
-                    <div className="flux-studio__bloom-meter-progress" />
-                  </div>
-                ) : null
-              }
               renderOverlay={({ progress, isPlaying, currentTrack }) =>
                 visualSettings.showPetals ? (
                   <PetalField
@@ -140,10 +128,10 @@ const FluxStudio = () => {
                     <label>
                       <input
                         type="checkbox"
-                        checked={visualSettings.showBloomMeter}
-                        onChange={() => toggleVisualSetting("showBloomMeter")}
+                        checked={visualSettings.showAmbientGlow}
+                        onChange={() => toggleVisualSetting("showAmbientGlow")}
                       />
-                      Bloom
+                      Ambient
                     </label>
                     <label>
                       <input

@@ -7,7 +7,6 @@ import Prev from "../assets/img/prev.svg?react";
 import Forward10 from "../assets/img/forward10.svg?react";
 import Backward10 from "../assets/img/backward10.svg?react";
 import VolumeControl from "./VolumeControl";
-import ProgressBar from "./ProgressBar";
 import WaveformCanvas from "./WaveformCanvas";
 import { formatTime } from "../../util/timeUtils";
 import "../styles/AudioPlayer.css";
@@ -21,7 +20,6 @@ const AudioPlayer = ({
   sourceLabel,
   extraActions,
   showAmbientGlow = false,
-  renderBloomMeter,
   renderOverlay,
   showWaveform = true,
 }) => {
@@ -39,13 +37,10 @@ const AudioPlayer = ({
   const intervalRef = useRef(null);
   const isReady = useRef(false);
   const isPlayingRef = useRef(false);
-  const progressBarRef = useRef(null);
+  const isScrubbingRef = useRef(false);
 
   const duration = Number.isFinite(audioRef.current?.duration) ? audioRef.current.duration : 0;
   const progressRatio = duration > 0 ? trackProgress / duration : 0;
-  const progressPercent = duration > 0 ? progressRatio * 100 : 0;
-  const clampedPercent = Math.min(Math.max(progressPercent, 0), 100);
-  const progressBackground = `linear-gradient(90deg, var(--accent-color, #2563eb) ${clampedPercent}%, rgba(226, 232, 240, 0.85) ${clampedPercent}%)`;
 
   const stopTimer = useCallback(() => {
     if (intervalRef.current) {
@@ -187,16 +182,35 @@ const AudioPlayer = ({
     }
   };
 
-  const onDrag = (value) => {
-    stopTimer();
-    audioRef.current.currentTime = value;
-    setTrackProgress(value);
-  };
+  const handleScrub = useCallback(
+    (ratio) => {
+      const activeDuration = Number.isFinite(duration) && duration > 0 ? duration : audioRef.current?.duration ?? 0;
+      if (!activeDuration) {
+        return;
+      }
 
-  const onDragEnd = () => {
-    if (!isPlayingRef.current) return;
-    playAudio();
-  };
+      if (!isScrubbingRef.current) {
+        isScrubbingRef.current = true;
+        stopTimer();
+      }
+
+      const nextTime = ratio * activeDuration;
+      audioRef.current.currentTime = nextTime;
+      setTrackProgress(nextTime);
+    },
+    [duration, stopTimer],
+  );
+
+  const handleScrubEnd = useCallback(() => {
+    if (!isScrubbingRef.current) {
+      return;
+    }
+
+    isScrubbingRef.current = false;
+    if (isPlayingRef.current) {
+      playAudio();
+    }
+  }, [playAudio]);
 
   const onForward10Click = () => {
     const audio = audioRef.current;
@@ -252,16 +266,6 @@ const AudioPlayer = ({
             {metaSummary ? <p className="audio-player__meta">{metaSummary}</p> : null}
           </div>
         </div>
-        {typeof renderBloomMeter === "function" ? (
-          <div className="audio-player__bloom-meter" style={{ "--bloom-progress": progressRatio }} aria-hidden="true">
-            {renderBloomMeter({
-              currentTrack,
-              progress: progressRatio,
-              isPlaying,
-            })}
-          </div>
-        ) : null}
-
         <div className="audio-player__controls" role="group" aria-label="Playback controls">
           <button type="button" onClick={toPrevTrack} aria-label="Previous track" disabled={isControlsDisabled}>
             <Prev />
@@ -289,18 +293,16 @@ const AudioPlayer = ({
 
         <div className="audio-player__progress">
           {currentTrack && showWaveform ? (
-            <WaveformCanvas src={audioSrc} progress={progressRatio} accentColor={currentTrack?.color} />
+            <WaveformCanvas
+              src={audioSrc}
+              progress={duration > 0 ? trackProgress / duration : 0}
+              accentColor={currentTrack?.color}
+              disabled={!currentTrack}
+              onScrub={handleScrub}
+              onScrubEnd={handleScrubEnd}
+              showGlow={showAmbientGlow}
+            />
           ) : null}
-          <ProgressBar
-            trackProgress={trackProgress}
-            duration={duration}
-            onDrag={onDrag}
-            onDragEnd={onDragEnd}
-            progressBarRef={progressBarRef}
-            trackStyling={progressBackground}
-            formatTime={formatTime}
-            showMeta={false}
-          />
           <div className="audio-player__time" aria-live="polite">
             <span>{currentTimeLabel}</span>
             <span aria-hidden="true">/</span>

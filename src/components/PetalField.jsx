@@ -8,6 +8,10 @@ function generatePetals(count) {
     const delay = Math.random() * 6;
     const duration = 8 + Math.random() * 6;
     const horizontal = Math.random() * 100;
+    const startY = -60 - Math.random() * 30;
+    const endY = 110 + Math.random() * 40;
+    const sway = (Math.random() - 0.5) * 40;
+    const scale = 0.9 + Math.random() * 0.35;
 
     return {
       id: `petal-${index}-${horizontal.toFixed(2)}`,
@@ -16,18 +20,24 @@ function generatePetals(count) {
       duration,
       horizontal,
       rotation: Math.random() * 360,
+      startY,
+      endY,
+      sway,
+      scale,
     };
   });
 }
 
-export default function PetalField({ isPlaying = false, intensity = 1, petalCount = 12, tintColor, progress = 0 }) {
+export default function PetalField({ isPlaying = false, intensity = 1, petalCount = 18, tintColor, progress = 0 }) {
   const prefersReducedMotion = useMotionPreferences();
 
   const petals = useMemo(() => {
     if (prefersReducedMotion) {
       return [];
     }
-    const cappedCount = Math.max(0, Math.round(petalCount * intensity));
+    const intensityMultiplier = Math.max(0.6, intensity + progress * 0.4);
+    const baseCount = Math.max(petalCount, 12);
+    const cappedCount = Math.max(0, Math.round(baseCount * intensityMultiplier));
     return generatePetals(cappedCount);
   }, [intensity, petalCount, prefersReducedMotion, progress]);
 
@@ -47,6 +57,10 @@ export default function PetalField({ isPlaying = false, intensity = 1, petalCoun
             "--petal-duration": `${petal.duration}s`,
             "--petal-horizontal": `${petal.horizontal}%`,
             "--petal-rotation": `${petal.rotation}deg`,
+            "--petal-start-y": `${petal.startY}%`,
+            "--petal-end-y": `${petal.endY}%`,
+            "--petal-sway": `${petal.sway}%`,
+            "--petal-scale": petal.scale,
           }}
         />
       ))}
