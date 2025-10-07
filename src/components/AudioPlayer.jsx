@@ -10,6 +10,18 @@ import VolumeControl from "./VolumeControl";
 import WaveformCanvas from "./WaveformCanvas";
 import { formatTime } from "../../util/timeUtils";
 import "../styles/AudioPlayer.css";
+import { usePlayback } from "../context/PlaybackContext";
+import {
+  cleanupPeqChain,
+  createPeqChain,
+  updatePeqFilters,
+  updatePreamp,
+} from "../utils/audio/peqGraph";
+import {
+  DEFAULT_PRESET,
+  BUNDLED_PRESETS,
+  calculateRecommendedPreamp,
+} from "../utils/peqPresets";
 
 const AudioPlayer = ({
   tracks = [],
@@ -23,14 +35,32 @@ const AudioPlayer = ({
   renderOverlay,
   showWaveform = true,
 }) => {
+  const {
+    peqState,
+    storePeqNodes,
+    updatePeqBand,
+    updateAllPeqBands,
+    setPeqPreamp,
+    togglePeqPreampAuto,
+    loadPeqPreset,
+  } = usePlayback();
+  const { peqBands, peqBypass, preampGain, preampAuto, peqNodes } = peqState;
   const [trackProgress, setTrackProgress] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
   const volumeRef = useRef(1);
+  const audioContextRef = useRef(null);
+  const sourceNodeRef = useRef(null);
+  const peqBandsRef = useRef(peqBands);
+  const peqBypassRef = useRef(peqBypass);
+  const preampGainRef = useRef(preampGain);
+  const preampAutoRef = useRef(preampAuto);
+  const peqNodesRef = useRef(peqNodes);
 
   const trackList = Array.isArray(tracks) ? tracks : [];
   const trackCount = trackList.length;
   const currentTrack = trackList[currentTrackIndex] || null;
+
   const { title, artist, album, audioSrc, image, codec, bitrate } = currentTrack ?? {};
 
   const audioRef = useRef(new Audio());
@@ -88,17 +118,37 @@ const AudioPlayer = ({
     if (!currentTrack || !audioRef.current.src) {
       return;
     }
-    isPlayingRef.current = true;
-    audioRef.current
-      .play()
+
+    const ensureContext = async () => {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioContextRef.current.state === "suspended") {
+        try {
+          await audioContextRef.current.resume();
+        } catch (err) {
+          console.warn("Failed to resume AudioContext", err);
+        }
+      }
+    };
+
+    ensureContext()
       .then(() => {
-        setIsPlaying(true);
-        startTimer();
+        isPlayingRef.current = true;
+        return audioRef.current
+          .play()
+          .then(() => {
+            setIsPlaying(true);
+            startTimer();
+          })
+          .catch((error) => {
+            console.warn("Autoplay prevented", error);
+            isPlayingRef.current = false;
+            setIsPlaying(false);
+          });
       })
       .catch((error) => {
-        console.warn("Autoplay prevented", error);
-        isPlayingRef.current = false;
-        setIsPlaying(false);
+        console.warn("AudioContext setup failed", error);
       });
   }, [currentTrack, startTimer]);
 
@@ -114,10 +164,95 @@ const AudioPlayer = ({
   }, [currentTrack, pauseAudio, playAudio]);
 
   useEffect(() => {
+    if (!import.meta.env?.DEV) {
+      return undefined;
+    }
+
+    window.__SAKU_AUDIO_CTX__ = audioContextRef;
+    window.__SAKU_PEQ_NODES__ = () => peqNodesRef.current ?? peqNodes;
+
+    const debugApi = {
+      get state() {
+        return peqState;
+      },
+      setBandGain(index, gainDb) {
+        if (typeof index !== "number" || Number.isNaN(index)) return;
+        updatePeqBand(index, { gain: gainDb });
+      },
+      setAllGains(gainDb) {
+        const baseBands = DEFAULT_PRESET.bands.map((defaults, idx) => ({
+          ...defaults,
+          ...(peqState.peqBands[idx] ?? {}),
+          gain: gainDb,
+        }));
+        updateAllPeqBands(baseBands);
+      },
+      loadPreset(key) {
+        const preset = key && BUNDLED_PRESETS[key.toUpperCase?.() ?? key];
+        if (preset) {
+          loadPeqPreset(preset);
+        }
+      },
+      resetFlat() {
+        loadPeqPreset(DEFAULT_PRESET);
+      },
+      setPreamp(db) {
+        setPeqPreamp(db);
+      },
+      toggleAuto(value) {
+        togglePeqPreampAuto(value);
+      },
+      recomputePreamp() {
+        const recommended = calculateRecommendedPreamp(peqState.peqBands ?? []);
+        setPeqPreamp(recommended);
+        return recommended;
+      },
+    };
+
+    window.__SAKU_DEBUG__ = debugApi;
+
+    Object.defineProperty(window, "audioContext", {
+      configurable: true,
+      get() {
+        return audioContextRef.current;
+      },
+    });
+
+    Object.defineProperty(window, "peqNodes", {
+      configurable: true,
+      get() {
+        return peqNodesRef.current ?? peqNodes;
+      },
+    });
+
+    return () => {
+      delete window.__SAKU_DEBUG__;
+      delete window.__SAKU_AUDIO_CTX__;
+      delete window.__SAKU_PEQ_NODES__;
+      delete window.audioContext;
+      delete window.peqNodes;
+    };
+  }, [loadPeqPreset, peqNodes, peqState, setPeqPreamp, togglePeqPreampAuto, updateAllPeqBands, updatePeqBand]);
+
+  useEffect(() => {
     const audio = audioRef.current;
 
-    stopTimer();
-    audio.pause();
+    const teardownChain = () => {
+      const nodes = peqNodesRef.current;
+      if (nodes) {
+        cleanupPeqChain(nodes);
+      }
+      storePeqNodes(null);
+      if (sourceNodeRef.current) {
+        try {
+          sourceNodeRef.current.disconnect();
+        } catch (error) {
+          console.warn("Failed to disconnect source node", error);
+        }
+      }
+    };
+
+    teardownChain();
 
     if (!audioSrc) {
       audio.removeAttribute("src");
@@ -133,6 +268,57 @@ const AudioPlayer = ({
     audio.volume = volumeRef.current;
     audio.currentTime = 0;
     setTrackProgress(0);
+
+    const setupPeqChain = async () => {
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+      }
+
+      const audioContext = audioContextRef.current;
+      let sourceNode = sourceNodeRef.current;
+
+      if (!sourceNode || sourceNode.mediaElement !== audio) {
+        try {
+          sourceNode = audioContext.createMediaElementSource(audio);
+          sourceNodeRef.current = sourceNode;
+        } catch (error) {
+          console.error("Failed to create MediaElementSource", error);
+          throw error;
+        }
+      } else {
+        try {
+          sourceNode.disconnect();
+        } catch (error) {
+          console.warn("Failed to reset source node connections", error);
+        }
+      }
+
+      const chain = createPeqChain(audioContext);
+      sourceNode.connect(chain.inputNode);
+      chain.outputNode.connect(audioContext.destination);
+
+      storePeqNodes(chain);
+
+      updatePeqFilters(chain.filters, peqBandsRef.current);
+      const bandsForPreamp = peqBandsRef.current ?? [];
+      const recommendedPreamp = calculateRecommendedPreamp(bandsForPreamp);
+      const storedPreamp = preampGainRef.current;
+      const targetPreamp = preampAutoRef.current
+        ? recommendedPreamp
+        : typeof storedPreamp === "number"
+          ? storedPreamp
+          : recommendedPreamp;
+      updatePreamp(chain.preampNode, targetPreamp);
+
+      if (peqBypassRef.current) {
+        sourceNode.disconnect();
+        sourceNode.connect(audioContext.destination);
+      }
+    };
+
+    setupPeqChain().catch((error) => {
+      console.error("Failed to set up PEQ chain", error);
+    });
 
     const handleCanPlay = () => {
       if (isReady.current && isPlayingRef.current) {
@@ -152,15 +338,78 @@ const AudioPlayer = ({
 
     return () => {
       audio.removeEventListener("canplay", handleCanPlay);
+      teardownChain();
     };
-  }, [audioSrc, playAudio, stopTimer]);
+  }, [audioSrc, playAudio, stopTimer, storePeqNodes]);
 
   useEffect(() => {
     volumeRef.current = volume;
     audioRef.current.volume = volume;
   }, [volume]);
 
+  useEffect(() => {
+    peqBandsRef.current = peqBands;
+  }, [peqBands]);
+
+  useEffect(() => {
+    peqBypassRef.current = peqBypass;
+  }, [peqBypass]);
+
+  useEffect(() => {
+    preampGainRef.current = preampGain;
+  }, [preampGain]);
+
+  useEffect(() => {
+    preampAutoRef.current = preampAuto;
+  }, [preampAuto]);
+
+  useEffect(() => {
+    peqNodesRef.current = peqNodes;
+  }, [peqNodes]);
+
   useEffect(() => pauseAudio, [pauseAudio]);
+
+  useEffect(() => {
+    if (!preampAuto) {
+      return;
+    }
+    const recommended = calculateRecommendedPreamp(peqBands);
+    if (Math.abs(recommended - preampGain) > 0.001) {
+      setPeqPreamp(recommended);
+    }
+  }, [peqBands, preampAuto, preampGain, setPeqPreamp]);
+
+  useEffect(() => {
+    if (peqNodes?.filters?.length) {
+      updatePeqFilters(peqNodes.filters, peqBands);
+    }
+  }, [peqBands, peqNodes]);
+
+  useEffect(() => {
+    if (peqNodes?.preampNode) {
+      updatePreamp(peqNodes.preampNode, preampGain);
+    }
+  }, [preampGain, peqNodes]);
+
+  useEffect(() => {
+    const audioContext = audioContextRef.current;
+    const sourceNode = sourceNodeRef.current;
+
+    if (!audioContext || !sourceNode) {
+      return;
+    }
+
+    sourceNode.disconnect();
+
+    if (peqBypass || !peqNodes?.inputNode || !peqNodes?.outputNode) {
+      peqNodes?.outputNode?.disconnect?.();
+      sourceNode.connect(audioContext.destination);
+    } else {
+      peqNodes.outputNode.disconnect();
+      sourceNode.connect(peqNodes.inputNode);
+      peqNodes.outputNode.connect(audioContext.destination);
+    }
+  }, [peqBypass, peqNodes]);
 
   const toPrevTrack = () => {
     if (trackCount === 0) return;

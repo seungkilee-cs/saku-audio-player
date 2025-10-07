@@ -10,16 +10,32 @@ import React, {
   useState,
 } from "react";
 import { loadBundledTracks } from "../assets/meta/tracks";
+import {
+  DEFAULT_PRESET,
+  calculateRecommendedPreamp,
+  clonePreset,
+  ensureBandsCount,
+  normalizePreset,
+} from "../utils/peqPresets";
+
+const normalizedDefaultPreset = normalizePreset(clonePreset(DEFAULT_PRESET));
+
+function deriveAutoPreamp(enabled, bands, fallback) {
+  if (!enabled) {
+    return fallback;
+  }
+  return calculateRecommendedPreamp(bands);
+}
 
 const PlaybackContext = createContext(null);
 
 const initialPeqState = {
   peqEnabled: true,
   peqBypass: false,
-  peqBands: [],
-  preampGain: 0,
+  peqBands: normalizedDefaultPreset.bands,
+  preampGain: normalizedDefaultPreset.preamp,
   preampAuto: true,
-  currentPresetName: "Flat",
+  currentPresetName: normalizedDefaultPreset.name,
   peqNodes: null,
 };
 
@@ -31,33 +47,34 @@ function peqReducer(state, action) {
         return state;
       }
 
-      const bands = state.peqBands.length
-        ? state.peqBands
-        : Array.from({ length: index + 1 }, () => ({}));
-
-      const nextBands = bands.map((band, bandIndex) => {
+      const baseBands = ensureBandsCount(state.peqBands);
+      const nextBands = baseBands.map((band, bandIndex) => {
         if (bandIndex === index) {
           return { ...band, ...updates };
         }
         return band;
       });
 
-      if (index >= nextBands.length) {
-        nextBands[index] = { ...(updates ?? {}) };
-      }
+      const nextPreampGain = deriveAutoPreamp(state.preampAuto, nextBands, state.preampGain);
 
       return {
         ...state,
         peqBands: nextBands,
+        preampGain: nextPreampGain,
       };
     }
     case "UPDATE_ALL_BANDS": {
       const { bands = [], presetName, preampGain } = action.payload ?? {};
+      const normalizedBands = ensureBandsCount(bands);
+      const nextPreampGain =
+        typeof preampGain === "number"
+          ? preampGain
+          : deriveAutoPreamp(state.preampAuto, normalizedBands, state.preampGain);
       return {
         ...state,
-        peqBands: bands,
+        peqBands: normalizedBands,
         currentPresetName: presetName ?? state.currentPresetName,
-        preampGain: typeof preampGain === "number" ? preampGain : state.preampGain,
+        preampGain: nextPreampGain,
       };
     }
     case "SET_PREAMP": {
@@ -70,9 +87,14 @@ function peqReducer(state, action) {
     }
     case "TOGGLE_PREAMP_AUTO": {
       const { value } = action.payload ?? {};
+      const nextAuto = typeof value === "boolean" ? value : !state.preampAuto;
+      const nextPreamp = nextAuto
+        ? calculateRecommendedPreamp(state.peqBands)
+        : state.preampGain;
       return {
         ...state,
-        preampAuto: typeof value === "boolean" ? value : !state.preampAuto,
+        preampAuto: nextAuto,
+        preampGain: nextPreamp,
       };
     }
     case "TOGGLE_BYPASS": {
@@ -87,11 +109,18 @@ function peqReducer(state, action) {
       if (!preset) {
         return state;
       }
+      let normalizedPreset;
+      try {
+        normalizedPreset = normalizePreset(clonePreset(preset));
+      } catch (error) {
+        console.error("Failed to load preset", error);
+        return state;
+      }
       return {
         ...state,
-        peqBands: preset.bands ?? state.peqBands,
-        preampGain: typeof preset.preamp === "number" ? preset.preamp : state.preampGain,
-        currentPresetName: preset.name ?? state.currentPresetName,
+        peqBands: normalizedPreset.bands,
+        preampGain: normalizedPreset.preamp,
+        currentPresetName: normalizedPreset.name ?? state.currentPresetName,
         preampAuto: true,
       };
     }

@@ -76,7 +76,11 @@ export function updatePreamp(preampNode, gainDb = 0) {
   preampNode.gain.value = linearGain;
 }
 
-export function cleanupPeqChain(nodes = {}) {
+export function cleanupPeqChain(nodes) {
+  if (!nodes) {
+    return;
+  }
+
   const { filters = [], preampNode, inputNode, outputNode } = nodes;
 
   filters.forEach((filter) => {
