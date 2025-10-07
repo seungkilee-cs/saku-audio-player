@@ -5,12 +5,113 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useReducer,
   useRef,
   useState,
 } from "react";
 import { loadBundledTracks } from "../assets/meta/tracks";
 
 const PlaybackContext = createContext(null);
+
+const initialPeqState = {
+  peqEnabled: true,
+  peqBypass: false,
+  peqBands: [],
+  preampGain: 0,
+  preampAuto: true,
+  currentPresetName: "Flat",
+  peqNodes: null,
+};
+
+function peqReducer(state, action) {
+  switch (action.type) {
+    case "UPDATE_BAND": {
+      const { index, updates } = action.payload ?? {};
+      if (typeof index !== "number" || index < 0) {
+        return state;
+      }
+
+      const bands = state.peqBands.length
+        ? state.peqBands
+        : Array.from({ length: index + 1 }, () => ({}));
+
+      const nextBands = bands.map((band, bandIndex) => {
+        if (bandIndex === index) {
+          return { ...band, ...updates };
+        }
+        return band;
+      });
+
+      if (index >= nextBands.length) {
+        nextBands[index] = { ...(updates ?? {}) };
+      }
+
+      return {
+        ...state,
+        peqBands: nextBands,
+      };
+    }
+    case "UPDATE_ALL_BANDS": {
+      const { bands = [], presetName, preampGain } = action.payload ?? {};
+      return {
+        ...state,
+        peqBands: bands,
+        currentPresetName: presetName ?? state.currentPresetName,
+        preampGain: typeof preampGain === "number" ? preampGain : state.preampGain,
+      };
+    }
+    case "SET_PREAMP": {
+      const { gain, autoOverride } = action.payload ?? {};
+      return {
+        ...state,
+        preampGain: typeof gain === "number" ? gain : state.preampGain,
+        preampAuto: typeof autoOverride === "boolean" ? autoOverride : state.preampAuto,
+      };
+    }
+    case "TOGGLE_PREAMP_AUTO": {
+      const { value } = action.payload ?? {};
+      return {
+        ...state,
+        preampAuto: typeof value === "boolean" ? value : !state.preampAuto,
+      };
+    }
+    case "TOGGLE_BYPASS": {
+      const { value } = action.payload ?? {};
+      return {
+        ...state,
+        peqBypass: typeof value === "boolean" ? value : !state.peqBypass,
+      };
+    }
+    case "LOAD_PRESET": {
+      const { preset } = action.payload ?? {};
+      if (!preset) {
+        return state;
+      }
+      return {
+        ...state,
+        peqBands: preset.bands ?? state.peqBands,
+        preampGain: typeof preset.preamp === "number" ? preset.preamp : state.preampGain,
+        currentPresetName: preset.name ?? state.currentPresetName,
+        preampAuto: true,
+      };
+    }
+    case "STORE_PEQ_NODES": {
+      return {
+        ...state,
+        peqNodes: action.payload ?? null,
+      };
+    }
+    case "SET_PEQ_ENABLED": {
+      const { value } = action.payload ?? {};
+      return {
+        ...state,
+        peqEnabled: typeof value === "boolean" ? value : state.peqEnabled,
+      };
+    }
+    default:
+      return state;
+  }
+}
 
 function sanitizeTracks(tracks) {
   const objectUrls = [];
@@ -33,6 +134,7 @@ export const PlaybackProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [activeSource, setActiveSource] = useState("none");
   const objectUrlsRef = useRef([]);
+  const [peqState, dispatchPeq] = useReducer(peqReducer, initialPeqState);
 
   const cleanupObjectUrls = useCallback((urls) => {
     urls?.forEach((url) => {
@@ -144,6 +246,65 @@ export const PlaybackProvider = ({ children }) => {
     }));
   }, []);
 
+  const updatePeqBand = useCallback(
+    (index, updates) => {
+      dispatchPeq({ type: "UPDATE_BAND", payload: { index, updates } });
+    },
+    [dispatchPeq],
+  );
+
+  const updateAllPeqBands = useCallback(
+    (bands, presetName, preampGain) => {
+      dispatchPeq({
+        type: "UPDATE_ALL_BANDS",
+        payload: { bands, presetName, preampGain },
+      });
+    },
+    [dispatchPeq],
+  );
+
+  const setPeqPreamp = useCallback(
+    (gain, { autoOverride } = {}) => {
+      dispatchPeq({ type: "SET_PREAMP", payload: { gain, autoOverride } });
+    },
+    [dispatchPeq],
+  );
+
+  const togglePeqPreampAuto = useCallback(
+    (value) => {
+      dispatchPeq({ type: "TOGGLE_PREAMP_AUTO", payload: { value } });
+    },
+    [dispatchPeq],
+  );
+
+  const togglePeqBypass = useCallback(
+    (value) => {
+      dispatchPeq({ type: "TOGGLE_BYPASS", payload: { value } });
+    },
+    [dispatchPeq],
+  );
+
+  const loadPeqPreset = useCallback(
+    (preset) => {
+      dispatchPeq({ type: "LOAD_PRESET", payload: { preset } });
+    },
+    [dispatchPeq],
+  );
+
+  const storePeqNodes = useCallback(
+    (nodes) => {
+      dispatchPeq({ type: "STORE_PEQ_NODES", payload: nodes });
+    },
+    [dispatchPeq],
+  );
+
+  const setPeqEnabled = useCallback(
+    (value) => {
+      dispatchPeq({ type: "SET_PEQ_ENABLED", payload: { value } });
+    },
+    [dispatchPeq],
+  );
+
   const value = useMemo(
     () => ({
       currentTrackIndex,
@@ -161,6 +322,15 @@ export const PlaybackProvider = ({ children }) => {
       playNext,
       playPrevious,
       resetToDefault,
+      peqState,
+      updatePeqBand,
+      updateAllPeqBands,
+      setPeqPreamp,
+      togglePeqPreampAuto,
+      togglePeqBypass,
+      loadPeqPreset,
+      storePeqNodes,
+      setPeqEnabled,
     }),
     [
       appendTracks,
@@ -176,6 +346,15 @@ export const PlaybackProvider = ({ children }) => {
       loading,
       error,
       activeSource,
+      peqState,
+      loadPeqPreset,
+      setPeqEnabled,
+      setPeqPreamp,
+      storePeqNodes,
+      togglePeqBypass,
+      togglePeqPreampAuto,
+      updateAllPeqBands,
+      updatePeqBand,
     ],
   );
 
