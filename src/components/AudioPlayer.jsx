@@ -68,6 +68,7 @@ const AudioPlayer = ({
   const isReady = useRef(false);
   const isPlayingRef = useRef(false);
   const isScrubbingRef = useRef(false);
+  const currentAudioSrcRef = useRef(null);
 
   const duration = Number.isFinite(audioRef.current?.duration) ? audioRef.current.duration : 0;
   const progressRatio = duration > 0 ? trackProgress / duration : 0;
@@ -234,6 +235,55 @@ const AudioPlayer = ({
     };
   }, [loadPeqPreset, peqNodes, peqState, setPeqPreamp, togglePeqPreampAuto, updateAllPeqBands, updatePeqBand]);
 
+  // Handle audio source changes (track switching)
+  useEffect(() => {
+    const audio = audioRef.current;
+
+    // Only reload if audioSrc actually changed
+    if (currentAudioSrcRef.current === audioSrc) {
+      return;
+    }
+    
+    console.log('AudioPlayer: audioSrc changed from', currentAudioSrcRef.current, 'to', audioSrc);
+    currentAudioSrcRef.current = audioSrc;
+
+    if (!audioSrc) {
+      audio.removeAttribute("src");
+      audio.load();
+      setTrackProgress(0);
+      setIsPlaying(false);
+      isPlayingRef.current = false;
+      return;
+    }
+
+    audio.src = audioSrc;
+    audio.load();
+    audio.volume = volumeRef.current;
+    audio.currentTime = 0;
+    setTrackProgress(0);
+
+    const handleCanPlay = () => {
+      if (isReady.current && isPlayingRef.current) {
+        playAudio();
+      }
+    };
+
+    audio.addEventListener("canplay", handleCanPlay);
+
+    if (!isReady.current) {
+      isReady.current = true;
+    } else if (isPlayingRef.current) {
+      playAudio();
+    } else {
+      setIsPlaying(false);
+    }
+
+    return () => {
+      audio.removeEventListener("canplay", handleCanPlay);
+    };
+  }, [audioSrc, playAudio]);
+
+  // Handle PEQ chain setup and updates
   useEffect(() => {
     const audio = audioRef.current;
 
@@ -252,22 +302,11 @@ const AudioPlayer = ({
       }
     };
 
-    teardownChain();
-
-    if (!audioSrc) {
-      audio.removeAttribute("src");
-      audio.load();
-      setTrackProgress(0);
-      setIsPlaying(false);
-      isPlayingRef.current = false;
+    // Only setup PEQ chain if we have audio
+    if (!audioSrc || !audio.src) {
+      teardownChain();
       return;
     }
-
-    audio.src = audioSrc;
-    audio.load();
-    audio.volume = volumeRef.current;
-    audio.currentTime = 0;
-    setTrackProgress(0);
 
     const setupPeqChain = async () => {
       if (!audioContextRef.current) {
@@ -293,13 +332,14 @@ const AudioPlayer = ({
         }
       }
 
-      const chain = createPeqChain(audioContext);
+      const chain = createPeqChain(audioContext, peqBandsRef.current);
       sourceNode.connect(chain.inputNode);
       chain.outputNode.connect(audioContext.destination);
 
       storePeqNodes(chain);
 
-      updatePeqFilters(chain.filters, peqBandsRef.current);
+      // Filters are already configured with correct values from createPeqChain
+      // updatePeqFilters(chain.filters, peqBandsRef.current);
       const bandsForPreamp = peqBandsRef.current ?? [];
       const recommendedPreamp = calculateRecommendedPreamp(bandsForPreamp);
       const storedPreamp = preampGainRef.current;
@@ -320,27 +360,8 @@ const AudioPlayer = ({
       console.error("Failed to set up PEQ chain", error);
     });
 
-    const handleCanPlay = () => {
-      if (isReady.current && isPlayingRef.current) {
-        playAudio();
-      }
-    };
-
-    audio.addEventListener("canplay", handleCanPlay);
-
-    if (!isReady.current) {
-      isReady.current = true;
-    } else if (isPlayingRef.current) {
-      playAudio();
-    } else {
-      setIsPlaying(false);
-    }
-
-    return () => {
-      audio.removeEventListener("canplay", handleCanPlay);
-      teardownChain();
-    };
-  }, [audioSrc, playAudio, stopTimer, storePeqNodes]);
+    return teardownChain;
+  }, [audioSrc, peqBands, preampGain, preampAuto, storePeqNodes]);
 
   useEffect(() => {
     volumeRef.current = volume;

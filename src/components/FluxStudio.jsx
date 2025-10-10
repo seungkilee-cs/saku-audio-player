@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import AudioPlayer from "./AudioPlayer";
 import PetalField from "./PetalField";
 import Playlist from "./Playlist";
+import PeqPanel from "./PeqPanel";
 import "../styles/FluxStudio.css";
 import { usePlayback } from "../context/PlaybackContext";
 import { parseAudioFiles } from "../assets/meta/tracks";
@@ -82,68 +83,71 @@ const FluxStudio = () => {
           ) : error ? (
             <div className="flux-studio__placeholder flux-studio__placeholder--error">{error}</div>
           ) : (
-            <AudioPlayer
-              tracks={tracks}
-              currentTrackIndex={currentTrackIndex}
-              onTrackChange={playTrackAt}
-              onNext={playNext}
-              onPrevious={playPrevious}
-              sourceLabel={`Source · ${displaySource}`}
-              showAmbientGlow={visualSettings.showAmbientGlow || visualSettings.showPetals}
-              showWaveform={visualSettings.showWaveform}
-              renderOverlay={({ progress, isPlaying, currentTrack }) =>
-                visualSettings.showPetals ? (
-                  <PetalField
-                    isPlaying={isPlaying}
-                    progress={progress}
-                    intensity={0.6 + progress * 0.4}
-                    petalCount={currentTrack ? 18 : 12}
-                    tintColor={currentTrack?.color}
-                  />
-                ) : null
-              }
-              extraActions={
-                <div className="flux-studio__extra-actions">
-                  <button
-                    type="button"
-                    className="flux-studio__toggle-playlist"
-                    onClick={togglePlaylist}
-                    aria-expanded={isPlaylistOpen}
-                  >
-                    <span className="flux-studio__toggle-label">Playlist</span>
-                    <span aria-hidden="true" className="flux-studio__toggle-icon">
-                      {isPlaylistOpen ? "▾" : "▸"}
-                    </span>
-                  </button>
-                  {/* <div className="flux-studio__visual-toggle" role="group" aria-label="Visual settings">
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={visualSettings.showWaveform}
-                        onChange={() => toggleVisualSetting("showWaveform")}
-                      />
-                      Waveform
-                    </label>
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={visualSettings.showAmbientGlow}
-                        onChange={() => toggleVisualSetting("showAmbientGlow")}
-                      />
-                      Ambient
-                    </label>
-                    <label>
-                      <input
-                        type="checkbox"
-                        checked={visualSettings.showPetals}
-                        onChange={() => toggleVisualSetting("showPetals")}
-                      />
-                      Petals
-                    </label>
-                  </div> */}
-                </div>
-              }
-            />
+            <>
+              <AudioPlayer
+                tracks={tracks}
+                currentTrackIndex={currentTrackIndex}
+                onTrackChange={playTrackAt}
+                onNext={playNext}
+                onPrevious={playPrevious}
+                sourceLabel={`Source · ${displaySource}`}
+                showAmbientGlow={visualSettings.showAmbientGlow || visualSettings.showPetals}
+                showWaveform={visualSettings.showWaveform}
+                renderOverlay={({ progress, isPlaying, currentTrack }) =>
+                  visualSettings.showPetals ? (
+                    <PetalField
+                      isPlaying={isPlaying}
+                      progress={progress}
+                      intensity={0.6 + progress * 0.4}
+                      petalCount={currentTrack ? 18 : 12}
+                      tintColor={currentTrack?.color}
+                    />
+                  ) : null
+                }
+                extraActions={
+                  <div className="flux-studio__extra-actions">
+                    <button
+                      type="button"
+                      className="flux-studio__toggle-playlist"
+                      onClick={togglePlaylist}
+                      aria-expanded={isPlaylistOpen}
+                    >
+                      <span className="flux-studio__toggle-label">Playlist</span>
+                      <span aria-hidden="true" className="flux-studio__toggle-icon">
+                        {isPlaylistOpen ? "▾" : "▸"}
+                      </span>
+                    </button>
+                    {/* <div className="flux-studio__visual-toggle" role="group" aria-label="Visual settings">
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={visualSettings.showWaveform}
+                          onChange={() => toggleVisualSetting("showWaveform")}
+                        />
+                        Waveform
+                      </label>
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={visualSettings.showAmbientGlow}
+                          onChange={() => toggleVisualSetting("showAmbientGlow")}
+                        />
+                        Ambient
+                      </label>
+                      <label>
+                        <input
+                          type="checkbox"
+                          checked={visualSettings.showPetals}
+                          onChange={() => toggleVisualSetting("showPetals")}
+                        />
+                        Petals
+                      </label>
+                    </div> */}
+                  </div>
+                }
+              />
+              <PeqPanel />
+            </>
           )}
         </section>
 

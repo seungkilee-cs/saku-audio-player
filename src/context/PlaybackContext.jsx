@@ -199,9 +199,19 @@ export const PlaybackProvider = ({ children }) => {
 
       objectUrlsRef.current = nextObjectUrls;
       setTracks(nextTrackList);
-      const safeIndex = Math.min(Math.max(startIndex, 0), nextTrackList.length - 1);
-      setCurrentTrackIndex(safeIndex);
-      setActiveSource(nextTrackList[safeIndex]?.sourceType ?? "unknown");
+      
+      // Only change current track index if replacing tracks or if no tracks were playing
+      if (mode === "replace" || tracks.length === 0) {
+        const safeIndex = Math.min(Math.max(startIndex, 0), nextTrackList.length - 1);
+        setCurrentTrackIndex(safeIndex);
+        setActiveSource(nextTrackList[safeIndex]?.sourceType ?? "unknown");
+      } else {
+        // When appending, keep current track but update source if needed
+        const currentTrack = nextTrackList[currentTrackIndex];
+        if (currentTrack) {
+          setActiveSource(currentTrack.sourceType ?? "unknown");
+        }
+      }
       setError(null);
       setLoading(false);
       return true;

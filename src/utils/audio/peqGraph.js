@@ -14,16 +14,16 @@ export const BAND_LAYOUT = [
   { freq: 16000, type: "highshelf" },
 ];
 
-function createFilterNode(audioContext, { freq, type }) {
+function createFilterNode(audioContext, band) {
   const filter = audioContext.createBiquadFilter();
-  filter.type = type;
-  filter.frequency.value = freq;
-  filter.Q.value = type === "peaking" ? DEFAULT_PEAKING_Q : DEFAULT_SHELF_Q;
-  filter.gain.value = 0;
+  filter.type = band.type;
+  filter.frequency.value = band.frequency;
+  filter.Q.value = band.Q || (band.type === "peaking" ? DEFAULT_PEAKING_Q : DEFAULT_SHELF_Q);
+  filter.gain.value = band.gain || 0;
   return filter;
 }
 
-export function createPeqChain(audioContext) {
+export function createPeqChain(audioContext, customBands = null) {
   if (!audioContext) {
     throw new Error("createPeqChain received an invalid AudioContext");
   }
@@ -31,7 +31,15 @@ export function createPeqChain(audioContext) {
   const preampNode = audioContext.createGain();
   preampNode.gain.value = 1; // 0 dB baseline
 
-  const filters = BAND_LAYOUT.map((band) => createFilterNode(audioContext, band));
+  // Use custom bands if provided, otherwise use default layout
+  const bandsToUse = customBands || BAND_LAYOUT.map(({ freq, type }) => ({
+    frequency: freq,
+    type,
+    gain: 0,
+    Q: type === "peaking" ? DEFAULT_PEAKING_Q : DEFAULT_SHELF_Q
+  }));
+
+  const filters = bandsToUse.map((band) => createFilterNode(audioContext, band));
 
   let previousNode = preampNode;
   filters.forEach((filter) => {
