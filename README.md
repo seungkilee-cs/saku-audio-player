@@ -6,10 +6,9 @@ A web-based audio player with advanced parametric equalizer capabilities.
 
 ## Screenshots
 ### Playser
-![player](./asset/screenshots/251011_player.png)
-
-### Playlist
-![playlist](./asset/screenshots/251011_playlist.png)
+Audio Player   |  Playlist
+:-------------------------:|:-------------------------:
+![player](./asset/screenshots/251011_player.png)  |  ![playlist](./asset/screenshots/251011_playlist.png)
 
 ### PEQ
 ![peq_vis](./asset/screenshots/251011_peq_modal.png)
