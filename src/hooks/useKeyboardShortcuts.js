@@ -115,6 +115,18 @@ const useKeyboardShortcuts = (actions, enabled = true) => {
         return 'Reset to Flat';
       },
       
+      'e': () => {
+        event.preventDefault();
+        currentActions.toggleEqModal?.();
+        return 'EQ Modal Toggled';
+      },
+      
+      'p': () => {
+        event.preventDefault();
+        currentActions.togglePlaylistModal?.();
+        return 'Playlist Modal Toggled';
+      },
+      
       ' ': () => {
         // Spacebar for play/pause (if available)
         if (currentActions.togglePlayback) {
@@ -173,6 +185,8 @@ const useKeyboardShortcuts = (actions, enabled = true) => {
       { key: 'Space', description: 'Play/Pause' },
       { key: 'T', description: 'Toggle EQ Bypass' },
       { key: 'R', description: 'Reset to Flat EQ' },
+      { key: 'E', description: 'Open/Close EQ Modal' },
+      { key: 'P', description: 'Open/Close Playlist Modal' },
       { key: 'Shift + ← →', description: 'Previous/Next Preset' },
       { key: 'Shift + ↑ ↓', description: 'Previous/Next Preset' },
       { key: 'Esc', description: 'Close Modal' }

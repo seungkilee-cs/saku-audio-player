@@ -39,7 +39,11 @@ const FluxStudio = () => {
   const displaySource = sourceLabels[activeSource] ?? sourceLabels.default;
 
   const togglePlaylist = () => {
-    setIsPlaylistModalOpen(true);
+    setIsPlaylistModalOpen(!isPlaylistModalOpen);
+  };
+
+  const toggleEqModal = () => {
+    setIsPeqModalOpen(!isPeqModalOpen);
   };
 
   const handleFilesSelected = async (fileList) => {
@@ -98,6 +102,8 @@ const FluxStudio = () => {
                 showAmbientGlow={visualSettings.showAmbientGlow || visualSettings.showPetals}
                 showWaveform={visualSettings.showWaveform}
                 onFilesDropped={handleFilesSelected}
+                onToggleEqModal={toggleEqModal}
+                onTogglePlaylistModal={togglePlaylist}
                 renderOverlay={({ progress, isPlaying, currentTrack }) =>
                   visualSettings.showPetals ? (
                     <PetalField

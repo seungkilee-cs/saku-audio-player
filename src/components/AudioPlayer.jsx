@@ -36,6 +36,8 @@ const AudioPlayer = ({
   renderOverlay,
   showWaveform = true,
   onFilesDropped, // New prop for handling dropped files
+  onToggleEqModal, // New prop for EQ modal toggle
+  onTogglePlaylistModal, // New prop for playlist modal toggle
 }) => {
   const {
     peqState,
@@ -559,8 +561,10 @@ const AudioPlayer = ({
     togglePlayback: isPlaying ? pauseAudio : playAudio,
     nextTrack: toNextTrack,
     previousTrack: toPrevTrack,
-    toggleMute: handleToggleMute
-  }), [onForward10Click, onBackward10Click, handleVolumeUp, handleVolumeDown, isPlaying, pauseAudio, playAudio, toNextTrack, toPrevTrack, handleToggleMute]);
+    toggleMute: handleToggleMute,
+    toggleEqModal: onToggleEqModal,
+    togglePlaylistModal: onTogglePlaylistModal
+  }), [onForward10Click, onBackward10Click, handleVolumeUp, handleVolumeDown, isPlaying, pauseAudio, playAudio, toNextTrack, toPrevTrack, handleToggleMute, onToggleEqModal, onTogglePlaylistModal]);
 
   useKeyboardShortcuts(keyboardActions, true);
 
