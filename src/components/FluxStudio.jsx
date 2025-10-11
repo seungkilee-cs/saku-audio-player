@@ -97,6 +97,7 @@ const FluxStudio = () => {
                 sourceLabel={`Source · ${displaySource}`}
                 showAmbientGlow={visualSettings.showAmbientGlow || visualSettings.showPetals}
                 showWaveform={visualSettings.showWaveform}
+                onFilesDropped={handleFilesSelected}
                 renderOverlay={({ progress, isPlaying, currentTrack }) =>
                   visualSettings.showPetals ? (
                     <PetalField

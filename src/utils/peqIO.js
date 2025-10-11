@@ -68,19 +68,16 @@ export function convertAutoEqToNative(autoEqPreset) {
   // This preserves the original AutoEq intent without information loss
   console.log('Using dynamic frequency mapping (preserving AutoEq frequencies)');
   
-  // Take up to 10 most significant filters (sorted by absolute gain)
-  const significantFilters = autoEqPreset.filters
-    .map(filter => ({ ...filter, absGain: Math.abs(filter.gain) }))
-    .sort((a, b) => b.absGain - a.absGain) // Sort by absolute gain (most significant first)
-    .slice(0, 10); // Take top 10 most significant
+  // Take up to 10 filters in original order (preserve AutoEq sequence)
+  const selectedFilters = autoEqPreset.filters.slice(0, 10);
 
-  console.log('Selected filters by significance:');
-  significantFilters.forEach((filter, i) => {
+  console.log('Selected filters in original order:');
+  selectedFilters.forEach((filter, i) => {
     console.log(`  ${i + 1}. ${filter.fc}Hz: ${filter.gain > 0 ? '+' : ''}${filter.gain}dB (${filter.type})`);
   });
 
   // Convert to native bands using AutoEq's exact frequencies
-  const nativeBands = significantFilters.map(filter => {
+  const nativeBands = selectedFilters.map(filter => {
     // Map AutoEq filter types to native types
     let nativeType = 'peaking'; // Default
     if (filter.type) {
@@ -140,14 +137,14 @@ export function convertAutoEqToNative(autoEqPreset) {
     }
   }
 
-  // Sort bands by frequency for logical order
-  nativeBands.sort((a, b) => a.frequency - b.frequency);
+  // Keep original AutoEq filter order (don't sort by frequency)
+  // This preserves the intended filter processing order
 
   const convertedPreset = {
     name: autoEqPreset.name || 'Imported AutoEq Preset',
-    description: `AutoEq preset - ${autoEqPreset.filters.length} filters, ${significantFilters.length} most significant used`,
+    description: `AutoEq preset - ${autoEqPreset.filters.length} filters, ${selectedFilters.length} used in original order`,
     version: '1.0',
-    preamp: autoEqPreset.preamp || 0,
+    preamp: autoEqPreset.preamp !== undefined ? autoEqPreset.preamp : 0,
     bands: nativeBands,
     source: 'autoeq',
     originalFrequencies: autoEqPreset.filters.map(f => f.fc),
@@ -155,11 +152,18 @@ export function convertAutoEqToNative(autoEqPreset) {
     importDate: new Date().toISOString()
   };
 
-  console.log('Converted AutoEq preset:', convertedPreset.name);
-  console.log('Final bands:');
+  console.log('=== AUTOEQ CONVERSION DEBUG ===');
+  console.log('Original AutoEq preamp:', autoEqPreset.preamp);
+  console.log('Converted preset preamp:', convertedPreset.preamp);
+  console.log('Original filter order:');
+  autoEqPreset.filters.forEach((filter, i) => {
+    console.log(`  ${i + 1}. ${filter.fc}Hz: ${filter.gain > 0 ? '+' : ''}${filter.gain}dB (${filter.type})`);
+  });
+  console.log('Final band order:');
   nativeBands.forEach((band, i) => {
     console.log(`  ${i + 1}. ${band.frequency}Hz: ${band.gain > 0 ? '+' : ''}${band.gain}dB (${band.type})`);
   });
+  console.log('=== END DEBUG ===');
   
   return convertedPreset;
 }
@@ -204,11 +208,82 @@ export function convertNativeToAutoEq(nativePreset) {
       };
     });
 
-  return {
+  const result = {
     name: nativePreset.name,
     preamp: nativePreset.preamp || 0,
     filters: autoEqFilters
   };
+
+  console.log('=== EXPORT TO AUTOEQ DEBUG ===');
+  console.log('Native preset preamp:', nativePreset.preamp);
+  console.log('Exported preamp:', result.preamp);
+  console.log('Native bands order:');
+  nativePreset.bands.forEach((band, i) => {
+    console.log(`  ${i + 1}. ${band.frequency}Hz: ${band.gain > 0 ? '+' : ''}${band.gain}dB (${band.type})`);
+  });
+  console.log('Exported filters order:');
+  result.filters.forEach((filter, i) => {
+    console.log(`  ${i + 1}. ${filter.fc}Hz: ${filter.gain > 0 ? '+' : ''}${filter.gain}dB (${filter.type})`);
+  });
+  console.log('=== END EXPORT DEBUG ===');
+
+  return result;
+}
+
+/**
+ * Convert native preset to AutoEq ParametricEQ.txt text format
+ * @param {Object} nativePreset - Native format preset
+ * @returns {string} - AutoEq ParametricEQ.txt format string
+ */
+export function convertNativeToAutoEqText(nativePreset) {
+  if (!nativePreset.bands || !Array.isArray(nativePreset.bands)) {
+    throw new Error('Native preset must have a bands array');
+  }
+
+  let textContent = '';
+  
+  // Add preamp line
+  const preamp = nativePreset.preamp || 0;
+  textContent += `Preamp: ${preamp >= 0 ? '+' : ''}${preamp.toFixed(1)} dB\n`;
+  
+  // Add filter lines
+  const activeFilters = nativePreset.bands.filter(band => Math.abs(band.gain) > 0.01);
+  
+  activeFilters.forEach((band, index) => {
+    // Map native types to AutoEq types
+    let autoEqType = 'PK'; // Default to peaking
+    switch (band.type?.toLowerCase()) {
+      case 'peaking':
+        autoEqType = 'PK';
+        break;
+      case 'lowshelf':
+        autoEqType = 'LSC';
+        break;
+      case 'highshelf':
+        autoEqType = 'HSC';
+        break;
+      case 'notch':
+        autoEqType = 'NOTCH';
+        break;
+      default:
+        autoEqType = 'PK';
+    }
+
+    // Format: Filter 1: ON PK Fc 105 Hz Gain 2.9 dB Q 0.70
+    const filterNum = index + 1;
+    const fc = Math.round(band.frequency);
+    const gain = band.gain >= 0 ? `+${band.gain.toFixed(1)}` : band.gain.toFixed(1);
+    const q = band.Q.toFixed(2);
+    
+    textContent += `Filter ${filterNum}: ON ${autoEqType} Fc ${fc} Hz Gain ${gain} dB Q ${q}\n`;
+  });
+
+  console.log('=== EXPORT TO AUTOEQ TEXT DEBUG ===');
+  console.log('Generated AutoEq text:');
+  console.log(textContent);
+  console.log('=== END EXPORT TEXT DEBUG ===');
+
+  return textContent;
 }
 
 /**
@@ -283,29 +358,40 @@ export function convertToNative(preset) {
 }
 
 /**
- * Export preset as JSON file download
+ * Export preset as file download (JSON or text depending on format)
  * @param {Object} preset - Preset to export
- * @param {string} format - Export format ('native' or 'autoeq')
+ * @param {string} format - Export format ('native', 'autoeq', or 'autoeq-text')
  * @param {string} filename - Optional custom filename
  */
 export function exportPresetAsJSON(preset, format = 'native', filename = null) {
   let exportData;
   let defaultFilename;
+  let mimeType;
+  let isTextFormat = false;
 
   switch (format) {
     case 'autoeq':
       exportData = convertNativeToAutoEq(preset);
       defaultFilename = `${sanitizeFilename(preset.name)}_autoeq.json`;
+      mimeType = 'application/json';
+      break;
+    case 'autoeq-text':
+      exportData = convertNativeToAutoEqText(preset);
+      defaultFilename = `${sanitizeFilenamePreserveSpaces(preset.name)} ParametricEQ.txt`;
+      mimeType = 'text/plain';
+      isTextFormat = true;
       break;
     case 'native':
     default:
       exportData = preset;
       defaultFilename = `${sanitizeFilename(preset.name)}.json`;
+      mimeType = 'application/json';
       break;
   }
 
-  const json = JSON.stringify(exportData, null, 2);
-  const blob = new Blob([json], { type: 'application/json' });
+  // Create content based on format
+  const content = isTextFormat ? exportData : JSON.stringify(exportData, null, 2);
+  const blob = new Blob([content], { type: mimeType });
   const url = URL.createObjectURL(blob);
 
   const anchor = document.createElement('a');
@@ -451,6 +537,18 @@ function sanitizeFilename(name) {
     .replace(/_+/g, '_')
     .replace(/^_|_$/g, '')
     .toLowerCase() || 'preset';
+}
+
+/**
+ * Sanitize filename while preserving spaces and case (for AutoEq format)
+ * @param {string} name - Original filename
+ * @returns {string} - Sanitized filename with spaces and case preserved
+ */
+function sanitizeFilenamePreserveSpaces(name) {
+  return name
+    .replace(/[<>:"/\\|?*]/g, '') // Remove only truly problematic characters
+    .replace(/\s+/g, ' ') // Normalize multiple spaces to single space
+    .trim() || 'preset';
 }
 
 /**

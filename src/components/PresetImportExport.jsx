@@ -145,10 +145,14 @@ const PresetImportExport = () => {
   const handleExport = useCallback(async () => {
     try {
       const preset = getCurrentPreset();
-      const format = EXPORT_FORMATS[selectedExportFormat.toUpperCase()];
+      
+      // Find format by id instead of key
+      const format = Object.values(EXPORT_FORMATS).find(f => f.id === selectedExportFormat);
       
       if (!format) {
-        throw new Error('Invalid export format selected');
+        console.error('Available formats:', Object.values(EXPORT_FORMATS).map(f => f.id));
+        console.error('Selected format:', selectedExportFormat);
+        throw new Error(`Invalid export format selected: ${selectedExportFormat}`);
       }
 
       let content, filename, mimeType;
@@ -161,11 +165,21 @@ const PresetImportExport = () => {
           break;
           
         case 'autoeq':
-          // Use existing AutoEq export from peqIO
+          // Use existing AutoEq JSON export from peqIO
           exportPresetAsJSON(preset, 'autoeq');
           setImportStatus({
             type: 'success',
-            message: `Exported "${preset.name}" in AutoEq format`
+            message: `Exported "${preset.name}" in AutoEq JSON format`
+          });
+          setTimeout(() => setImportStatus({ type: 'idle', message: '' }), 2000);
+          return;
+          
+        case 'autoeq-text':
+          // Use AutoEq text export from peqIO
+          exportPresetAsJSON(preset, 'autoeq-text');
+          setImportStatus({
+            type: 'success',
+            message: `Exported "${preset.name}" in AutoEq ParametricEQ.txt format`
           });
           setTimeout(() => setImportStatus({ type: 'idle', message: '' }), 2000);
           return;
@@ -205,6 +219,8 @@ const PresetImportExport = () => {
       
     } catch (error) {
       console.error('Export error:', error);
+      console.error('Selected format was:', selectedExportFormat);
+      console.error('Available formats:', Object.values(EXPORT_FORMATS).map(f => ({ id: f.id, name: f.name })));
       setImportStatus({
         type: 'error',
         message: `Export failed: ${error.message}`

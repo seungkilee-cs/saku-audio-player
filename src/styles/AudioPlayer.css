@@ -291,3 +291,116 @@
     flex: 1;
   }
 }
+/* Drag and Drop Styles */
+.audio-player {
+  position: relative;
+}
+
+.audio-player--drag-over {
+  transform: scale(1.02);
+  transition: transform 0.2s ease;
+}
+
+.audio-player__drag-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(74, 158, 255, 0.1);
+  backdrop-filter: blur(2px);
+  border: 3px dashed rgba(74, 158, 255, 0.5);
+  border-radius: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  animation: drag-pulse 1s ease-in-out infinite alternate;
+}
+
+.audio-player__drag-content {
+  text-align: center;
+  color: var(--accent-color, #4a9eff);
+  background: rgba(255, 255, 255, 0.9);
+  padding: 24px 32px;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(74, 158, 255, 0.2);
+  border: 2px solid rgba(74, 158, 255, 0.3);
+}
+
+.audio-player__drag-icon {
+  font-size: 3rem;
+  margin-bottom: 12px;
+  animation: bounce 0.6s ease-in-out infinite alternate;
+}
+
+.audio-player__drag-text {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent-color, #4a9eff);
+}
+
+@keyframes drag-pulse {
+  0% {
+    border-color: rgba(74, 158, 255, 0.3);
+    background: rgba(74, 158, 255, 0.05);
+  }
+  100% {
+    border-color: rgba(74, 158, 255, 0.6);
+    background: rgba(74, 158, 255, 0.15);
+  }
+}
+
+@keyframes bounce {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Mobile responsiveness for drag and drop */
+@media (max-width: 768px) {
+  .audio-player__drag-content {
+    padding: 20px 24px;
+  }
+  
+  .audio-player__drag-icon {
+    font-size: 2.5rem;
+    margin-bottom: 8px;
+  }
+  
+  .audio-player__drag-text {
+    font-size: 1rem;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .audio-player__drag-overlay {
+    border-width: 4px;
+    background: rgba(74, 158, 255, 0.2);
+  }
+  
+  .audio-player__drag-content {
+    border-width: 3px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .audio-player--drag-over {
+    transform: none;
+    transition: none;
+  }
+  
+  .audio-player__drag-overlay {
+    animation: none;
+  }
+  
+  .audio-player__drag-icon {
+    animation: none;
+  }
+}

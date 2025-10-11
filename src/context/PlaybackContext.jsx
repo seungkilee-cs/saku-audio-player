@@ -150,7 +150,7 @@ function peqReducer(state, action) {
         peqBands: normalizedPreset.bands,
         preampGain: normalizedPreset.preamp,
         currentPresetName: normalizedPreset.name ?? state.currentPresetName,
-        preampAuto: true,
+        preampAuto: false, // Don't auto-calculate preamp for imported presets
       };
     }
     case "STORE_PEQ_NODES": {

@@ -11,11 +11,18 @@ export const EXPORT_FORMATS = {
     description: 'Native format with full feature support'
   },
   AUTOEQ: {
-    id: 'autoeq',
+    id: 'autoeq-text',
     name: 'AutoEq ParametricEQ.txt',
     extension: 'txt',
     mimeType: 'text/plain',
     description: 'AutoEq text format for headphone corrections'
+  },
+  AUTOEQ_JSON: {
+    id: 'autoeq',
+    name: 'AutoEq JSON',
+    extension: 'json',
+    mimeType: 'application/json',
+    description: 'AutoEq JSON format'
   },
   POWERAMP: {
     id: 'poweramp',

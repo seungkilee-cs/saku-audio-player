@@ -34,6 +34,7 @@ const AudioPlayer = ({
   showAmbientGlow = false,
   renderOverlay,
   showWaveform = true,
+  onFilesDropped, // New prop for handling dropped files
 }) => {
   const {
     peqState,
@@ -48,6 +49,7 @@ const AudioPlayer = ({
   const [trackProgress, setTrackProgress] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [volume, setVolume] = useState(1);
+  const [isDragOver, setIsDragOver] = useState(false);
   const volumeRef = useRef(1);
   const audioContextRef = useRef(null);
   const sourceNodeRef = useRef(null);
@@ -498,6 +500,33 @@ const AudioPlayer = ({
     setTrackProgress(nextTime);
   };
 
+  // Drag and drop handlers
+  const handleDragOver = useCallback((event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    // Only set drag over to false if we're leaving the main container
+    if (!event.currentTarget.contains(event.relatedTarget)) {
+      setIsDragOver(false);
+    }
+  }, []);
+
+  const handleDrop = useCallback((event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragOver(false);
+
+    const files = Array.from(event.dataTransfer.files);
+    if (files.length > 0 && onFilesDropped) {
+      onFilesDropped(files);
+    }
+  }, [onFilesDropped]);
+
   const currentTimeLabel = formatTime(Math.min(trackProgress, duration || 0));
   const totalTimeLabel = duration ? formatTime(duration) : "—";
   const displayTitle = title || "Awaiting your first track";
@@ -506,7 +535,13 @@ const AudioPlayer = ({
   const isControlsDisabled = !currentTrack;
 
   return (
-    <section className="audio-player" aria-label="Audio player">
+    <section 
+      className={`audio-player ${isDragOver ? 'audio-player--drag-over' : ''}`} 
+      aria-label="Audio player"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <div className="audio-player__card">
         {(sourceLabel || extraActions) && (
           <div className="audio-player__topbar">
@@ -586,6 +621,16 @@ const AudioPlayer = ({
           <VolumeControl volume={volume} onVolumeChange={setVolume} />
         </div>
       </div>
+      
+      {/* Drag and Drop Overlay */}
+      {isDragOver && (
+        <div className="audio-player__drag-overlay">
+          <div className="audio-player__drag-content">
+            <div className="audio-player__drag-icon">🎵</div>
+            <p className="audio-player__drag-text">Drop audio files to add to playlist</p>
+          </div>
+        </div>
+      )}
     </section>
   );
 };

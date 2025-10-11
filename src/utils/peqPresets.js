@@ -132,7 +132,13 @@ export function ensureBandsCount(bands = [], target = BAND_LAYOUT.length) {
 export function normalizePreset(preset) {
   validatePreset(preset);
   const bands = ensureBandsCount(preset.bands);
-  const preamp = typeof preset.preamp === "number" ? preset.preamp : calculateRecommendedPreamp(bands);
+  
+  // Preserve explicit preamp values, including negative values and zero
+  // Only calculate recommended preamp if preamp is undefined or null
+  const preamp = (preset.preamp !== undefined && preset.preamp !== null) 
+    ? preset.preamp 
+    : calculateRecommendedPreamp(bands);
+    
   return {
     ...preset,
     preamp,
