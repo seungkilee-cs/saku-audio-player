@@ -1,7 +1,5 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "../styles/VolumeControl.css";
-
-const VOLUME_STOPS = [0, 0.1, 0.25, 0.5, 0.75, 1];
 
 const SpeakerIcon = ({ muted = false }) => (
   <svg className="volume-toggle__icon" viewBox="0 0 24 24" role="presentation" aria-hidden="true">
@@ -41,6 +39,8 @@ const SpeakerIcon = ({ muted = false }) => (
 
 const VolumeControl = ({ volume, onVolumeChange }) => {
   const lastVolumeRef = useRef(0.75);
+  const [isDragging, setIsDragging] = useState(false);
+  const sliderRef = useRef(null);
 
   useEffect(() => {
     if (volume > 0) {
@@ -48,31 +48,30 @@ const VolumeControl = ({ volume, onVolumeChange }) => {
     }
   }, [volume]);
 
-  const activeIndex = useMemo(() => {
-    const nearest = VOLUME_STOPS.reduce((prev, stop) => (Math.abs(stop - volume) < Math.abs(prev - volume) ? stop : prev), 0);
-    return VOLUME_STOPS.indexOf(nearest);
-  }, [volume]);
-
   const fillPercent = Math.round(volume * 100);
 
-  const applyStep = (index) => {
-    const clampedIndex = Math.min(Math.max(index, 0), VOLUME_STOPS.length - 1);
-    onVolumeChange(VOLUME_STOPS[clampedIndex]);
+  const handleSliderChange = (event) => {
+    const newVolume = parseFloat(event.target.value);
+    onVolumeChange(newVolume);
   };
 
   const handleSliderKeyDown = (event) => {
+    const step = event.shiftKey ? 0.01 : 0.05; // Fine control with Shift
+    
     if (event.key === "ArrowRight" || event.key === "ArrowUp") {
       event.preventDefault();
-      applyStep(activeIndex + 1);
+      const newVolume = Math.min(1, volume + step);
+      onVolumeChange(newVolume);
     } else if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
       event.preventDefault();
-      applyStep(activeIndex - 1);
+      const newVolume = Math.max(0, volume - step);
+      onVolumeChange(newVolume);
     } else if (event.key === "Home") {
       event.preventDefault();
-      applyStep(0);
+      onVolumeChange(0);
     } else if (event.key === "End") {
       event.preventDefault();
-      applyStep(VOLUME_STOPS.length - 1);
+      onVolumeChange(1);
     }
   };
 
@@ -83,6 +82,30 @@ const VolumeControl = ({ volume, onVolumeChange }) => {
       onVolumeChange(0);
     }
   };
+
+  const handleMouseDown = () => {
+    setIsDragging(true);
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  useEffect(() => {
+    const handleGlobalMouseUp = () => {
+      setIsDragging(false);
+    };
+
+    if (isDragging) {
+      document.addEventListener('mouseup', handleGlobalMouseUp);
+      document.addEventListener('mouseleave', handleGlobalMouseUp);
+    }
+
+    return () => {
+      document.removeEventListener('mouseup', handleGlobalMouseUp);
+      document.removeEventListener('mouseleave', handleGlobalMouseUp);
+    };
+  }, [isDragging]);
 
   return (
     <div className="volume-control" role="group" aria-label="Volume">
@@ -95,32 +118,32 @@ const VolumeControl = ({ volume, onVolumeChange }) => {
         <SpeakerIcon muted={volume === 0} />
       </button>
 
-      <div
-        className="volume-steps"
-        role="slider"
-        tabIndex={0}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={fillPercent}
-        aria-valuetext={`${fillPercent} percent`}
-        style={{ "--volume-fill": `${fillPercent}%` }}
-        onKeyDown={handleSliderKeyDown}
-      >
-        {VOLUME_STOPS.map((stop, index) => {
-          const isActive = index === activeIndex;
-          return (
-            <button
-              key={stop}
-              type="button"
-              className={`volume-step${isActive ? " is-active" : ""}`}
-              onClick={() => applyStep(index)}
-              tabIndex={-1}
-              aria-hidden="true"
-            >
-              <span className="volume-step-dot" aria-hidden="true" />
-            </button>
-          );
-        })}
+      <div className="volume-slider-container">
+        <input
+          ref={sliderRef}
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+          value={volume}
+          onChange={handleSliderChange}
+          onKeyDown={handleSliderKeyDown}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+          className={`volume-slider ${isDragging ? 'dragging' : ''}`}
+          aria-label="Volume"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={fillPercent}
+          aria-valuetext={`${fillPercent} percent`}
+        />
+        <div 
+          className="volume-slider-track"
+          style={{ "--volume-fill": `${fillPercent}%` }}
+        >
+          <div className="volume-slider-fill" />
+          <div className="volume-slider-thumb" />
+        </div>
       </div>
 
       <span className="volume-percentage" aria-hidden="true">

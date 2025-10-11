@@ -8,6 +8,14 @@ export default defineConfig({
     outDir: "dist",
   },
   base: "/saku-audio-player/",
+  optimizeDeps: {
+    include: [
+      'music-metadata'
+    ],
+    exclude: [
+      'music-metadata/lib/parsers'
+    ]
+  },
   esbuild: {
     loader: "jsx",
     include: [

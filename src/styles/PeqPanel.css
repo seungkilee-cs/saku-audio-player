@@ -97,6 +97,23 @@
   background: rgba(255, 255, 255, 0.15);
 }
 
+.clear-settings-btn {
+  padding: 8px 16px;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 44px;
+  font-size: 0.85rem;
+}
+
+.clear-settings-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
 .peq-current-preset {
   color: #4a90e2;
   font-weight: 600;
@@ -281,5 +298,135 @@
     min-width: 44px;
     min-height: 44px;
     touch-action: none;
+  }
+}/* Enh
+anced PeqPanel Header Styles */
+.peq-panel__title-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.peq-panel__title-section h3 {
+  margin: 0;
+  flex: 1;
+}
+
+/* Keyboard Shortcuts Help Styles */
+.peq-panel__shortcuts-help {
+  margin-top: 24px;
+  padding: 16px;
+  background: var(--bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.peq-panel__shortcuts-help details {
+  cursor: pointer;
+}
+
+.peq-panel__shortcuts-help summary {
+  font-weight: 600;
+  color: var(--text-primary);
+  padding: 4px 0;
+  user-select: none;
+  outline: none;
+}
+
+.peq-panel__shortcuts-help summary:hover {
+  color: var(--accent-color);
+}
+
+.peq-panel__shortcuts-help summary:focus {
+  color: var(--accent-color);
+  text-decoration: underline;
+}
+
+.shortcuts-help-content {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+}
+
+.shortcut-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.shortcut-key {
+  display: inline-block;
+  padding: 2px 6px;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  min-width: 24px;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.shortcut-description {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+/* Mobile responsiveness for new elements */
+@media (max-width: 768px) {
+  .peq-panel__title-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .peq-panel__shortcuts-help {
+    margin-top: 16px;
+    padding: 12px;
+  }
+  
+  .shortcuts-help-content {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  
+  .shortcut-item {
+    gap: 6px;
+  }
+  
+  .shortcut-key {
+    min-width: 20px;
+    padding: 1px 4px;
+    font-size: 0.7rem;
+  }
+  
+  .shortcut-description {
+    font-size: 0.8rem;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .shortcut-key {
+    border-width: 2px;
+    background: var(--bg-primary);
+  }
+  
+  .peq-panel__shortcuts-help {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .peq-panel__shortcuts-help summary {
+    transition: none;
   }
 }

@@ -84,11 +84,12 @@
 }
 
 .playlist__browse {
-  background: linear-gradient(135deg, #2563eb, #7c3aed);
+  background: linear-gradient(135deg, #4a9eff, #7c3aed);
   color: #ffffff;
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+  box-shadow: 0 2px 4px rgba(74, 158, 255, 0.3);
 }
 
 .playlist__browse::before {
@@ -104,7 +105,7 @@
 .playlist__browse:hover,
 .playlist__browse:focus-visible {
   transform: translateY(-1px);
-  box-shadow: 0 14px 36px rgba(37, 99, 235, 0.28);
+  box-shadow: 0 4px 12px rgba(74, 158, 255, 0.4);
 }
 
 .playlist__reset:hover,

@@ -17,6 +17,13 @@ import {
   ensureBandsCount,
   normalizePreset,
 } from "../utils/peqPresets";
+import {
+  loadPeqState,
+  debouncedSavePeqState,
+  validateLoadedState,
+  isStorageAvailable,
+  clearPeqState
+} from "../utils/peqPersistence";
 
 const normalizedDefaultPreset = normalizePreset(clonePreset(DEFAULT_PRESET));
 
@@ -29,15 +36,37 @@ function deriveAutoPreamp(enabled, bands, fallback) {
 
 const PlaybackContext = createContext(null);
 
-const initialPeqState = {
-  peqEnabled: true,
-  peqBypass: false,
-  peqBands: normalizedDefaultPreset.bands,
-  preampGain: normalizedDefaultPreset.preamp,
-  preampAuto: true,
-  currentPresetName: normalizedDefaultPreset.name,
-  peqNodes: null,
-};
+// Try to load saved state, fall back to default if not available
+function getInitialPeqState() {
+  if (isStorageAvailable()) {
+    const savedState = loadPeqState();
+    if (savedState && validateLoadedState(savedState)) {
+      console.log('Restoring PEQ state from localStorage');
+      return {
+        peqEnabled: savedState.peqEnabled ?? true,
+        peqBypass: savedState.peqBypass ?? false,
+        peqBands: savedState.peqBands || normalizedDefaultPreset.bands,
+        preampGain: savedState.preampGain ?? normalizedDefaultPreset.preamp,
+        preampAuto: savedState.preampAuto ?? true,
+        currentPresetName: savedState.currentPresetName || normalizedDefaultPreset.name,
+        peqNodes: null,
+      };
+    }
+  }
+  
+  console.log('Using default PEQ state');
+  return {
+    peqEnabled: true,
+    peqBypass: false,
+    peqBands: normalizedDefaultPreset.bands,
+    preampGain: normalizedDefaultPreset.preamp,
+    preampAuto: true,
+    currentPresetName: normalizedDefaultPreset.name,
+    peqNodes: null,
+  };
+}
+
+const initialPeqState = getInitialPeqState();
 
 function peqReducer(state, action) {
   switch (action.type) {
@@ -164,6 +193,17 @@ export const PlaybackProvider = ({ children }) => {
   const [activeSource, setActiveSource] = useState("none");
   const objectUrlsRef = useRef([]);
   const [peqState, dispatchPeq] = useReducer(peqReducer, initialPeqState);
+
+  // Auto-save PEQ state changes to localStorage
+  useEffect(() => {
+    // Don't save on initial load
+    if (peqState === initialPeqState) return;
+    
+    // Only save if we have meaningful state (bands exist)
+    if (peqState.peqBands && peqState.peqBands.length > 0) {
+      debouncedSavePeqState(peqState);
+    }
+  }, [peqState.peqBands, peqState.preampGain, peqState.preampAuto, peqState.peqBypass, peqState.currentPresetName]);
 
   const cleanupObjectUrls = useCallback((urls) => {
     urls?.forEach((url) => {
@@ -344,6 +384,19 @@ export const PlaybackProvider = ({ children }) => {
     [dispatchPeq],
   );
 
+  const clearPeqSettings = useCallback(() => {
+    // Reset to default preset
+    loadPeqPreset(DEFAULT_PRESET);
+    
+    // Clear localStorage
+    try {
+      clearPeqState();
+      console.log('PEQ settings cleared and reset to default');
+    } catch (error) {
+      console.error('Failed to clear PEQ settings:', error);
+    }
+  }, [loadPeqPreset]);
+
   const value = useMemo(
     () => ({
       currentTrackIndex,
@@ -370,6 +423,7 @@ export const PlaybackProvider = ({ children }) => {
       loadPeqPreset,
       storePeqNodes,
       setPeqEnabled,
+      clearPeqSettings,
     }),
     [
       appendTracks,
@@ -388,6 +442,7 @@ export const PlaybackProvider = ({ children }) => {
       peqState,
       loadPeqPreset,
       setPeqEnabled,
+      clearPeqSettings,
       setPeqPreamp,
       storePeqNodes,
       togglePeqBypass,

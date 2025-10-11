@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { usePlayback } from '../context/PlaybackContext';
 import { DEFAULT_PRESET } from '../utils/peqPresets';
+import { loadPresetLibrary } from '../utils/presetLibrary';
 import BandControl from './BandControl';
 import PeqResponseChart from './PeqResponseChart';
 import PresetImportExport from './PresetImportExport';
 import PresetLibrary from './PresetLibrary';
+import ClippingMonitor from './ClippingMonitor';
+import useKeyboardShortcuts from '../hooks/useKeyboardShortcuts';
 import '../styles/PeqPanel.css';
 
 const PeqPanel = () => {
@@ -14,10 +17,49 @@ const PeqPanel = () => {
     loadPeqPreset,
     togglePeqBypass,
     setPeqPreamp,
-    togglePeqPreampAuto
+    togglePeqPreampAuto,
+    clearPeqSettings
   } = usePlayback();
 
-  const { peqBands, peqBypass, preampGain, preampAuto, currentPresetName } = peqState;
+  const { peqBands, peqBypass, preampGain, preampAuto, currentPresetName, peqNodes } = peqState;
+
+  // Load preset library for keyboard shortcuts
+  const presetLibrary = useMemo(() => {
+    try {
+      return loadPresetLibrary();
+    } catch (error) {
+      console.warn('Could not load preset library:', error);
+      return [];
+    }
+  }, []);
+
+  // Keyboard shortcut actions
+  const shortcutActions = useMemo(() => ({
+    toggleBypass: () => togglePeqBypass(),
+    previousPreset: () => cyclePrevPreset(),
+    nextPreset: () => cycleNextPreset(),
+    resetToFlat: () => loadPeqPreset(DEFAULT_PRESET)
+  }), [togglePeqBypass, loadPeqPreset]);
+
+  // Preset cycling logic
+  const cyclePrevPreset = () => {
+    if (presetLibrary.length === 0) return;
+    
+    const currentIndex = presetLibrary.findIndex(p => p.name === currentPresetName);
+    const prevIndex = currentIndex <= 0 ? presetLibrary.length - 1 : currentIndex - 1;
+    loadPeqPreset(presetLibrary[prevIndex]);
+  };
+
+  const cycleNextPreset = () => {
+    if (presetLibrary.length === 0) return;
+    
+    const currentIndex = presetLibrary.findIndex(p => p.name === currentPresetName);
+    const nextIndex = currentIndex >= presetLibrary.length - 1 ? 0 : currentIndex + 1;
+    loadPeqPreset(presetLibrary[nextIndex]);
+  };
+
+  // Enable keyboard shortcuts
+  const { shortcuts } = useKeyboardShortcuts(shortcutActions, true);
 
 
 
@@ -33,7 +75,10 @@ const PeqPanel = () => {
   return (
     <div className="peq-panel">
       <div className="peq-panel__header">
-        <h3>Parametric EQ</h3>
+        <div className="peq-panel__title-section">
+          <h3>Parametric EQ</h3>
+          <ClippingMonitor peqChain={peqNodes} />
+        </div>
         
         <div className="peq-panel__global-controls">
           <div className="peq-control-group">
@@ -81,6 +126,19 @@ const PeqPanel = () => {
           >
             Reset
           </button>
+
+          <button 
+            type="button"
+            className="clear-settings-btn"
+            onClick={() => {
+              if (window.confirm('Clear all saved EQ settings and reset to default? This cannot be undone.')) {
+                clearPeqSettings();
+              }
+            }}
+            title="Clear all saved settings and reset to default"
+          >
+            Clear All
+          </button>
         </div>
       </div>
 
@@ -100,6 +158,21 @@ const PeqPanel = () => {
       <PresetImportExport />
 
       <PresetLibrary />
+
+      {/* Keyboard Shortcuts Help */}
+      <div className="peq-panel__shortcuts-help">
+        <details>
+          <summary>Keyboard Shortcuts</summary>
+          <div className="shortcuts-help-content">
+            {shortcuts.map((shortcut, index) => (
+              <div key={index} className="shortcut-item">
+                <kbd className="shortcut-key">{shortcut.key}</kbd>
+                <span className="shortcut-description">{shortcut.description}</span>
+              </div>
+            ))}
+          </div>
+        </details>
+      </div>
     </div>
   );
 };

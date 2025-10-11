@@ -358,4 +358,117 @@
     from { opacity: 0; }
     to { opacity: 1; }
   }
+}/* 
+Enhanced Export Section Styles */
+.preset-import-export__format-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.preset-import-export__format-selector label {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+}
+
+.preset-import-export__format-select {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preset-import-export__format-select:hover {
+  border-color: var(--accent-color);
+}
+
+.preset-import-export__format-select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.2);
+}
+
+.preset-import-export__format-info {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: var(--bg-tertiary);
+  border-radius: 4px;
+  border-left: 3px solid var(--accent-color);
+}
+
+.preset-import-export__format-info small {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.preset-import-export__export-btn--unified {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--accent-color);
+  color: var(--accent-text);
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.preset-import-export__export-btn--unified:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.preset-import-export__export-btn--unified:active {
+  transform: translateY(0);
+}
+
+.preset-import-export__export-btn--unified:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Mobile responsiveness for new elements */
+@media (max-width: 768px) {
+  .preset-import-export__format-selector {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  
+  .preset-import-export__format-select {
+    padding: 10px 12px;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+  
+  .preset-import-export__format-info {
+    padding: 6px 10px;
+    margin-bottom: 10px;
+  }
+  
+  .preset-import-export__export-btn--unified {
+    padding: 14px 16px;
+    font-size: 16px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .preset-import-export__format-select {
+    border-width: 2px;
+  }
+  
+  .preset-import-export__format-info {
+    border-left-width: 4px;
+  }
 }

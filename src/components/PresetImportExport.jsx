@@ -7,6 +7,9 @@ import {
   detectPresetFormat 
 } from '../utils/peqIO';
 import { addPresetToLibrary } from '../utils/presetLibrary';
+import { EXPORT_FORMATS } from '../utils/formatDefinitions';
+import { convertToPowerAmp } from '../utils/converters/powerampConverter';
+import { convertToQudelix } from '../utils/converters/qudelixConverter';
 import '../styles/PresetImportExport.css';
 
 const PresetImportExport = () => {
@@ -15,6 +18,7 @@ const PresetImportExport = () => {
   const fileInputRef = useRef(null);
   const [importStatus, setImportStatus] = useState({ type: 'idle', message: '' });
   const [isDragOver, setIsDragOver] = useState(false);
+  const [selectedExportFormat, setSelectedExportFormat] = useState('native');
 
   // Create current preset object for export
   const getCurrentPreset = useCallback(() => {
@@ -137,40 +141,76 @@ const PresetImportExport = () => {
     }
   }, [processImportFile]);
 
-  // Export handlers
-  const handleExportNative = useCallback(() => {
+  // Enhanced export handler with multiple format support
+  const handleExport = useCallback(async () => {
     try {
       const preset = getCurrentPreset();
-      exportPresetAsJSON(preset, 'native');
-      setImportStatus({
-        type: 'success',
-        message: `Exported "${preset.name}" in native format`
-      });
-      setTimeout(() => setImportStatus({ type: 'idle', message: '' }), 2000);
-    } catch (error) {
-      setImportStatus({
-        type: 'error',
-        message: `Export failed: ${error.message}`
-      });
-    }
-  }, [getCurrentPreset]);
+      const format = EXPORT_FORMATS[selectedExportFormat.toUpperCase()];
+      
+      if (!format) {
+        throw new Error('Invalid export format selected');
+      }
 
-  const handleExportAutoEq = useCallback(() => {
-    try {
-      const preset = getCurrentPreset();
-      exportPresetAsJSON(preset, 'autoeq');
+      let content, filename, mimeType;
+      
+      switch (selectedExportFormat) {
+        case 'native':
+          content = JSON.stringify(preset, null, 2);
+          filename = `${preset.name}.json`;
+          mimeType = format.mimeType;
+          break;
+          
+        case 'autoeq':
+          // Use existing AutoEq export from peqIO
+          exportPresetAsJSON(preset, 'autoeq');
+          setImportStatus({
+            type: 'success',
+            message: `Exported "${preset.name}" in AutoEq format`
+          });
+          setTimeout(() => setImportStatus({ type: 'idle', message: '' }), 2000);
+          return;
+          
+        case 'poweramp':
+          content = convertToPowerAmp(preset);
+          filename = `${preset.name}.xml`;
+          mimeType = format.mimeType;
+          break;
+          
+        case 'qudelix':
+          content = convertToQudelix(preset);
+          filename = `${preset.name}.json`;
+          mimeType = format.mimeType;
+          break;
+          
+        default:
+          throw new Error('Unsupported export format');
+      }
+      
+      // Download the file
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
       setImportStatus({
         type: 'success',
-        message: `Exported "${preset.name}" in AutoEq format`
+        message: `Exported "${preset.name}" in ${format.name} format`
       });
       setTimeout(() => setImportStatus({ type: 'idle', message: '' }), 2000);
+      
     } catch (error) {
+      console.error('Export error:', error);
       setImportStatus({
         type: 'error',
         message: `Export failed: ${error.message}`
       });
     }
-  }, [getCurrentPreset]);
+  }, [getCurrentPreset, selectedExportFormat]);
 
   const handleImportClick = useCallback(() => {
     fileInputRef.current?.click();
@@ -221,27 +261,38 @@ const PresetImportExport = () => {
         {/* Export Section */}
         <div className="preset-import-export__section">
           <h5>Export Current Preset</h5>
-          <div className="preset-import-export__export-buttons">
-            <button
-              type="button"
-              className="preset-import-export__export-btn preset-import-export__export-btn--native"
-              onClick={handleExportNative}
-              title="Export in native format (recommended)"
+          
+          <div className="preset-import-export__format-selector">
+            <label htmlFor="export-format-select">Export Format:</label>
+            <select
+              id="export-format-select"
+              value={selectedExportFormat}
+              onChange={(e) => setSelectedExportFormat(e.target.value)}
+              className="preset-import-export__format-select"
             >
-              <span className="preset-import-export__btn-icon">💾</span>
-              Native Format
-            </button>
-            
-            <button
-              type="button"
-              className="preset-import-export__export-btn preset-import-export__export-btn--autoeq"
-              onClick={handleExportAutoEq}
-              title="Export in AutoEq format for compatibility"
-            >
-              <span className="preset-import-export__btn-icon">🎧</span>
-              AutoEq Format
-            </button>
+              {Object.entries(EXPORT_FORMATS).map(([key, format]) => (
+                <option key={key} value={format.id}>
+                  {format.name}
+                </option>
+              ))}
+            </select>
           </div>
+          
+          <div className="preset-import-export__format-info">
+            <small>
+              {EXPORT_FORMATS[selectedExportFormat.toUpperCase()]?.description || 'Select a format to see details'}
+            </small>
+          </div>
+          
+          <button
+            type="button"
+            className="preset-import-export__export-btn preset-import-export__export-btn--unified"
+            onClick={handleExport}
+            title={`Export in ${EXPORT_FORMATS[selectedExportFormat.toUpperCase()]?.name || 'selected'} format`}
+          >
+            <span className="preset-import-export__btn-icon">💾</span>
+            Export Preset
+          </button>
           
           <p className="preset-import-export__export-info">
             Current: <strong>{currentPresetName}</strong>
@@ -289,7 +340,8 @@ const PresetImportExport = () => {
               <li><strong>Native JSON:</strong> Saku player's native format with full metadata</li>
               <li><strong>AutoEq ParametricEQ.txt:</strong> Text files from AutoEq headphone corrections</li>
               <li><strong>AutoEq JSON:</strong> JSON format AutoEq presets</li>
-              <li><strong>PowerAmp:</strong> Import presets from PowerAmp music player</li>
+              <li><strong>PowerAmp XML:</strong> Export for PowerAmp music player (10 fixed bands)</li>
+              <li><strong>Qudelix JSON:</strong> Export for Qudelix 5K DAC/Amp devices</li>
             </ul>
             <div className="preset-import-export__autoeq-guide">
               <p><strong>How to get AutoEq presets:</strong></p>

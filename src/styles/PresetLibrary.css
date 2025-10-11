@@ -459,3 +459,24 @@
     flex-direction: column;
   }
 }
+
+/* Storage Info */
+.preset-library__storage-info {
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.preset-library__storage-info p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.storage-warning {
+  color: #fbbf24 !important;
+  font-weight: 500;
+  margin-top: 4px !important;
+}

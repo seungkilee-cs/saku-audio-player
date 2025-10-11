@@ -10,6 +10,7 @@ import {
   getFavoritePresets,
   getMostUsedPresets
 } from '../utils/presetLibrary';
+import { getStorageInfo } from '../utils/peqPersistence';
 import '../styles/PresetLibrary.css';
 
 const PresetLibrary = () => {
@@ -22,10 +23,12 @@ const PresetLibrary = () => {
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [newPresetName, setNewPresetName] = useState('');
   const [saveStatus, setSaveStatus] = useState({ type: 'idle', message: '' });
+  const [storageInfo, setStorageInfo] = useState(null);
 
-  // Load user presets on mount
+  // Load user presets and storage info on mount
   useEffect(() => {
     setUserPresets(loadPresetLibrary());
+    setStorageInfo(getStorageInfo());
   }, []);
 
   // Get current preset for saving
@@ -354,6 +357,16 @@ const PresetLibrary = () => {
           <span className="preset-library__status-message">
             {saveStatus.message}
           </span>
+        </div>
+      )}
+
+      {/* Storage Info */}
+      {storageInfo && storageInfo.available && (
+        <div className="preset-library__storage-info">
+          <p>Storage: {Math.round(storageInfo.totalSize / 1024)}KB used</p>
+          {storageInfo.totalSize > 50000 && (
+            <p className="storage-warning">Storage usage is high. Consider removing unused presets.</p>
+          )}
         </div>
       )}
     </div>

@@ -1,0 +1,135 @@
+.clipping-monitor {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: var(--bg-secondary, #2a2a2a);
+  border: 1px solid var(--border-color, #404040);
+  transition: all 0.15s ease;
+  font-size: 0.75rem;
+  min-width: 80px;
+}
+
+.clipping-monitor.clipping {
+  background: var(--error-bg, #4a1a1a);
+  border-color: var(--error-color, #ff4444);
+  animation: pulse-red 0.3s ease-in-out;
+}
+
+.clipping-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-secondary, #888);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.clipping-monitor.clipping .clipping-indicator {
+  background: var(--error-color, #ff4444);
+  box-shadow: 0 0 6px var(--error-color, #ff4444);
+  animation: blink 0.5s ease-in-out infinite alternate;
+}
+
+.clipping-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.1;
+  min-width: 0;
+}
+
+.clipping-label {
+  font-weight: 600;
+  color: var(--text-secondary, #888);
+  font-size: 0.65rem;
+  letter-spacing: 0.5px;
+}
+
+.clipping-monitor.clipping .clipping-label {
+  color: var(--error-color, #ff4444);
+}
+
+.peak-level {
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 0.7rem;
+  color: var(--text-primary, #fff);
+  white-space: nowrap;
+}
+
+.clipping-monitor.clipping .peak-level {
+  color: var(--error-color, #ff4444);
+  font-weight: 600;
+}
+
+@keyframes pulse-red {
+  0%, 100% { 
+    transform: scale(1);
+    box-shadow: none;
+  }
+  50% { 
+    transform: scale(1.02);
+    box-shadow: 0 0 8px rgba(255, 68, 68, 0.3);
+  }
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .clipping-monitor {
+    min-width: 70px;
+    padding: 3px 6px;
+    gap: 4px;
+  }
+  
+  .clipping-indicator {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .clipping-label {
+    font-size: 0.6rem;
+  }
+  
+  .peak-level {
+    font-size: 0.65rem;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .clipping-monitor {
+    border-width: 2px;
+  }
+  
+  .clipping-monitor.clipping {
+    background: #000;
+    border-color: #ff0000;
+  }
+  
+  .clipping-monitor.clipping .clipping-indicator {
+    background: #ff0000;
+    box-shadow: none;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .clipping-monitor,
+  .clipping-indicator {
+    transition: none;
+  }
+  
+  .clipping-monitor.clipping {
+    animation: none;
+  }
+  
+  .clipping-monitor.clipping .clipping-indicator {
+    animation: none;
+  }
+}

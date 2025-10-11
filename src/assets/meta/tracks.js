@@ -25,7 +25,18 @@ export async function parseAudioFiles(fileList) {
     return [];
   }
 
-  const trackPromises = files.map((file) =>
+  // Filter for audio files
+  const audioFiles = files.filter(file => {
+    const extension = getFileExtension(file.name).toLowerCase();
+    return ['mp3', 'wav', 'flac', 'm4a', 'aac', 'ogg', 'wma'].includes(extension);
+  });
+
+  if (audioFiles.length === 0) {
+    console.warn('No supported audio files found in selection');
+    return [];
+  }
+
+  const trackPromises = audioFiles.map((file) =>
     parseSource({
       key: file.name,
       src: URL.createObjectURL(file),
@@ -36,13 +47,48 @@ export async function parseAudioFiles(fileList) {
   );
 
   const tracks = await Promise.all(trackPromises);
-  return tracks.filter(Boolean);
+  const validTracks = tracks.filter(Boolean);
+  
+  console.log(`Successfully processed ${validTracks.length} out of ${audioFiles.length} audio files`);
+  return validTracks;
 }
 
 async function parseSource({ key, src, blobResolver, fallbackImage, sourceType }) {
   try {
     const blob = await blobResolver();
-    const metadata = await mm.parseBlob(blob);
+    let metadata;
+    
+    try {
+      // Check if mm is available and has parseBlob method
+      if (mm && typeof mm.parseBlob === 'function') {
+        metadata = await mm.parseBlob(blob);
+      } else {
+        throw new Error('music-metadata not available');
+      }
+    } catch (metadataError) {
+      console.warn(`Metadata parsing failed for ${key}, using fallback:`, metadataError.message);
+      
+      // Try to get basic file info
+      const fileExtension = getFileExtension(key).toLowerCase();
+      const fileName = key.replace(/\.[^/.]+$/, ""); // Remove file extension
+      
+      // Create fallback metadata with basic file info
+      metadata = {
+        common: {
+          title: fileName,
+          artist: "Unknown Artist",
+          album: "Unknown Album",
+          picture: null
+        },
+        format: {
+          duration: null, // Will be detected by audio element
+          bitrate: null,
+          sampleRate: null,
+          container: fileExtension.toUpperCase(),
+          codec: fileExtension === 'mp3' ? 'MP3' : 'Unknown'
+        }
+      };
+    }
 
     const imageData = metadata.common.picture?.[0];
     const image = imageData
@@ -92,6 +138,10 @@ async function parseSource({ key, src, blobResolver, fallbackImage, sourceType }
     console.error(`Error parsing metadata for ${key}:`, error.message);
     return null;
   }
+}
+
+function getFileExtension(filename) {
+  return filename.split('.').pop() || 'unknown';
 }
 
 function arrayBufferToBase64(buffer) {

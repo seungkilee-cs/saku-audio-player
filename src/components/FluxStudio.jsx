@@ -3,6 +3,7 @@ import AudioPlayer from "./AudioPlayer";
 import PetalField from "./PetalField";
 import Playlist from "./Playlist";
 import PeqPanel from "./PeqPanel";
+import Modal from "./Modal";
 import "../styles/FluxStudio.css";
 import { usePlayback } from "../context/PlaybackContext";
 import { parseAudioFiles } from "../assets/meta/tracks";
@@ -29,14 +30,16 @@ const FluxStudio = () => {
     visualSettings,
   } = usePlayback();
 
-  const [isPlaylistOpen, setIsPlaylistOpen] = useState(true);
+
   const [uploadState, setUploadState] = useState("idle");
-  const [uploadMessage, setUploadMessage] = useState("Drop audio files here or use the add button.");
+  const [uploadMessage, setUploadMessage] = useState("Drop files or click add");
+  const [isPeqModalOpen, setIsPeqModalOpen] = useState(false);
+  const [isPlaylistModalOpen, setIsPlaylistModalOpen] = useState(false);
 
   const displaySource = sourceLabels[activeSource] ?? sourceLabels.default;
 
   const togglePlaylist = () => {
-    setIsPlaylistOpen((prev) => !prev);
+    setIsPlaylistModalOpen(true);
   };
 
   const handleFilesSelected = async (fileList) => {
@@ -62,7 +65,8 @@ const FluxStudio = () => {
       const success = await apply(parsedTracks, { startIndex: shouldAppend ? tracks.length : 0 });
       if (success) {
         setUploadState("success");
-        setUploadMessage(`Loaded ${parsedTracks.length} track${parsedTracks.length > 1 ? "s" : ""}. Ready to play.`);
+        const totalTracks = tracks.length + parsedTracks.length;
+        setUploadMessage(`Added ${parsedTracks.length} track${parsedTracks.length > 1 ? "s" : ""}. ${totalTracks} total.`);
       } else {
         setUploadState("error");
         setUploadMessage("We couldn't queue the uploaded tracks. Please try again.");
@@ -76,7 +80,7 @@ const FluxStudio = () => {
 
   return (
     <div className="flux-studio">
-      <main className={`flux-studio__layout${isPlaylistOpen ? "" : " flux-studio__layout--sidebar-hidden"}`}>
+      <main className="flux-studio__layout">
         <section className="flux-studio__primary">
           {loading ? (
             <div className="flux-studio__placeholder">Loading tracks…</div>
@@ -108,13 +112,25 @@ const FluxStudio = () => {
                   <div className="flux-studio__extra-actions">
                     <button
                       type="button"
+                      className="flux-studio__toggle-peq"
+                      onClick={() => setIsPeqModalOpen(true)}
+                      title="Open Parametric EQ"
+                    >
+                      <span className="flux-studio__toggle-label">EQ</span>
+                      <span aria-hidden="true" className="flux-studio__toggle-icon">
+                        🎛️
+                      </span>
+                    </button>
+                    
+                    <button
+                      type="button"
                       className="flux-studio__toggle-playlist"
                       onClick={togglePlaylist}
-                      aria-expanded={isPlaylistOpen}
+                      title="Open Playlist"
                     >
                       <span className="flux-studio__toggle-label">Playlist</span>
                       <span aria-hidden="true" className="flux-studio__toggle-icon">
-                        {isPlaylistOpen ? "▾" : "▸"}
+                        📋
                       </span>
                     </button>
                     {/* <div className="flux-studio__visual-toggle" role="group" aria-label="Visual settings">
@@ -146,24 +162,40 @@ const FluxStudio = () => {
                   </div>
                 }
               />
-              <PeqPanel />
             </>
           )}
         </section>
 
-        {isPlaylistOpen ? (
-          <aside className="flux-studio__sidebar">
-            <Playlist
-              tracks={tracks}
-              currentTrackIndex={currentTrackIndex}
-              onTrackSelect={playTrackAt}
-              onUpload={handleFilesSelected}
-              onReset={resetToDefault}
-            />
-            <p className={`flux-studio__upload-status flux-studio__upload-status--${uploadState}`}>{uploadMessage}</p>
-          </aside>
-        ) : null}
+
       </main>
+
+      {/* EQ and Playlist Modals */}
+      <Modal
+        isOpen={isPeqModalOpen}
+        onClose={() => setIsPeqModalOpen(false)}
+        title="Parametric EQ"
+        size="large"
+        theme="dark"
+      >
+        <PeqPanel />
+      </Modal>
+
+      <Modal
+        isOpen={isPlaylistModalOpen}
+        onClose={() => setIsPlaylistModalOpen(false)}
+        title="Playlist"
+        size="medium"
+        theme="light"
+      >
+        <Playlist
+          tracks={tracks}
+          currentTrackIndex={currentTrackIndex}
+          onTrackSelect={playTrackAt}
+          onUpload={handleFilesSelected}
+          onReset={resetToDefault}
+        />
+        <p className={`flux-studio__upload-status flux-studio__upload-status--${uploadState}`}>{uploadMessage}</p>
+      </Modal>
     </div>
   );
 }

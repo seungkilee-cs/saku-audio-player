@@ -289,3 +289,79 @@
     align-items: flex-start;
   }
 }
+/* Enhanced Extra Actions for Mobile Modals */
+.flux-studio__extra-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.flux-studio__toggle-peq {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.flux-studio__toggle-peq:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent-color);
+}
+
+.flux-studio__toggle-peq:focus {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+}
+
+/* Mobile-specific styles */
+@media (max-width: 1024px) {
+  .flux-studio__toggle-peq {
+    padding: 8px 12px;
+  }
+  
+  .flux-studio__toggle-playlist {
+    padding: 8px 12px;
+  }
+  
+  .flux-studio__toggle-label {
+    font-size: 0.85rem;
+  }
+  
+  .flux-studio__toggle-icon {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .flux-studio__extra-actions {
+    gap: 6px;
+  }
+  
+  .flux-studio__toggle-peq,
+  .flux-studio__toggle-playlist {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+  
+  .flux-studio__toggle-label {
+    display: none; /* Hide text on very small screens, show only icons */
+  }
+  
+  .flux-studio__toggle-icon {
+    font-size: 1.1rem;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .flux-studio__toggle-peq {
+    border-width: 2px;
+  }
+}
