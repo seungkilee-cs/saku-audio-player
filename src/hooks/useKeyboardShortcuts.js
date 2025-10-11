@@ -39,32 +39,74 @@ const useKeyboardShortcuts = (actions, enabled = true) => {
     const shortcuts = {
       'b': () => {
         event.preventDefault();
-        currentActions.toggleBypass?.();
-        return 'Bypass Toggled';
+        currentActions.previousTrack?.();
+        return 'Previous Track';
       },
       
       'arrowleft': () => {
         event.preventDefault();
-        currentActions.previousPreset?.();
-        return 'Previous Preset';
+        // Primary: Skip backward, Shift: Previous preset
+        if (event.shiftKey) {
+          currentActions.previousPreset?.();
+          return 'Previous Preset';
+        } else {
+          currentActions.skipBackward?.();
+          return 'Skip Backward 10s';
+        }
       },
       
       'arrowright': () => {
         event.preventDefault();
-        currentActions.nextPreset?.();
-        return 'Next Preset';
+        // Primary: Skip forward, Shift: Next preset
+        if (event.shiftKey) {
+          currentActions.nextPreset?.();
+          return 'Next Preset';
+        } else {
+          currentActions.skipForward?.();
+          return 'Skip Forward 10s';
+        }
       },
       
       'arrowup': () => {
         event.preventDefault();
-        currentActions.previousPreset?.();
-        return 'Previous Preset';
+        // Primary: Volume up, Shift: Previous preset
+        if (event.shiftKey) {
+          currentActions.previousPreset?.();
+          return 'Previous Preset';
+        } else {
+          currentActions.volumeUp?.();
+          return 'Volume Up';
+        }
       },
       
       'arrowdown': () => {
         event.preventDefault();
-        currentActions.nextPreset?.();
-        return 'Next Preset';
+        // Primary: Volume down, Shift: Next preset
+        if (event.shiftKey) {
+          currentActions.nextPreset?.();
+          return 'Next Preset';
+        } else {
+          currentActions.volumeDown?.();
+          return 'Volume Down';
+        }
+      },
+      
+      'n': () => {
+        event.preventDefault();
+        currentActions.nextTrack?.();
+        return 'Next Track';
+      },
+      
+      't': () => {
+        event.preventDefault();
+        currentActions.toggleBypass?.();
+        return 'Bypass Toggled';
+      },
+      
+      'm': () => {
+        event.preventDefault();
+        currentActions.toggleMute?.();
+        return 'Mute Toggled';
       },
       
       'r': () => {
@@ -123,12 +165,17 @@ const useKeyboardShortcuts = (actions, enabled = true) => {
   // Return shortcut information for help UI
   return {
     shortcuts: [
-      { key: 'B', description: 'Toggle EQ Bypass' },
-      { key: '← →', description: 'Previous/Next Preset' },
-      { key: '↑ ↓', description: 'Previous/Next Preset' },
+      { key: '← →', description: 'Skip Backward/Forward 10s' },
+      { key: '↑ ↓', description: 'Volume Up/Down' },
+      { key: 'B', description: 'Previous Track' },
+      { key: 'N', description: 'Next Track' },
+      { key: 'M', description: 'Mute/Unmute' },
+      { key: 'Space', description: 'Play/Pause' },
+      { key: 'T', description: 'Toggle EQ Bypass' },
       { key: 'R', description: 'Reset to Flat EQ' },
-      { key: 'Space', description: 'Play/Pause (if available)' },
-      { key: 'Esc', description: 'Close Modal (if available)' }
+      { key: 'Shift + ← →', description: 'Previous/Next Preset' },
+      { key: 'Shift + ↑ ↓', description: 'Previous/Next Preset' },
+      { key: 'Esc', description: 'Close Modal' }
     ]
   };
 };

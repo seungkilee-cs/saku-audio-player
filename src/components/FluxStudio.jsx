@@ -26,7 +26,7 @@ const FluxStudio = () => {
     activeSource,
     replaceTracks,
     appendTracks,
-    resetToDefault,
+    clearPlaylist,
     visualSettings,
   } = usePlayback();
 
@@ -193,7 +193,7 @@ const FluxStudio = () => {
           currentTrackIndex={currentTrackIndex}
           onTrackSelect={playTrackAt}
           onUpload={handleFilesSelected}
-          onReset={resetToDefault}
+          onReset={clearPlaylist}
         />
         <p className={`flux-studio__upload-status flux-studio__upload-status--${uploadState}`}>{uploadMessage}</p>
       </Modal>

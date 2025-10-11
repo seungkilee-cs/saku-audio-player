@@ -312,6 +312,14 @@ export const PlaybackProvider = ({ children }) => {
     initialize();
   }, [initialize]);
 
+  const clearPlaylist = useCallback(() => {
+    setTracks([]);
+    setCurrentTrackIndex(0);
+    setActiveSource("none");
+    setLoading(false);
+    setError(null);
+  }, []);
+
   const [visualSettings, setVisualSettings] = useState({
     showPetals: true,
     showWaveform: true,
@@ -414,6 +422,7 @@ export const PlaybackProvider = ({ children }) => {
       playNext,
       playPrevious,
       resetToDefault,
+      clearPlaylist,
       peqState,
       updatePeqBand,
       updateAllPeqBands,
@@ -433,6 +442,7 @@ export const PlaybackProvider = ({ children }) => {
       playTrackAt,
       replaceTracks,
       resetToDefault,
+      clearPlaylist,
       tracks,
       visualSettings,
       toggleVisualSetting,

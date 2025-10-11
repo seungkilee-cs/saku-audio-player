@@ -24,6 +24,7 @@ const PresetLibrary = () => {
   const [newPresetName, setNewPresetName] = useState('');
   const [saveStatus, setSaveStatus] = useState({ type: 'idle', message: '' });
   const [storageInfo, setStorageInfo] = useState(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState(null); // { presetId, presetName }
 
   // Load user presets and storage info on mount
   useEffect(() => {
@@ -87,24 +88,63 @@ const PresetLibrary = () => {
     }
   }, [loadPeqPreset]);
 
-  // Delete a user preset
+  // Show delete confirmation
   const handleDeletePreset = useCallback((presetId) => {
-    if (window.confirm('Are you sure you want to delete this preset?')) {
-      try {
-        removePresetFromLibrary(presetId);
-        setUserPresets(loadPresetLibrary());
+    const preset = userPresets.find(p => p.id === presetId);
+    setDeleteConfirmation({ presetId, presetName: preset?.name || 'Unknown' });
+  }, [userPresets]);
+
+  // Confirm deletion
+  const confirmDelete = useCallback(() => {
+    if (!deleteConfirmation) return;
+    
+    try {
+      // Check if we're deleting the currently applied preset
+      const isCurrentPreset = deleteConfirmation.presetName === currentPresetName;
+      
+      removePresetFromLibrary(deleteConfirmation.presetId);
+      setUserPresets(loadPresetLibrary());
+      
+      // If we deleted the currently applied preset, reset to flat
+      if (isCurrentPreset) {
+        const flatPreset = {
+          name: 'Flat',
+          description: 'Flat response (no EQ)',
+          version: '1.0',
+          preamp: 0,
+          bands: Array(10).fill(null).map((_, i) => ({
+            frequency: [60, 150, 400, 1000, 2400, 4800, 9600, 12000, 14000, 16000][i],
+            type: i === 0 ? 'lowshelf' : i === 9 ? 'highshelf' : 'peaking',
+            gain: 0,
+            Q: i === 0 || i === 9 ? 0.707 : 1.0
+          }))
+        };
+        loadPeqPreset(flatPreset);
+        setSaveStatus({ 
+          type: 'success', 
+          message: 'Preset deleted and EQ reset to flat' 
+        });
+      } else {
         setSaveStatus({ 
           type: 'success', 
           message: 'Preset deleted successfully' 
         });
-        setTimeout(() => setSaveStatus({ type: 'idle', message: '' }), 2000);
-      } catch (error) {
-        setSaveStatus({ 
-          type: 'error', 
-          message: `Failed to delete preset: ${error.message}` 
-        });
       }
+      
+      setTimeout(() => setSaveStatus({ type: 'idle', message: '' }), 2000);
+    } catch (error) {
+      setSaveStatus({ 
+        type: 'error', 
+        message: `Failed to delete preset: ${error.message}` 
+      });
     }
+    
+    setDeleteConfirmation(null);
+  }, [deleteConfirmation, currentPresetName, loadPeqPreset]);
+
+  // Cancel deletion
+  const cancelDelete = useCallback(() => {
+    setDeleteConfirmation(null);
   }, []);
 
   // Toggle favorite status
@@ -367,6 +407,33 @@ const PresetLibrary = () => {
           {storageInfo.totalSize > 50000 && (
             <p className="storage-warning">Storage usage is high. Consider removing unused presets.</p>
           )}
+        </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirmation && (
+        <div className="preset-library__delete-overlay">
+          <div className="preset-library__delete-dialog">
+            <h3>Delete Preset</h3>
+            <p>Are you sure you want to delete "{deleteConfirmation.presetName}"?</p>
+            <p>This action cannot be undone.</p>
+            <div className="preset-library__delete-actions">
+              <button 
+                type="button" 
+                className="preset-library__delete-cancel"
+                onClick={cancelDelete}
+              >
+                Cancel
+              </button>
+              <button 
+                type="button" 
+                className="preset-library__delete-confirm"
+                onClick={confirmDelete}
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

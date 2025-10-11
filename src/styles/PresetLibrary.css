@@ -479,4 +479,93 @@
   color: #fbbf24 !important;
   font-weight: 500;
   margin-top: 4px !important;
+}/* Delete Co
+nfirmation Dialog */
+.preset-library__delete-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.preset-library__delete-dialog {
+  background: var(--bg-primary, #ffffff);
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 400px;
+  width: 90%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border: 2px solid var(--error-color, #dc2626);
+}
+
+.preset-library__delete-dialog h3 {
+  margin: 0 0 16px 0;
+  color: var(--error-color, #dc2626);
+  font-size: 1.2rem;
+}
+
+.preset-library__delete-dialog p {
+  margin: 0 0 12px 0;
+  color: var(--text-primary, #333);
+  line-height: 1.4;
+}
+
+.preset-library__delete-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.preset-library__delete-cancel,
+.preset-library__delete-confirm {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.preset-library__delete-cancel {
+  background: var(--bg-secondary, #f3f4f6);
+  color: var(--text-primary, #333);
+}
+
+.preset-library__delete-cancel:hover {
+  background: var(--bg-tertiary, #e5e7eb);
+}
+
+.preset-library__delete-confirm {
+  background: var(--error-color, #dc2626);
+  color: white;
+}
+
+.preset-library__delete-confirm:hover {
+  background: var(--error-hover, #b91c1c);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .preset-library__delete-dialog {
+    padding: 20px;
+    margin: 16px;
+  }
+  
+  .preset-library__delete-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .preset-library__delete-cancel,
+  .preset-library__delete-confirm {
+    width: 100%;
+    padding: 12px;
+  }
 }

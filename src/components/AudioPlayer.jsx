@@ -1,5 +1,5 @@
 // src/components/AudioPlayer.jsx
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Play from "../assets/img/play.svg?react";
 import Pause from "../assets/img/pause.svg?react";
 import Next from "../assets/img/next.svg?react";
@@ -11,6 +11,7 @@ import WaveformCanvas from "./WaveformCanvas";
 import { formatTime } from "../../util/timeUtils";
 import "../styles/AudioPlayer.css";
 import { usePlayback } from "../context/PlaybackContext";
+import useKeyboardShortcuts from "../hooks/useKeyboardShortcuts";
 import {
   cleanupPeqChain,
   createPeqChain,
@@ -51,6 +52,7 @@ const AudioPlayer = ({
   const [volume, setVolume] = useState(1);
   const [isDragOver, setIsDragOver] = useState(false);
   const volumeRef = useRef(1);
+  const previousVolumeRef = useRef(1);
   const audioContextRef = useRef(null);
   const sourceNodeRef = useRef(null);
   const peqBandsRef = useRef(peqBands);
@@ -500,6 +502,27 @@ const AudioPlayer = ({
     setTrackProgress(nextTime);
   };
 
+  const handleVolumeUp = useCallback(() => {
+    const newVolume = Math.min(volume + 0.1, 1);
+    setVolume(newVolume);
+  }, [volume]);
+
+  const handleVolumeDown = useCallback(() => {
+    const newVolume = Math.max(volume - 0.1, 0);
+    setVolume(newVolume);
+  }, [volume]);
+
+  const handleToggleMute = useCallback(() => {
+    if (volume === 0) {
+      // Restore previous volume
+      setVolume(previousVolumeRef.current);
+    } else {
+      // Store current volume before muting
+      previousVolumeRef.current = volume;
+      setVolume(0);
+    }
+  }, [volume]);
+
   // Drag and drop handlers
   const handleDragOver = useCallback((event) => {
     event.preventDefault();
@@ -526,6 +549,20 @@ const AudioPlayer = ({
       onFilesDropped(files);
     }
   }, [onFilesDropped]);
+
+  // Keyboard shortcuts for audio player
+  const keyboardActions = useMemo(() => ({
+    skipForward: onForward10Click,
+    skipBackward: onBackward10Click,
+    volumeUp: handleVolumeUp,
+    volumeDown: handleVolumeDown,
+    togglePlayback: isPlaying ? pauseAudio : playAudio,
+    nextTrack: toNextTrack,
+    previousTrack: toPrevTrack,
+    toggleMute: handleToggleMute
+  }), [onForward10Click, onBackward10Click, handleVolumeUp, handleVolumeDown, isPlaying, pauseAudio, playAudio, toNextTrack, toPrevTrack, handleToggleMute]);
+
+  useKeyboardShortcuts(keyboardActions, true);
 
   const currentTimeLabel = formatTime(Math.min(trackProgress, duration || 0));
   const totalTimeLabel = duration ? formatTime(duration) : "—";
