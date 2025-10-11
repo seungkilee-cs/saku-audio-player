@@ -1,7 +1,7 @@
 import * as mm from "music-metadata";
 import images from "../img";
 import audio from "../audio";
-import defaultImage from "../img/pale_blue.png";
+// import defaultImage from "../img/pale_blue.png";
 
 export async function loadBundledTracks() {
   const entries = Object.entries(audio);
