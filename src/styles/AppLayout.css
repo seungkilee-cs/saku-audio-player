@@ -1,0 +1,100 @@
+/* App Layout - Integrated Three-Panel Design */
+
+.app-layout {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  width: 100vw;
+  background: linear-gradient(135deg, #0a0a0b 0%, #1a1a1d 100%);
+  color: #f8fafc;
+  overflow: hidden;
+}
+
+/* Main Content Area */
+.app-main {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  overflow: hidden;
+  transition: grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Desktop: Three-column layout (1280px+) */
+@media (min-width: 1280px) {
+  .app-main {
+    grid-template-columns: 320px 1fr 380px;
+  }
+
+  .app-main.left-collapsed {
+    grid-template-columns: 48px 1fr 380px;
+  }
+
+  .app-main.right-collapsed {
+    grid-template-columns: 320px 1fr 48px;
+  }
+
+  .app-main.left-collapsed.right-collapsed {
+    grid-template-columns: 48px 1fr 48px;
+  }
+}
+
+/* Tablet: Two-column layout (768px - 1279px) */
+@media (min-width: 768px) and (max-width: 1279px) {
+  .app-main {
+    grid-template-columns: 280px 1fr 48px;
+  }
+
+  .app-main.left-collapsed {
+    grid-template-columns: 48px 1fr 48px;
+  }
+
+  .app-main.right-collapsed {
+    grid-template-columns: 280px 1fr 48px;
+  }
+}
+
+/* Mobile: Single column (< 768px) */
+@media (max-width: 767px) {
+  .app-main {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto auto;
+    padding: 0.5rem;
+  }
+
+  .app-main .sidebar {
+    display: none;
+  }
+}
+
+/* Center Panel */
+.app-center {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Smooth transitions */
+.app-main > * {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Focus management */
+.app-layout:focus-within {
+  outline: none;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .app-layout {
+    background: #000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .app-main,
+  .app-main > * {
+    transition: none;
+  }
+}

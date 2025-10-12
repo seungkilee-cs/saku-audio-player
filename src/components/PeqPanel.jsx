@@ -74,33 +74,72 @@ const PeqPanel = () => {
 
   return (
     <div className="peq-panel">
-      <div className="peq-panel__header">
-        <div className="peq-panel__title-section">
-          <h3>Parametric EQ</h3>
-          <ClippingMonitor peqChain={peqNodes} />
-        </div>
-        
-        <div className="peq-panel__global-controls">
-          <div className="peq-control-group">
-            <label>Current Preset:</label>
-            <span className="peq-current-preset">{currentPresetName}</span>
-          </div>
+      {/* Header with Clipping Monitor */}
+      <div className="peq-panel__title-section">
+        <h3>Equalizer</h3>
+        <ClippingMonitor peqChain={peqNodes} />
+      </div>
 
-          <div className="peq-control-group">
+      {/* Compact Controls */}
+      <div className="peq-panel__global-controls">
+        {/* Preset Navigation */}
+        <div className="peq-panel__preset-row">
+          <div className="peq-panel__preset-name" title={currentPresetName}>
+            {currentPresetName}
+          </div>
+          <div className="peq-panel__preset-actions">
             <button 
               type="button"
-              className={`peq-bypass-btn ${peqBypass ? 'bypassed' : ''}`}
-              onClick={() => togglePeqBypass()}
+              className="peq-panel__preset-nav"
+              onClick={cyclePrevPreset}
+              title="Previous Preset (Shift + ←)"
+              aria-label="Previous Preset"
             >
-              {peqBypass ? 'Bypassed' : 'Active'}
+              ◀
+            </button>
+            <button 
+              type="button"
+              className="peq-panel__preset-nav"
+              onClick={cycleNextPreset}
+              title="Next Preset (Shift + →)"
+              aria-label="Next Preset"
+            >
+              ▶
             </button>
           </div>
+        </div>
 
-          <div className="peq-control-group">
-            <label htmlFor="preamp-slider">
-              Preamp: {preampGain.toFixed(1)} dB
-              {preampAuto && <span className="auto-indicator">(Auto)</span>}
-            </label>
+        {/* Quick Actions */}
+        <div className="peq-panel__quick-actions">
+          <button 
+            type="button"
+            className={`peq-bypass-btn ${peqBypass ? 'bypassed' : ''}`}
+            onClick={() => togglePeqBypass()}
+            title={peqBypass ? 'EQ is Bypassed (Press T)' : 'EQ is Active (Press T)'}
+          >
+            {peqBypass ? 'Bypassed' : 'Active'}
+          </button>
+
+          <button 
+            type="button"
+            className="reset-btn"
+            onClick={handleResetToFlat}
+            title="Reset to Flat (Press R)"
+          >
+            Reset to Flat
+          </button>
+        </div>
+
+        {/* Preamp Control */}
+        <div className="peq-control-group">
+          <label htmlFor="preamp-slider">
+            <span>Preamp</span>
+            <span className="peq-control-group__value">
+              {preampGain.toFixed(1)} dB
+              {preampAuto && <span className="auto-indicator"> (Auto)</span>}
+            </span>
+          </label>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <input
               id="preamp-slider"
               type="range"
@@ -109,36 +148,17 @@ const PeqPanel = () => {
               step="0.1"
               value={preampGain}
               onChange={handlePreampChange}
+              style={{ flex: 1 }}
             />
             <button 
               type="button"
               className={`auto-toggle ${preampAuto ? 'active' : ''}`}
               onClick={() => togglePeqPreampAuto()}
+              title="Toggle Auto Preamp"
             >
               Auto
             </button>
           </div>
-
-          <button 
-            type="button"
-            className="reset-btn"
-            onClick={handleResetToFlat}
-          >
-            Reset
-          </button>
-
-          <button 
-            type="button"
-            className="clear-settings-btn"
-            onClick={() => {
-              if (window.confirm('Clear all saved EQ settings and reset to default? This cannot be undone.')) {
-                clearPeqSettings();
-              }
-            }}
-            title="Clear all saved settings and reset to default"
-          >
-            Clear All
-          </button>
         </div>
       </div>
 

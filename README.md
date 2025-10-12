@@ -1,8 +1,8 @@
-# Saku Audio Player
+# [Saku Audio Player](https://seungkilee-cs.github.io/saku-audio-player/)
 
 > 咲く, Let your music bloom
 
-A web-based audio player with advanced parametric equalizer capabilities.
+A web-based audio player with autoEq compatible 10 band parametric equalizer, built with Reactjs.
 
 ## Screenshots
 ### Playser

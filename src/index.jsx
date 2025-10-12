@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { PlaybackProvider } from "./context/PlaybackContext";
 import FluxStudio from "./components/FluxStudio";
 import "./styles/theme.css";
+import "./styles/theme-light.css";
 import "./App.css";
 
 function App() {
