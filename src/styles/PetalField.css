@@ -1,4 +1,3 @@
-
 .petal-field {
   position: absolute;
   inset: -25% -30% -35% -30%;
@@ -15,13 +14,22 @@
   height: var(--petal-size, 0.9rem);
   border-radius: 60% 40% 60% 40%;
   background:
-    radial-gradient(60% 80% at 50% 35%, var(--petal-accent, rgba(249, 206, 229, 0.92)) 0%, transparent 70%),
-    linear-gradient(145deg, rgba(249, 206, 229, 0.88), rgba(181, 213, 255, 0.65));
+    radial-gradient(
+      60% 80% at 50% 35%,
+      var(--petal-accent, rgba(249, 206, 229, 0.92)) 0%,
+      transparent 70%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(249, 206, 229, 0.88),
+      rgba(181, 213, 255, 0.65)
+    );
   transform-origin: center;
   filter: drop-shadow(0 6px 12px rgba(249, 168, 212, 0.4));
   opacity: 0;
   animation:
-    petal-fall var(--petal-duration, 12s) var(--easing-glide, ease-in-out) infinite,
+    petal-fall var(--petal-duration, 12s) var(--easing-glide, ease-in-out)
+      infinite,
     petal-drift var(--petal-duration, 12s) ease-in-out infinite,
     petal-tilt calc(var(--petal-duration, 12s) * 0.6) ease-in-out infinite;
   animation-delay: var(--petal-delay, 0s);
@@ -29,18 +37,19 @@
 
 @keyframes petal-fall {
   0% {
-    transform:
-      translate3d(-50%, var(--petal-start-y, -40%), 0)
-      rotate(var(--petal-rotation, 0deg))
-      scale(var(--petal-scale, 1));
+    transform: translate3d(-50%, var(--petal-start-y, -40%), 0)
+      rotate(var(--petal-rotation, 0deg)) scale(var(--petal-scale, 1));
     opacity: 0;
   }
   10% {
     opacity: 0.9;
   }
   100% {
-    transform:
-      translate3d(calc(-50% + var(--petal-sway, 0%)), var(--petal-end-y, 120%), 0)
+    transform: translate3d(
+        calc(-50% + var(--petal-sway, 0%)),
+        var(--petal-end-y, 120%),
+        0
+      )
       rotate(calc(var(--petal-rotation, 0deg) + 120deg))
       scale(var(--petal-scale, 1));
     opacity: 0;

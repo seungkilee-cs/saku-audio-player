@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import Play from "../assets/img/play.svg?react";
 import Pause from "../assets/img/pause.svg?react";
 import Next from "../assets/img/next.svg?react";
@@ -70,7 +76,8 @@ const AudioPlayer = ({
   const trackCount = trackList.length;
   const currentTrack = trackList[currentTrackIndex] || null;
 
-  const { title, artist, album, audioSrc, image, codec, bitrate } = currentTrack ?? {};
+  const { title, artist, album, audioSrc, image, codec, bitrate } =
+    currentTrack ?? {};
 
   const audioRef = useRef(new Audio());
   const intervalRef = useRef(null);
@@ -79,7 +86,9 @@ const AudioPlayer = ({
   const isScrubbingRef = useRef(false);
   const currentAudioSrcRef = useRef(null);
 
-  const duration = Number.isFinite(audioRef.current?.duration) ? audioRef.current.duration : 0;
+  const duration = Number.isFinite(audioRef.current?.duration)
+    ? audioRef.current.duration
+    : 0;
   const progressRatio = duration > 0 ? trackProgress / duration : 0;
 
   const stopTimer = useCallback(() => {
@@ -108,7 +117,8 @@ const AudioPlayer = ({
         if (onNext) {
           onNext();
         } else if (typeof onTrackChange === "function") {
-          const nextIndex = currentTrackIndex < trackCount - 1 ? currentTrackIndex + 1 : 0;
+          const nextIndex =
+            currentTrackIndex < trackCount - 1 ? currentTrackIndex + 1 : 0;
           onTrackChange(nextIndex);
         }
       } else {
@@ -131,7 +141,8 @@ const AudioPlayer = ({
 
     const ensureContext = async () => {
       if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+        audioContextRef.current = new (window.AudioContext ||
+          window.webkitAudioContext)();
       }
       if (audioContextRef.current.state === "suspended") {
         try {
@@ -242,7 +253,15 @@ const AudioPlayer = ({
       delete window.audioContext;
       delete window.peqNodes;
     };
-  }, [loadPeqPreset, peqNodes, peqState, setPeqPreamp, togglePeqPreampAuto, updateAllPeqBands, updatePeqBand]);
+  }, [
+    loadPeqPreset,
+    peqNodes,
+    peqState,
+    setPeqPreamp,
+    togglePeqPreampAuto,
+    updateAllPeqBands,
+    updatePeqBand,
+  ]);
 
   // Handle audio source changes (track switching)
   useEffect(() => {
@@ -252,8 +271,13 @@ const AudioPlayer = ({
     if (currentAudioSrcRef.current === audioSrc) {
       return;
     }
-    
-    console.log('AudioPlayer: audioSrc changed from', currentAudioSrcRef.current, 'to', audioSrc);
+
+    console.log(
+      "AudioPlayer: audioSrc changed from",
+      currentAudioSrcRef.current,
+      "to",
+      audioSrc,
+    );
     currentAudioSrcRef.current = audioSrc;
 
     if (!audioSrc) {
@@ -319,7 +343,8 @@ const AudioPlayer = ({
 
     const setupPeqChain = async () => {
       if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+        audioContextRef.current = new (window.AudioContext ||
+          window.webkitAudioContext)();
       }
 
       const audioContext = audioContextRef.current;
@@ -446,7 +471,8 @@ const AudioPlayer = ({
     if (onPrevious) {
       onPrevious();
     } else if (typeof onTrackChange === "function") {
-      const previousIndex = currentTrackIndex - 1 < 0 ? trackCount - 1 : currentTrackIndex - 1;
+      const previousIndex =
+        currentTrackIndex - 1 < 0 ? trackCount - 1 : currentTrackIndex - 1;
       onTrackChange(previousIndex);
     }
   };
@@ -463,7 +489,10 @@ const AudioPlayer = ({
 
   const handleScrub = useCallback(
     (ratio) => {
-      const activeDuration = Number.isFinite(duration) && duration > 0 ? duration : audioRef.current?.duration ?? 0;
+      const activeDuration =
+        Number.isFinite(duration) && duration > 0
+          ? duration
+          : (audioRef.current?.duration ?? 0);
       if (!activeDuration) {
         return;
       }
@@ -494,7 +523,10 @@ const AudioPlayer = ({
   const onForward10Click = () => {
     const audio = audioRef.current;
     if (!audio) return;
-    const nextTime = Math.min(audio.currentTime + 10, duration || audio.duration || 0);
+    const nextTime = Math.min(
+      audio.currentTime + 10,
+      duration || audio.duration || 0,
+    );
     audio.currentTime = nextTime;
     setTrackProgress(nextTime);
   };
@@ -544,30 +576,49 @@ const AudioPlayer = ({
     }
   }, []);
 
-  const handleDrop = useCallback((event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setIsDragOver(false);
+  const handleDrop = useCallback(
+    (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      setIsDragOver(false);
 
-    const files = Array.from(event.dataTransfer.files);
-    if (files.length > 0 && onFilesDropped) {
-      onFilesDropped(files);
-    }
-  }, [onFilesDropped]);
+      const files = Array.from(event.dataTransfer.files);
+      if (files.length > 0 && onFilesDropped) {
+        onFilesDropped(files);
+      }
+    },
+    [onFilesDropped],
+  );
 
   // Keyboard shortcuts for audio player
-  const keyboardActions = useMemo(() => ({
-    skipForward: onForward10Click,
-    skipBackward: onBackward10Click,
-    volumeUp: handleVolumeUp,
-    volumeDown: handleVolumeDown,
-    togglePlayback: isPlaying ? pauseAudio : playAudio,
-    nextTrack: toNextTrack,
-    previousTrack: toPrevTrack,
-    toggleMute: handleToggleMute,
-    toggleEqModal: onToggleEqModal,
-    togglePlaylistModal: onTogglePlaylistModal
-  }), [onForward10Click, onBackward10Click, handleVolumeUp, handleVolumeDown, isPlaying, pauseAudio, playAudio, toNextTrack, toPrevTrack, handleToggleMute, onToggleEqModal, onTogglePlaylistModal]);
+  const keyboardActions = useMemo(
+    () => ({
+      skipForward: onForward10Click,
+      skipBackward: onBackward10Click,
+      volumeUp: handleVolumeUp,
+      volumeDown: handleVolumeDown,
+      togglePlayback: isPlaying ? pauseAudio : playAudio,
+      nextTrack: toNextTrack,
+      previousTrack: toPrevTrack,
+      toggleMute: handleToggleMute,
+      toggleEqModal: onToggleEqModal,
+      togglePlaylistModal: onTogglePlaylistModal,
+    }),
+    [
+      onForward10Click,
+      onBackward10Click,
+      handleVolumeUp,
+      handleVolumeDown,
+      isPlaying,
+      pauseAudio,
+      playAudio,
+      toNextTrack,
+      toPrevTrack,
+      handleToggleMute,
+      onToggleEqModal,
+      onTogglePlaylistModal,
+    ],
+  );
 
   useKeyboardShortcuts(keyboardActions, true);
 
@@ -575,12 +626,14 @@ const AudioPlayer = ({
   const totalTimeLabel = duration ? formatTime(duration) : "—";
   const displayTitle = title || "Awaiting your first track";
   const displayArtist = artist || "Upload audio to begin.";
-  const metaSummary = [album, codec, bitrate ? `${bitrate} kbps` : null].filter(Boolean).join(" • ");
+  const metaSummary = [album, codec, bitrate ? `${bitrate} kbps` : null]
+    .filter(Boolean)
+    .join(" • ");
   const isControlsDisabled = !currentTrack;
 
   return (
-    <section 
-      className={`audio-player ${isDragOver ? 'audio-player--drag-over' : ''}`} 
+    <section
+      className={`audio-player ${isDragOver ? "audio-player--drag-over" : ""}`}
       aria-label="Audio player"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
@@ -589,11 +642,17 @@ const AudioPlayer = ({
       <div className="audio-player__card">
         {(sourceLabel || extraActions) && (
           <div className="audio-player__topbar">
-            {sourceLabel ? <span className="audio-player__source">{sourceLabel}</span> : null}
-            {extraActions ? <div className="audio-player__extra-actions">{extraActions}</div> : null}
+            {sourceLabel ? (
+              <span className="audio-player__source">{sourceLabel}</span>
+            ) : null}
+            {extraActions ? (
+              <div className="audio-player__extra-actions">{extraActions}</div>
+            ) : null}
           </div>
         )}
-        {showAmbientGlow ? <div className="audio-player__ambient-glow" aria-hidden="true" /> : null}
+        {showAmbientGlow ? (
+          <div className="audio-player__ambient-glow" aria-hidden="true" />
+        ) : null}
         <div className="audio-player__header">
           <div className="audio-player__art">
             {image ? (
@@ -605,21 +664,41 @@ const AudioPlayer = ({
             )}
             {renderOverlay ? (
               <div className="audio-player__art-overlay">
-                {renderOverlay({ currentTrack, progress: progressRatio, isPlaying })}
+                {renderOverlay({
+                  currentTrack,
+                  progress: progressRatio,
+                  isPlaying,
+                })}
               </div>
             ) : null}
           </div>
           <div className="audio-player__info">
             <h2 className="audio-player__title">{displayTitle}</h2>
             <p className="audio-player__artist">{displayArtist}</p>
-            {metaSummary ? <p className="audio-player__meta">{metaSummary}</p> : null}
+            {metaSummary ? (
+              <p className="audio-player__meta">{metaSummary}</p>
+            ) : null}
           </div>
         </div>
-        <div className="audio-player__controls" role="group" aria-label="Playback controls">
-          <button type="button" onClick={toPrevTrack} aria-label="Previous track" disabled={isControlsDisabled}>
+        <div
+          className="audio-player__controls"
+          role="group"
+          aria-label="Playback controls"
+        >
+          <button
+            type="button"
+            onClick={toPrevTrack}
+            aria-label="Previous track"
+            disabled={isControlsDisabled}
+          >
             <Prev />
           </button>
-          <button type="button" onClick={onBackward10Click} aria-label="Rewind 10 seconds" disabled={isControlsDisabled}>
+          <button
+            type="button"
+            onClick={onBackward10Click}
+            aria-label="Rewind 10 seconds"
+            disabled={isControlsDisabled}
+          >
             <Backward10 />
           </button>
           <button
@@ -632,10 +711,20 @@ const AudioPlayer = ({
           >
             {isPlaying ? <Pause /> : <Play />}
           </button>
-          <button type="button" onClick={onForward10Click} aria-label="Forward 10 seconds" disabled={isControlsDisabled}>
+          <button
+            type="button"
+            onClick={onForward10Click}
+            aria-label="Forward 10 seconds"
+            disabled={isControlsDisabled}
+          >
             <Forward10 />
           </button>
-          <button type="button" onClick={toNextTrack} aria-label="Next track" disabled={isControlsDisabled}>
+          <button
+            type="button"
+            onClick={toNextTrack}
+            aria-label="Next track"
+            disabled={isControlsDisabled}
+          >
             <Next />
           </button>
         </div>
@@ -653,7 +742,9 @@ const AudioPlayer = ({
             />
           ) : null}
           <div className="audio-player__time" aria-live="polite">
-            <span className="audio-player__time-current">{currentTimeLabel}</span>
+            <span className="audio-player__time-current">
+              {currentTimeLabel}
+            </span>
             <span className="audio-player__time-divider" aria-hidden="true">
               /
             </span>
@@ -665,33 +756,35 @@ const AudioPlayer = ({
           <div className="audio-player__playback-controls">
             <button
               type="button"
-              className={`audio-player__mode-btn ${shuffleMode ? 'active' : ''}`}
+              className={`audio-player__mode-btn ${shuffleMode ? "active" : ""}`}
               onClick={toggleShuffle}
-              title={shuffleMode ? 'Shuffle: On' : 'Shuffle: Off'}
+              title={shuffleMode ? "Shuffle: On" : "Shuffle: Off"}
               aria-label="Toggle Shuffle"
             >
               🔀
             </button>
             <button
               type="button"
-              className={`audio-player__mode-btn ${repeatMode !== 'off' ? 'active' : ''}`}
+              className={`audio-player__mode-btn ${repeatMode !== "off" ? "active" : ""}`}
               onClick={toggleRepeatMode}
-              title={`Repeat: ${repeatMode === 'off' ? 'Off' : repeatMode === 'all' ? 'All' : 'One'}`}
+              title={`Repeat: ${repeatMode === "off" ? "Off" : repeatMode === "all" ? "All" : "One"}`}
               aria-label="Toggle Repeat Mode"
             >
-              {repeatMode === 'one' ? '🔂' : '🔁'}
+              {repeatMode === "one" ? "🔂" : "🔁"}
             </button>
           </div>
           <VolumeControl volume={volume} onVolumeChange={setVolume} />
         </div>
       </div>
-      
+
       {/* Drag and Drop Overlay */}
       {isDragOver && (
         <div className="audio-player__drag-overlay">
           <div className="audio-player__drag-content">
             <div className="audio-player__drag-icon">🎵</div>
-            <p className="audio-player__drag-text">Drop audio files to add to playlist</p>
+            <p className="audio-player__drag-text">
+              Drop audio files to add to playlist
+            </p>
           </div>
         </div>
       )}
@@ -700,3 +793,4 @@ const AudioPlayer = ({
 };
 
 export default AudioPlayer;
+

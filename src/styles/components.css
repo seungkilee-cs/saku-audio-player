@@ -1,5 +1,3 @@
-/* Modern Component System for Saku Audio Player */
-
 /* Slider Components */
 .slider {
   position: relative;
@@ -349,8 +347,12 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .skeleton {
@@ -366,8 +368,12 @@
 }
 
 @keyframes skeleton-loading {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }
 
 /* Waveform Component */
@@ -445,11 +451,11 @@
     gap: var(--space-1);
     padding: var(--space-3);
   }
-  
+
   .eq-slider {
     height: 150px;
   }
-  
+
   .card {
     padding: var(--space-4);
   }
@@ -459,12 +465,13 @@
   .eq-visualizer {
     grid-template-columns: repeat(3, 1fr);
   }
-  
+
   .eq-slider {
     height: 120px;
   }
-  
+
   .waveform {
     height: 60px;
   }
 }
+

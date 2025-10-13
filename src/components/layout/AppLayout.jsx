@@ -1,13 +1,13 @@
-import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { usePlayback } from '../../context/PlaybackContext';
-import AudioPlayer from '../AudioPlayer';
-import Playlist from '../Playlist';
-import PeqPanel from '../PeqPanel';
-import Sidebar from './Sidebar';
-import Header from './Header';
-import useKeyboardShortcuts from '../../hooks/useKeyboardShortcuts';
-import { parseAudioFiles } from '../../assets/meta/tracks';
-import '../../styles/AppLayout.css';
+import React, { useState, useCallback, useRef, useEffect } from "react";
+import { usePlayback } from "../../context/PlaybackContext";
+import AudioPlayer from "../AudioPlayer";
+import Playlist from "../Playlist";
+import PeqPanel from "../PeqPanel";
+import Sidebar from "./Sidebar";
+import Header from "./Header";
+import useKeyboardShortcuts from "../../hooks/useKeyboardShortcuts";
+import { parseAudioFiles } from "../../assets/meta/tracks";
+import "../../styles/AppLayout.css";
 
 const AppLayout = () => {
   const {
@@ -23,8 +23,12 @@ const AppLayout = () => {
   } = usePlayback();
 
   // Initialize sidebars based on screen width
-  const [leftSidebarOpen, setLeftSidebarOpen] = useState(() => window.innerWidth >= 1280);
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(() => window.innerWidth >= 1280);
+  const [leftSidebarOpen, setLeftSidebarOpen] = useState(
+    () => window.innerWidth >= 1280,
+  );
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(
+    () => window.innerWidth >= 1280,
+  );
   const playlistRef = useRef(null);
 
   // Close sidebars on mobile when resizing
@@ -36,39 +40,44 @@ const AppLayout = () => {
       }
     };
 
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   const sourceLabels = {
-    uploaded: 'Custom Uploads',
-    bundled: 'Demo Gallery',
-    default: 'Unknown Source',
+    uploaded: "Custom Uploads",
+    bundled: "Demo Gallery",
+    default: "Unknown Source",
   };
 
   const displaySource = sourceLabels[activeSource] ?? sourceLabels.default;
 
-  const handleFilesSelected = useCallback(async (fileList) => {
-    if (!fileList || fileList.length === 0) return;
+  const handleFilesSelected = useCallback(
+    async (fileList) => {
+      if (!fileList || fileList.length === 0) return;
 
-    try {
-      const parsedTracks = await parseAudioFiles(fileList);
-      if (!parsedTracks.length) return;
+      try {
+        const parsedTracks = await parseAudioFiles(fileList);
+        if (!parsedTracks.length) return;
 
-      const shouldAppend = tracks.length > 0;
-      const apply = shouldAppend ? appendTracks : replaceTracks;
-      await apply(parsedTracks, { startIndex: shouldAppend ? tracks.length : 0 });
-    } catch (error) {
-      console.error('Failed to parse uploaded files', error);
-    }
-  }, [tracks.length, appendTracks, replaceTracks]);
+        const shouldAppend = tracks.length > 0;
+        const apply = shouldAppend ? appendTracks : replaceTracks;
+        await apply(parsedTracks, {
+          startIndex: shouldAppend ? tracks.length : 0,
+        });
+      } catch (error) {
+        console.error("Failed to parse uploaded files", error);
+      }
+    },
+    [tracks.length, appendTracks, replaceTracks],
+  );
 
   const toggleLeftSidebar = useCallback(() => {
-    setLeftSidebarOpen(prev => !prev);
+    setLeftSidebarOpen((prev) => !prev);
   }, []);
 
   const toggleRightSidebar = useCallback(() => {
-    setRightSidebarOpen(prev => !prev);
+    setRightSidebarOpen((prev) => !prev);
   }, []);
 
   const handleAddToPlaylist = useCallback(() => {
@@ -76,23 +85,28 @@ const AppLayout = () => {
   }, []);
 
   // Keyboard shortcuts for app-level actions
-  useKeyboardShortcuts({
-    addToPlaylist: handleAddToPlaylist
-  }, true);
+  useKeyboardShortcuts(
+    {
+      addToPlaylist: handleAddToPlaylist,
+    },
+    true,
+  );
 
   return (
     <div className="app-layout">
-      <Header 
+      <Header
         onTogglePlaylist={toggleLeftSidebar}
         onToggleEq={toggleRightSidebar}
         playlistOpen={leftSidebarOpen}
         eqOpen={rightSidebarOpen}
       />
-      
-      <main className={`app-main ${!leftSidebarOpen ? 'left-collapsed' : ''} ${!rightSidebarOpen ? 'right-collapsed' : ''} ${leftSidebarOpen || rightSidebarOpen ? 'has-open-sidebar' : ''}`}>
+
+      <main
+        className={`app-main ${!leftSidebarOpen ? "left-collapsed" : ""} ${!rightSidebarOpen ? "right-collapsed" : ""} ${leftSidebarOpen || rightSidebarOpen ? "has-open-sidebar" : ""}`}
+      >
         {/* Left Sidebar: Playlist */}
-        <Sidebar 
-          position="left" 
+        <Sidebar
+          position="left"
           isOpen={leftSidebarOpen}
           onToggle={toggleLeftSidebar}
           title="Playlist"
@@ -125,8 +139,8 @@ const AppLayout = () => {
         </div>
 
         {/* Right Sidebar: Parametric EQ */}
-        <Sidebar 
-          position="right" 
+        <Sidebar
+          position="right"
           isOpen={rightSidebarOpen}
           onToggle={toggleRightSidebar}
           title="Parametric EQ"

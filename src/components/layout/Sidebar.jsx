@@ -1,46 +1,44 @@
-import React from 'react';
-import '../../styles/Sidebar.css';
+import React from "react";
+import "../../styles/Sidebar.css";
 
-const Sidebar = ({ 
-  position = 'left', 
-  isOpen = true, 
-  onToggle, 
+const Sidebar = ({
+  position = "left",
+  isOpen = true,
+  onToggle,
   title,
-  children 
+  children,
 }) => {
   return (
-    <aside 
-      className={`sidebar sidebar--${position} ${isOpen ? 'sidebar--open' : 'sidebar--collapsed'}`}
+    <aside
+      className={`sidebar sidebar--${position} ${isOpen ? "sidebar--open" : "sidebar--collapsed"}`}
       aria-label={title}
     >
       {isOpen && (
         <div className="sidebar__header">
           <h2 className="sidebar__title">{title}</h2>
-          <button 
+          <button
             className="sidebar__toggle"
             onClick={onToggle}
             aria-label={`Collapse ${title}`}
             title={`Collapse ${title}`}
           >
-            {position === 'left' ? '◀' : '▶'}
+            {position === "left" ? "◀" : "▶"}
           </button>
         </div>
       )}
-      
+
       {!isOpen && (
-        <button 
+        <button
           className="sidebar__toggle sidebar__toggle--collapsed"
           onClick={onToggle}
           aria-label={`Expand ${title}`}
           title={`Expand ${title}`}
         >
-          {position === 'left' ? '▶' : '◀'}
+          {position === "left" ? "▶" : "◀"}
         </button>
       )}
-      
-      <div className="sidebar__content">
-        {children}
-      </div>
+
+      <div className="sidebar__content">{children}</div>
     </aside>
   );
 };

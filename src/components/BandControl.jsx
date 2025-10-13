@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 const BandControl = ({ band, index, onChange }) => {
   const { frequency, gain, Q, type } = band;
@@ -45,7 +45,8 @@ const BandControl = ({ band, index, onChange }) => {
           orient="vertical"
         />
         <span className="gain-display">
-          {gain > 0 ? '+' : ''}{gain.toFixed(1)} dB
+          {gain > 0 ? "+" : ""}
+          {gain.toFixed(1)} dB
         </span>
       </div>
 
@@ -65,8 +66,8 @@ const BandControl = ({ band, index, onChange }) => {
       </div>
 
       <div className="band-control__type">
-        <select 
-          value={type} 
+        <select
+          value={type}
           onChange={handleTypeChange}
           className="type-selector"
         >
@@ -81,3 +82,4 @@ const BandControl = ({ band, index, onChange }) => {
 };
 
 export default BandControl;
+

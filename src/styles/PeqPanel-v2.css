@@ -1,5 +1,3 @@
-/* Modern PEQ Panel Styles */
-
 .peq-panel {
   width: 100%;
   max-width: 1200px;
@@ -357,7 +355,7 @@
   .peq-bands {
     grid-template-columns: repeat(5, 1fr);
   }
-  
+
   .peq-band__slider-container {
     height: 150px;
   }
@@ -367,41 +365,41 @@
   .peq-panel {
     padding: var(--space-4);
   }
-  
+
   .peq-panel__header {
     flex-direction: column;
     gap: var(--space-4);
     align-items: flex-start;
   }
-  
+
   .peq-panel__controls {
     align-self: stretch;
     justify-content: center;
   }
-  
+
   .peq-global-controls {
     grid-template-columns: 1fr;
   }
-  
+
   .peq-bands {
     grid-template-columns: repeat(3, 1fr);
     gap: var(--space-3);
     padding: var(--space-4);
   }
-  
+
   .peq-band__slider-container {
     height: 120px;
   }
-  
+
   .peq-preset-controls {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .peq-preset-selector {
     min-width: auto;
   }
-  
+
   .peq-response-chart__container {
     height: 250px;
   }
@@ -411,13 +409,14 @@
   .peq-bands {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .peq-import-export__actions {
     flex-direction: column;
   }
-  
+
   .peq-import-export__actions .btn {
     width: 100%;
     justify-content: center;
   }
 }
+

@@ -1,5 +1,3 @@
-/* Modern Audio Player Styles */
-
 .audio-player {
   position: relative;
   width: 100%;
@@ -18,7 +16,7 @@
 }
 
 .audio-player-card::before {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   left: 0;
@@ -275,33 +273,33 @@
   .audio-player-card {
     padding: var(--space-6);
   }
-  
+
   .audio-player__header {
     grid-template-columns: 1fr;
     text-align: center;
     gap: var(--space-4);
   }
-  
+
   .audio-player__art {
     width: 200px;
     height: 200px;
     justify-self: center;
   }
-  
+
   .audio-player__title {
     font-size: var(--font-size-xl);
   }
-  
+
   .audio-player__artist {
     font-size: var(--font-size-base);
   }
-  
+
   .audio-player__topbar {
     flex-direction: column;
     gap: var(--space-3);
     align-items: flex-start;
   }
-  
+
   .audio-player__extra-actions {
     align-self: stretch;
     justify-content: center;
@@ -312,29 +310,30 @@
   .audio-player__controls {
     gap: var(--space-3);
   }
-  
+
   .audio-player__controls button {
     width: 44px;
     height: 44px;
   }
-  
+
   .audio-player__play {
     width: 56px !important;
     height: 56px !important;
   }
-  
+
   .audio-player__play svg {
     width: 20px;
     height: 20px;
   }
-  
+
   .audio-player__controls button svg {
     width: 18px;
     height: 18px;
   }
-  
+
   .audio-player__art {
     width: 160px;
     height: 160px;
   }
 }
+

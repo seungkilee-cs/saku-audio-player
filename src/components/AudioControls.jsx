@@ -18,7 +18,9 @@ const AudioControls = ({
 
   useEffect(() => {
     const handleKeyDown = (event) => {
-      const isWithinContainer = containerRef.current?.contains(document.activeElement);
+      const isWithinContainer = containerRef.current?.contains(
+        document.activeElement,
+      );
       if (!isWithinContainer) {
         return;
       }
