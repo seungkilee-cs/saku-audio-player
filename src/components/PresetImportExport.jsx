@@ -17,8 +17,7 @@ const PresetImportExport = () => {
   const { peqBands, preampGain, currentPresetName } = peqState;
   const fileInputRef = useRef(null);
   const [importStatus, setImportStatus] = useState({ type: 'idle', message: '' });
-  const [isDragOver, setIsDragOver] = useState(false);
-  const [selectedExportFormat, setSelectedExportFormat] = useState('native');
+  const [selectedExportFormat, setSelectedExportFormat] = useState('autoeq-text');
 
   // Create current preset object for export
   const getCurrentPreset = useCallback(() => {
@@ -118,28 +117,6 @@ const PresetImportExport = () => {
       });
     }
   }, [loadPeqPreset]);
-
-  // Handle drag and drop
-  const handleDragOver = useCallback((e) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'copy';
-    setIsDragOver(true);
-  }, []);
-
-  const handleDragLeave = useCallback((e) => {
-    e.preventDefault();
-    setIsDragOver(false);
-  }, []);
-
-  const handleDrop = useCallback(async (e) => {
-    e.preventDefault();
-    setIsDragOver(false);
-
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      await processImportFile(file);
-    }
-  }, [processImportFile]);
 
   // Enhanced export handler with multiple format support
   const handleExport = useCallback(async () => {
@@ -242,83 +219,61 @@ const PresetImportExport = () => {
         <h4>Import / Export</h4>
       </div>
 
+      {/* Compact Single-Column Layout */}
       <div className="preset-import-export__actions">
-        {/* Import Section */}
-        <div className="preset-import-export__section">
-          <h5>Import Preset</h5>
-          <div 
-            className={`preset-import-export__drop-zone ${isDragOver ? 'drag-over' : ''}`}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={handleImportClick}
-          >
-            <div className="preset-import-export__drop-content">
-              <span className="preset-import-export__drop-icon">📁</span>
-              <p>
-                <strong>Click to select</strong> or drag & drop file
-              </p>
-              <p className="preset-import-export__drop-hint">
-                Supports: JSON, AutoEq ParametricEQ.txt, PowerAmp
-              </p>
-            </div>
-          </div>
-          
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".json,.txt,application/json,text/plain"
-            onChange={handleFileSelect}
-            style={{ display: 'none' }}
-            aria-label="Select preset file"
-          />
-        </div>
+        {/* Import Button */}
+        <button
+          type="button"
+          className="preset-import-export__import-btn"
+          onClick={handleImportClick}
+          title="Import preset from file"
+        >
+          <span className="preset-import-export__btn-icon">📁</span>
+          Import Preset
+        </button>
+        
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".json,.txt,application/json,text/plain"
+          onChange={handleFileSelect}
+          style={{ display: 'none' }}
+          aria-label="Select preset file"
+        />
 
-        {/* Export Section */}
-        <div className="preset-import-export__section">
-          <h5>Export Current Preset</h5>
-          
-          <div className="preset-import-export__format-selector">
-            <label htmlFor="export-format-select">Export Format:</label>
-            <select
-              id="export-format-select"
-              value={selectedExportFormat}
-              onChange={(e) => setSelectedExportFormat(e.target.value)}
-              className="preset-import-export__format-select"
-            >
-              {Object.entries(EXPORT_FORMATS).map(([key, format]) => (
-                <option key={key} value={format.id}>
-                  {format.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          
-          <div className="preset-import-export__format-info">
-            <small>
-              {EXPORT_FORMATS[selectedExportFormat.toUpperCase()]?.description || 'Select a format to see details'}
-            </small>
-          </div>
+        {/* Export Controls */}
+        <div className="preset-import-export__export-row">
+          <select
+            id="export-format-select"
+            value={selectedExportFormat}
+            onChange={(e) => setSelectedExportFormat(e.target.value)}
+            className="preset-import-export__format-select"
+            title="Select export format"
+          >
+            {Object.entries(EXPORT_FORMATS).map(([key, format]) => (
+              <option key={key} value={format.id}>
+                {format.name}
+              </option>
+            ))}
+          </select>
           
           <button
             type="button"
-            className="preset-import-export__export-btn preset-import-export__export-btn--unified"
+            className="preset-import-export__export-btn"
             onClick={handleExport}
             title={`Export in ${EXPORT_FORMATS[selectedExportFormat.toUpperCase()]?.name || 'selected'} format`}
           >
             <span className="preset-import-export__btn-icon">💾</span>
-            Export Preset
+            Export
           </button>
-          
-          <p className="preset-import-export__export-info">
-            Current: <strong>{currentPresetName}</strong>
-            {preampGain !== 0 && (
-              <span className="preset-import-export__preamp-info">
-                {' '}(Preamp: {preampGain > 0 ? '+' : ''}{preampGain.toFixed(1)}dB)
-              </span>
-            )}
-          </p>
         </div>
+        
+        <p className="preset-import-export__current-info">
+          <strong>{currentPresetName}</strong>
+          {preampGain !== 0 && (
+            <span> ({preampGain > 0 ? '+' : ''}{preampGain.toFixed(1)}dB)</span>
+          )}
+        </p>
       </div>
 
       {/* Status Messages */}
@@ -347,28 +302,14 @@ const PresetImportExport = () => {
         </div>
       )}
 
-      {/* Help Section */}
+      {/* Compact Help */}
       <div className="preset-import-export__help">
         <details>
-          <summary>Supported Formats</summary>
+          <summary>Formats: AutoEq, JSON, PowerAmp, Qudelix</summary>
           <div className="preset-import-export__help-content">
-            <ul>
-              <li><strong>Native JSON:</strong> Saku player's native format with full metadata</li>
-              <li><strong>AutoEq ParametricEQ.txt:</strong> Text files from AutoEq headphone corrections</li>
-              <li><strong>AutoEq JSON:</strong> JSON format AutoEq presets</li>
-              <li><strong>PowerAmp XML:</strong> Export for PowerAmp music player (10 fixed bands)</li>
-              <li><strong>Qudelix JSON:</strong> Export for Qudelix 5K DAC/Amp devices</li>
-            </ul>
-            <div className="preset-import-export__autoeq-guide">
-              <p><strong>How to get AutoEq presets:</strong></p>
-              <ol>
-                <li>Visit <a href="https://github.com/jaakkopasanen/AutoEq" target="_blank" rel="noopener noreferrer">AutoEq on GitHub</a></li>
-                <li>Navigate to: <code>results/[brand]/[model]/</code></li>
-                <li>Download the <strong>ParametricEQ.txt</strong> file</li>
-                <li>Import it here for headphone correction</li>
-              </ol>
-              <p><em>Example: Sony WH-1000XM4 → results/Sony/WH-1000XM4/ParametricEQ.txt</em></p>
-            </div>
+            <p><strong>AutoEq:</strong> Get presets from <a href="https://github.com/jaakkopasanen/AutoEq" target="_blank" rel="noopener noreferrer">github.com/jaakkopasanen/AutoEq</a></p>
+            <p><strong>Import:</strong> Supports .txt, .json, .xml files</p>
+            <p><strong>Export:</strong> Choose format from dropdown</p>
           </div>
         </details>
       </div>

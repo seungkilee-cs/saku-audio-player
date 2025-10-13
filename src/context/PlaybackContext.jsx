@@ -191,6 +191,9 @@ export const PlaybackProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [activeSource, setActiveSource] = useState("none");
+  const [repeatMode, setRepeatMode] = useState('all'); // 'off', 'all', 'one'
+  const [shuffleMode, setShuffleMode] = useState(false);
+  const [shuffleOrder, setShuffleOrder] = useState([]);
   const objectUrlsRef = useRef([]);
   const [peqState, dispatchPeq] = useReducer(peqReducer, initialPeqState);
 
@@ -289,12 +292,68 @@ export const PlaybackProvider = ({ children }) => {
   );
 
   const playNext = useCallback(() => {
-    playTrackAt(currentTrackIndex + 1);
-  }, [currentTrackIndex, playTrackAt]);
+    if (tracks.length === 0) return;
+    
+    // Repeat one: replay current track
+    if (repeatMode === 'one') {
+      playTrackAt(currentTrackIndex);
+      return;
+    }
+    
+    let nextIndex;
+    if (shuffleMode && shuffleOrder.length > 0) {
+      // Shuffle mode: use shuffle order
+      const currentPos = shuffleOrder.indexOf(currentTrackIndex);
+      if (currentPos === shuffleOrder.length - 1) {
+        // At end of shuffle order
+        if (repeatMode === 'all') {
+          nextIndex = shuffleOrder[0]; // Loop back to start
+        } else {
+          return; // Stop at end
+        }
+      } else {
+        nextIndex = shuffleOrder[currentPos + 1];
+      }
+    } else {
+      // Normal mode
+      if (currentTrackIndex === tracks.length - 1) {
+        // At last track
+        if (repeatMode === 'all') {
+          nextIndex = 0; // Loop back to start
+        } else {
+          return; // Stop at end
+        }
+      } else {
+        nextIndex = currentTrackIndex + 1;
+      }
+    }
+    
+    playTrackAt(nextIndex);
+  }, [currentTrackIndex, playTrackAt, tracks.length, repeatMode, shuffleMode, shuffleOrder]);
 
   const playPrevious = useCallback(() => {
-    playTrackAt(currentTrackIndex - 1);
-  }, [currentTrackIndex, playTrackAt]);
+    if (tracks.length === 0) return;
+    
+    let prevIndex;
+    if (shuffleMode && shuffleOrder.length > 0) {
+      // Shuffle mode: use shuffle order
+      const currentPos = shuffleOrder.indexOf(currentTrackIndex);
+      if (currentPos === 0) {
+        prevIndex = shuffleOrder[shuffleOrder.length - 1]; // Loop to end
+      } else {
+        prevIndex = shuffleOrder[currentPos - 1];
+      }
+    } else {
+      // Normal mode
+      if (currentTrackIndex === 0) {
+        prevIndex = tracks.length - 1; // Loop to end
+      } else {
+        prevIndex = currentTrackIndex - 1;
+      }
+    }
+    
+    playTrackAt(prevIndex);
+  }, [currentTrackIndex, playTrackAt, tracks.length, shuffleMode, shuffleOrder]);
 
   const replaceTracks = useCallback(
     async (newTracks, options = {}) => {
@@ -308,8 +367,12 @@ export const PlaybackProvider = ({ children }) => {
     [applyTracks],
   );
 
-  const resetToDefault = useCallback(() => {
-    initialize();
+  const resetToDefault = useCallback(async () => {
+    // Clear current playlist first
+    setTracks([]);
+    setCurrentTrackIndex(0);
+    // Then load default tracks
+    await initialize();
   }, [initialize]);
 
   const clearPlaylist = useCallback(() => {
@@ -319,6 +382,47 @@ export const PlaybackProvider = ({ children }) => {
     setLoading(false);
     setError(null);
   }, []);
+
+  // Shuffle functionality
+  const toggleShuffle = useCallback(() => {
+    if (!shuffleMode) {
+      // Enabling shuffle: create shuffle order
+      const indices = tracks.map((_, i) => i);
+      const otherIndices = indices.filter(i => i !== currentTrackIndex);
+      // Fisher-Yates shuffle
+      for (let i = otherIndices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [otherIndices[i], otherIndices[j]] = [otherIndices[j], otherIndices[i]];
+      }
+      setShuffleOrder([currentTrackIndex, ...otherIndices]);
+    } else {
+      // Disabling shuffle: clear order
+      setShuffleOrder([]);
+    }
+    setShuffleMode(!shuffleMode);
+  }, [shuffleMode, tracks, currentTrackIndex]);
+
+  // Repeat mode cycling: off -> all -> one -> off
+  const toggleRepeatMode = useCallback(() => {
+    setRepeatMode(prev => {
+      if (prev === 'off') return 'all';
+      if (prev === 'all') return 'one';
+      return 'off';
+    });
+  }, []);
+
+  // Update shuffle order when tracks change
+  useEffect(() => {
+    if (shuffleMode && tracks.length > 0) {
+      const indices = tracks.map((_, i) => i);
+      const otherIndices = indices.filter(i => i !== currentTrackIndex);
+      for (let i = otherIndices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [otherIndices[i], otherIndices[j]] = [otherIndices[j], otherIndices[i]];
+      }
+      setShuffleOrder([currentTrackIndex, ...otherIndices]);
+    }
+  }, [tracks.length]); // Only when track count changes
 
   const [visualSettings, setVisualSettings] = useState({
     showPetals: true,
@@ -423,6 +527,10 @@ export const PlaybackProvider = ({ children }) => {
       playPrevious,
       resetToDefault,
       clearPlaylist,
+      repeatMode,
+      shuffleMode,
+      toggleRepeatMode,
+      toggleShuffle,
       peqState,
       updatePeqBand,
       updateAllPeqBands,
@@ -449,6 +557,10 @@ export const PlaybackProvider = ({ children }) => {
       loading,
       error,
       activeSource,
+      repeatMode,
+      shuffleMode,
+      toggleRepeatMode,
+      toggleShuffle,
       peqState,
       loadPeqPreset,
       setPeqEnabled,

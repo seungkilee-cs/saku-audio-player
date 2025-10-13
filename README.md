@@ -1,8 +1,8 @@
-# Saku Audio Player
+# [Saku Audio Player](https://seungkilee-cs.github.io/saku-audio-player/)
 
 > 咲く, Let your music bloom
 
-A web-based audio player with advanced parametric equalizer capabilities.
+A web-based audio player with autoEq compatible 10 band parametric equalizer, built with Reactjs.
 
 ## Screenshots
 ### Playser
@@ -48,16 +48,29 @@ Audio Player   |  Playlist
 - Accessibility compliant interface
 
 ## TODO
+- [x] UI Clean up and Consistency
+   - [x] Font consistency
+   - [x] PEQ Panel theme consistency and font consistency
+   - [x] Playlist margin and track item handling
+
 - [ ] Playlist management enhancements
    - [ ] remove individual track
    - [ ] drag and move track order
    - [ ] Repeat modes (currently repeat all by default)
-- [ ] UI Clean up
+
 - [ ] UX Revamp for more consistent experience on both Mobile and Browser
+   - [x] playlist responsive
+   - [x] PEQ responsive
+   - [ ] Panel Control Mobile support
+   - [x] Keyboard shortcut modal
+   - [ ] Player responsive (vertical)
+
+- [ ] AutoEq Search Integration
 - [ ] Memory leak testing and optimization 
-- [ ] Electron App for Desktop usage
+
 - [ ] Consolidate PEQ import
 - [ ] PEQ modularization
+- [ ] Electron App for Desktop usage
 
 
 ## Keyboard Shortcuts

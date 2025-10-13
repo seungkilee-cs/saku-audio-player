@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { usePlayback } from '../context/PlaybackContext';
-import { DEFAULT_PRESET } from '../utils/peqPresets';
+import { DEFAULT_PRESET, BUNDLED_PRESETS } from '../utils/peqPresets';
 import { loadPresetLibrary } from '../utils/presetLibrary';
 import BandControl from './BandControl';
 import PeqResponseChart from './PeqResponseChart';
@@ -17,49 +17,52 @@ const PeqPanel = () => {
     loadPeqPreset,
     togglePeqBypass,
     setPeqPreamp,
-    togglePeqPreampAuto,
-    clearPeqSettings
+    togglePeqPreampAuto
   } = usePlayback();
 
   const { peqBands, peqBypass, preampGain, preampAuto, currentPresetName, peqNodes } = peqState;
 
-  // Load preset library for keyboard shortcuts
+  // Load preset library for keyboard shortcuts (bundled + user presets)
   const presetLibrary = useMemo(() => {
     try {
-      return loadPresetLibrary();
+      const userPresets = loadPresetLibrary();
+      const bundledPresets = Object.values(BUNDLED_PRESETS);
+      return [...bundledPresets, ...userPresets];
     } catch (error) {
       console.warn('Could not load preset library:', error);
-      return [];
+      return Object.values(BUNDLED_PRESETS);
     }
   }, []);
+
+  // Preset cycling logic
+  const cyclePrevPreset = useCallback(() => {
+    if (presetLibrary.length === 0) return;
+    
+    const currentIndex = presetLibrary.findIndex(p => p.name === currentPresetName);
+    // If not found (-1) or at first preset (0), go to last preset
+    const prevIndex = (currentIndex <= 0) ? presetLibrary.length - 1 : currentIndex - 1;
+    loadPeqPreset(presetLibrary[prevIndex]);
+  }, [presetLibrary, currentPresetName, loadPeqPreset]);
+
+  const cycleNextPreset = useCallback(() => {
+    if (presetLibrary.length === 0) return;
+    
+    const currentIndex = presetLibrary.findIndex(p => p.name === currentPresetName);
+    // If not found (-1) or at last preset, go to first preset
+    const nextIndex = (currentIndex < 0 || currentIndex >= presetLibrary.length - 1) ? 0 : currentIndex + 1;
+    loadPeqPreset(presetLibrary[nextIndex]);
+  }, [presetLibrary, currentPresetName, loadPeqPreset]);
 
   // Keyboard shortcut actions
   const shortcutActions = useMemo(() => ({
     toggleBypass: () => togglePeqBypass(),
-    previousPreset: () => cyclePrevPreset(),
-    nextPreset: () => cycleNextPreset(),
+    previousPreset: cyclePrevPreset,
+    nextPreset: cycleNextPreset,
     resetToFlat: () => loadPeqPreset(DEFAULT_PRESET)
-  }), [togglePeqBypass, loadPeqPreset]);
-
-  // Preset cycling logic
-  const cyclePrevPreset = () => {
-    if (presetLibrary.length === 0) return;
-    
-    const currentIndex = presetLibrary.findIndex(p => p.name === currentPresetName);
-    const prevIndex = currentIndex <= 0 ? presetLibrary.length - 1 : currentIndex - 1;
-    loadPeqPreset(presetLibrary[prevIndex]);
-  };
-
-  const cycleNextPreset = () => {
-    if (presetLibrary.length === 0) return;
-    
-    const currentIndex = presetLibrary.findIndex(p => p.name === currentPresetName);
-    const nextIndex = currentIndex >= presetLibrary.length - 1 ? 0 : currentIndex + 1;
-    loadPeqPreset(presetLibrary[nextIndex]);
-  };
+  }), [togglePeqBypass, cyclePrevPreset, cycleNextPreset, loadPeqPreset]);
 
   // Enable keyboard shortcuts
-  const { shortcuts } = useKeyboardShortcuts(shortcutActions, true);
+  useKeyboardShortcuts(shortcutActions, true);
 
 
 
@@ -74,33 +77,72 @@ const PeqPanel = () => {
 
   return (
     <div className="peq-panel">
-      <div className="peq-panel__header">
-        <div className="peq-panel__title-section">
-          <h3>Parametric EQ</h3>
-          <ClippingMonitor peqChain={peqNodes} />
-        </div>
-        
-        <div className="peq-panel__global-controls">
-          <div className="peq-control-group">
-            <label>Current Preset:</label>
-            <span className="peq-current-preset">{currentPresetName}</span>
-          </div>
+      {/* Header with Clipping Monitor */}
+      <div className="peq-panel__title-section">
+        <h3>Equalizer</h3>
+        <ClippingMonitor peqChain={peqNodes} />
+      </div>
 
-          <div className="peq-control-group">
+      {/* Compact Controls */}
+      <div className="peq-panel__global-controls">
+        {/* Preset Navigation */}
+        <div className="peq-panel__preset-row">
+          <div className="peq-panel__preset-name" title={currentPresetName}>
+            {currentPresetName}
+          </div>
+          <div className="peq-panel__preset-actions">
             <button 
               type="button"
-              className={`peq-bypass-btn ${peqBypass ? 'bypassed' : ''}`}
-              onClick={() => togglePeqBypass()}
+              className="peq-panel__preset-nav"
+              onClick={cyclePrevPreset}
+              title="Previous Preset (Shift + ←)"
+              aria-label="Previous Preset"
             >
-              {peqBypass ? 'Bypassed' : 'Active'}
+              ◀
+            </button>
+            <button 
+              type="button"
+              className="peq-panel__preset-nav"
+              onClick={cycleNextPreset}
+              title="Next Preset (Shift + →)"
+              aria-label="Next Preset"
+            >
+              ▶
             </button>
           </div>
+        </div>
 
-          <div className="peq-control-group">
-            <label htmlFor="preamp-slider">
-              Preamp: {preampGain.toFixed(1)} dB
-              {preampAuto && <span className="auto-indicator">(Auto)</span>}
-            </label>
+        {/* Quick Actions */}
+        <div className="peq-panel__quick-actions">
+          <button 
+            type="button"
+            className={`peq-bypass-btn ${peqBypass ? 'bypassed' : ''}`}
+            onClick={() => togglePeqBypass()}
+            title={peqBypass ? 'EQ is Bypassed (Press T)' : 'EQ is Active (Press T)'}
+          >
+            {peqBypass ? 'Bypassed' : 'Active'}
+          </button>
+
+          <button 
+            type="button"
+            className="reset-btn"
+            onClick={handleResetToFlat}
+            title="Reset to Flat (Press R)"
+          >
+            Reset to Flat
+          </button>
+        </div>
+
+        {/* Preamp Control */}
+        <div className="peq-control-group">
+          <label htmlFor="preamp-slider">
+            <span>Preamp</span>
+            <span className="peq-control-group__value">
+              {preampGain.toFixed(1)} dB
+              {preampAuto && <span className="auto-indicator"> (Auto)</span>}
+            </span>
+          </label>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <input
               id="preamp-slider"
               type="range"
@@ -109,36 +151,17 @@ const PeqPanel = () => {
               step="0.1"
               value={preampGain}
               onChange={handlePreampChange}
+              style={{ flex: 1 }}
             />
             <button 
               type="button"
               className={`auto-toggle ${preampAuto ? 'active' : ''}`}
               onClick={() => togglePeqPreampAuto()}
+              title="Toggle Auto Preamp"
             >
               Auto
             </button>
           </div>
-
-          <button 
-            type="button"
-            className="reset-btn"
-            onClick={handleResetToFlat}
-          >
-            Reset
-          </button>
-
-          <button 
-            type="button"
-            className="clear-settings-btn"
-            onClick={() => {
-              if (window.confirm('Clear all saved EQ settings and reset to default? This cannot be undone.')) {
-                clearPeqSettings();
-              }
-            }}
-            title="Clear all saved settings and reset to default"
-          >
-            Clear All
-          </button>
         </div>
       </div>
 
@@ -159,8 +182,8 @@ const PeqPanel = () => {
 
       <PresetLibrary />
 
-      {/* Keyboard Shortcuts Help */}
-      <div className="peq-panel__shortcuts-help">
+      {/* Keyboard Shortcuts Help - Moved to Header Modal */}
+      {/* <div className="peq-panel__shortcuts-help">
         <details>
           <summary>Keyboard Shortcuts</summary>
           <div className="shortcuts-help-content">
@@ -172,7 +195,7 @@ const PeqPanel = () => {
             ))}
           </div>
         </details>
-      </div>
+      </div> */}
     </div>
   );
 };

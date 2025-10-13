@@ -7,8 +7,7 @@ import {
   removePresetFromLibrary,
   togglePresetFavorite,
   incrementPresetUsage,
-  getFavoritePresets,
-  getMostUsedPresets
+  getFavoritePresets
 } from '../utils/presetLibrary';
 import { getStorageInfo } from '../utils/peqPersistence';
 import '../styles/PresetLibrary.css';
@@ -19,12 +18,24 @@ const PresetLibrary = () => {
   
   const [userPresets, setUserPresets] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('all'); // 'all', 'favorites', 'recent'
+  const [activeTab, setActiveTab] = useState('all'); // 'all', 'custom', 'favorites'
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [newPresetName, setNewPresetName] = useState('');
   const [saveStatus, setSaveStatus] = useState({ type: 'idle', message: '' });
   const [storageInfo, setStorageInfo] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null); // { presetId, presetName }
+
+  // ESC key to close modals
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') {
+        if (showSaveDialog) setShowSaveDialog(false);
+        if (deleteConfirmation) setDeleteConfirmation(null);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [showSaveDialog, deleteConfirmation]);
 
   // Load user presets and storage info on mount
   useEffect(() => {
@@ -168,8 +179,9 @@ const PresetLibrary = () => {
       case 'favorites':
         presets = getFavoritePresets();
         break;
-      case 'recent':
-        presets = getMostUsedPresets(10);
+      case 'custom':
+        // Only show user-created presets (exclude bundled)
+        presets = userPresets.filter(p => p.source === 'user' || !p.source);
         break;
       case 'all':
       default:
@@ -189,6 +201,9 @@ const PresetLibrary = () => {
   }, [activeTab, searchQuery, userPresets]);
 
   const filteredPresets = getFilteredPresets();
+  const customPresetsCount = userPresets.filter(p => p.source === 'user' || !p.source).length;
+  const bundledPresetsCount = Object.keys(BUNDLED_PRESETS).length;
+  const totalPresetsCount = userPresets.length + bundledPresetsCount;
 
   return (
     <div className="preset-library">
@@ -222,7 +237,14 @@ const PresetLibrary = () => {
             className={`preset-library__tab ${activeTab === 'all' ? 'active' : ''}`}
             onClick={() => setActiveTab('all')}
           >
-            All ({userPresets.length})
+            All ({totalPresetsCount})
+          </button>
+          <button
+            type="button"
+            className={`preset-library__tab ${activeTab === 'custom' ? 'active' : ''}`}
+            onClick={() => setActiveTab('custom')}
+          >
+            👤 Custom ({customPresetsCount})
           </button>
           <button
             type="button"
@@ -231,46 +253,41 @@ const PresetLibrary = () => {
           >
             ⭐ Favorites
           </button>
-          <button
-            type="button"
-            className={`preset-library__tab ${activeTab === 'recent' ? 'active' : ''}`}
-            onClick={() => setActiveTab('recent')}
-          >
-            🔥 Most Used
-          </button>
         </div>
       </div>
 
-      {/* Bundled Presets */}
-      <div className="preset-library__section">
-        <h5>Built-in Presets</h5>
-        <div className="preset-library__grid">
-          {Object.values(BUNDLED_PRESETS).map((preset) => (
-            <div
-              key={preset.name}
-              className={`preset-library__item preset-library__item--bundled ${
-                currentPresetName === preset.name ? 'active' : ''
-              }`}
-            >
-              <div className="preset-library__item-header">
-                <h6>{preset.name}</h6>
+      {/* Bundled Presets - Only show in "All" tab */}
+      {activeTab === 'all' && (
+        <div className="preset-library__section">
+          <h5>Built-in Presets</h5>
+          <div className="preset-library__grid">
+            {Object.values(BUNDLED_PRESETS).map((preset) => (
+              <div
+                key={preset.name}
+                className={`preset-library__item preset-library__item--bundled ${
+                  currentPresetName === preset.name ? 'active' : ''
+                }`}
+              >
+                <div className="preset-library__item-header">
+                  <h6>{preset.name}</h6>
+                </div>
+                <p className="preset-library__item-description">
+                  {preset.description}
+                </p>
+                <div className="preset-library__item-actions">
+                  <button
+                    type="button"
+                    className="preset-library__load-btn"
+                    onClick={() => handleLoadPreset(preset)}
+                  >
+                    Load
+                  </button>
+                </div>
               </div>
-              <p className="preset-library__item-description">
-                {preset.description}
-              </p>
-              <div className="preset-library__item-actions">
-                <button
-                  type="button"
-                  className="preset-library__load-btn"
-                  onClick={() => handleLoadPreset(preset)}
-                >
-                  Load
-                </button>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* User Presets */}
       <div className="preset-library__section">

@@ -1,2 +1,0 @@
-- [ ] Volume Design
-- [ ] Player Size

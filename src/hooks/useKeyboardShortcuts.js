@@ -127,6 +127,12 @@ const useKeyboardShortcuts = (actions, enabled = true) => {
         return 'Playlist Modal Toggled';
       },
       
+      'a': () => {
+        event.preventDefault();
+        currentActions.addToPlaylist?.();
+        return 'Add to Playlist';
+      },
+      
       ' ': () => {
         // Spacebar for play/pause (if available)
         if (currentActions.togglePlayback) {

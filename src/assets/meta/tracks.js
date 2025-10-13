@@ -1,7 +1,6 @@
 import * as mm from "music-metadata";
 import images from "../img";
 import audio from "../audio";
-// import defaultImage from "../img/pale_blue.png";
 
 export async function loadBundledTracks() {
   const entries = Object.entries(audio);
@@ -10,7 +9,7 @@ export async function loadBundledTracks() {
       key,
       src,
       blobResolver: () => fetch(src).then((response) => response.blob()),
-      fallbackImage: images[key.toLowerCase()] || defaultImage,
+      fallbackImage: images[key.toLowerCase()] || null,
       sourceType: "bundled",
     }),
   );

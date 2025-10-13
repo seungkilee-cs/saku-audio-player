@@ -134,6 +134,17 @@
   flex-shrink: 0;
 }
 
+/* Dark Theme */
+[data-theme="dark"] .volume-percentage {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+[data-theme="dark"] .volume-toggle {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.9);
+}
+
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .volume-control {

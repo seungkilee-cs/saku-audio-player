@@ -1,0 +1,138 @@
+/* App Layout - Integrated Three-Panel Design */
+
+.app-layout {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100vh;
+  width: 100vw;
+  background: linear-gradient(135deg, #0a0a0b 0%, #1a1a1d 100%);
+  color: #f8fafc;
+  overflow: hidden;
+}
+
+/* Main Content Area */
+.app-main {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  overflow: hidden;
+  transition: grid-template-columns 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Desktop: Three-column layout (1280px+) */
+@media (min-width: 1280px) {
+  .app-main {
+    grid-template-columns: 280px 1fr 440px;
+  }
+
+  .app-main.left-collapsed {
+    grid-template-columns: 48px 1fr 440px;
+  }
+
+  .app-main.right-collapsed {
+    grid-template-columns: 280px 1fr 48px;
+  }
+
+  .app-main.left-collapsed.right-collapsed {
+    grid-template-columns: 48px 1fr 48px;
+  }
+}
+
+/* Tablet/Mobile: Overlay panels (< 1280px) */
+@media (max-width: 1279px) {
+  .app-main {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+    padding: 0.5rem;
+    position: relative;
+  }
+
+  .app-main .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 90vw;
+    max-width: 400px;
+    z-index: 200 !important;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    margin: 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 
+                0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  }
+
+  .app-main .sidebar.sidebar--left {
+    left: 0;
+  }
+
+  .app-main .sidebar.sidebar--right {
+    right: 0;
+    transform: translateX(100%);
+  }
+
+  .app-main .sidebar.sidebar--open {
+    transform: translateX(0);
+  }
+
+  /* Overlay backdrop */
+  .app-main::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(6px);
+    z-index: 199 !important;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .app-main.has-open-sidebar::before {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Ensure center content is below overlay */
+  .app-center {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+/* Center Panel */
+.app-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Smooth transitions */
+.app-main > * {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* Focus management */
+.app-layout:focus-within {
+  outline: none;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .app-layout {
+    background: #000;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .app-main,
+  .app-main > * {
+    transition: none;
+  }
+}
