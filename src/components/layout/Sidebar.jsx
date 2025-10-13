@@ -13,23 +13,30 @@ const Sidebar = ({
       className={`sidebar sidebar--${position} ${isOpen ? 'sidebar--open' : 'sidebar--collapsed'}`}
       aria-label={title}
     >
-      <div className="sidebar__header">
-        {isOpen && title && (
+      {isOpen && (
+        <div className="sidebar__header">
           <h2 className="sidebar__title">{title}</h2>
-        )}
+          <button 
+            className="sidebar__toggle"
+            onClick={onToggle}
+            aria-label={`Collapse ${title}`}
+            title={`Collapse ${title}`}
+          >
+            {position === 'left' ? '◀' : '▶'}
+          </button>
+        </div>
+      )}
+      
+      {!isOpen && (
         <button 
-          className="sidebar__toggle"
+          className="sidebar__toggle sidebar__toggle--collapsed"
           onClick={onToggle}
-          aria-label={isOpen ? `Collapse ${title}` : `Expand ${title}`}
-          title={isOpen ? `Collapse ${title}` : `Expand ${title}`}
+          aria-label={`Expand ${title}`}
+          title={`Expand ${title}`}
         >
-          {isOpen ? (
-            position === 'left' ? '◀' : '▶'
-          ) : (
-            position === 'left' ? '▶' : '◀'
-          )}
+          {position === 'left' ? '▶' : '◀'}
         </button>
-      </div>
+      )}
       
       <div className="sidebar__content">
         {children}

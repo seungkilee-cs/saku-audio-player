@@ -1,36 +1,54 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import useTheme from '../../hooks/useTheme';
 import '../../styles/Header.css';
 
 const Header = ({ onTogglePlaylist, onToggleEq, playlistOpen, eqOpen }) => {
-  const { theme, toggleTheme, isDark } = useTheme();
+  const { toggleTheme, isDark } = useTheme();
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
+
+  const shortcuts = [
+    { category: 'Playback', items: [
+      { key: 'Space', description: 'Play/Pause' },
+      { key: '← / →', description: 'Skip ±10 seconds' },
+      { key: '↑ / ↓', description: 'Volume ±10%' },
+      { key: 'N', description: 'Next track' },
+      { key: 'B', description: 'Previous track' },
+      { key: 'M', description: 'Mute/Unmute' },
+    ]},
+    { category: 'Panels', items: [
+      { key: 'P', description: 'Toggle Playlist' },
+      { key: 'E', description: 'Toggle EQ' },
+      { key: 'A', description: 'Add to Playlist' },
+    ]},
+    { category: 'EQ Controls', items: [
+      { key: 'T', description: 'Toggle EQ Bypass' },
+      { key: 'R', description: 'Reset EQ to Flat' },
+      { key: 'Shift + ← →', description: 'Cycle Presets' },
+    ]},
+    { category: 'Help', items: [
+      { key: '?', description: 'Show this help' },
+      { key: 'Esc', description: 'Close modal' },
+    ]},
+  ];
+
   const handleShowShortcuts = () => {
-    const shortcuts = `
-Keyboard Shortcuts:
-
-Playback:
-  Space       - Play/Pause
-  ← / →       - Skip ±10 seconds
-  ↑ / ↓       - Volume ±10%
-  N           - Next track
-  B           - Previous track
-  M           - Mute/Unmute
-
-Panels:
-  P           - Toggle Playlist
-  E           - Toggle EQ
-  
-EQ Controls:
-  T           - Toggle EQ Bypass
-  R           - Reset EQ to Flat
-  Shift + ← → - Cycle Presets
-
-Help:
-  ?           - Show this help
-    `.trim();
-    
-    alert(shortcuts);
+    setShowShortcutsModal(true);
   };
+
+  const handleCloseModal = () => {
+    setShowShortcutsModal(false);
+  };
+
+  // ESC key to close modal
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape' && showShortcutsModal) {
+        handleCloseModal();
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [showShortcutsModal]);
 
   return (
     <header className="app-header">
@@ -87,6 +105,32 @@ Help:
           <span className="header-btn__icon">❓</span>
         </button>
       </div>
+      {/* Keyboard Shortcuts Modal */}
+      {showShortcutsModal && (
+        <div className="shortcuts-modal-overlay" onClick={handleCloseModal}>
+          <div className="shortcuts-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="shortcuts-modal__header">
+              <h2>Keyboard Shortcuts</h2>
+              <button className="shortcuts-modal__close" onClick={handleCloseModal}>✕</button>
+            </div>
+            <div className="shortcuts-modal__content">
+              {shortcuts.map((section, idx) => (
+                <div key={idx} className="shortcuts-section">
+                  <h3 className="shortcuts-section__title">{section.category}</h3>
+                  <div className="shortcuts-section__items">
+                    {section.items.map((shortcut, i) => (
+                      <div key={i} className="shortcut-item">
+                        <kbd className="shortcut-key">{shortcut.key}</kbd>
+                        <span className="shortcut-description">{shortcut.description}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 };

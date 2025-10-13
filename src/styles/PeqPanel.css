@@ -26,6 +26,7 @@
   font-size: 1rem;
   font-weight: 600;
   letter-spacing: -0.01em;
+  font-family: var(--font-body);
 }
 
 .peq-panel__global-controls {
@@ -260,18 +261,18 @@
 
 .peq-panel__bands {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  gap: 16px;
-  margin-top: 20px;
+  grid-template-columns: repeat(5, 1fr); /* 5 columns = 2 rows for 10 bands */
+  gap: 12px;
+  margin-top: 16px;
 }
 
-/* Band Control Styles */
+/* Band Control Styles - Compact */
 .band-control {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 16px 8px;
+  gap: 8px;
+  padding: 12px 6px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -282,23 +283,25 @@
 }
 
 .band-control__frequency {
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.9);
+  font-family: var(--font-body);
 }
 
 .band-control__gain {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .gain-slider {
   writing-mode: bt-lr; /* IE */
   -webkit-appearance: slider-vertical; /* WebKit */
-  width: 20px;
-  height: 120px;
+  appearance: slider-vertical;
+  width: 18px;
+  height: 100px;
   background: rgba(255, 255, 255, 0.1);
   outline: none;
   border-radius: 10px;
@@ -308,8 +311,8 @@
 .gain-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: #4a90e2;
   cursor: pointer;
@@ -318,8 +321,8 @@
 }
 
 .gain-slider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   background: #4a90e2;
   cursor: pointer;
@@ -333,29 +336,31 @@
 }
 
 .gain-display {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: rgba(255, 255, 255, 0.8);
   font-weight: 500;
-  min-width: 50px;
+  min-width: 45px;
   text-align: center;
+  font-family: var(--font-body);
 }
 
 .band-control__q {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   width: 100%;
 }
 
 .band-control__q label {
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   color: rgba(255, 255, 255, 0.7);
+  font-family: var(--font-body);
 }
 
 .band-control__q input {
   width: 100%;
-  height: 20px;
+  height: 18px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 10px;
   outline: none;
@@ -368,8 +373,9 @@
 }
 
 .q-display {
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.625rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: var(--font-body);
 }
 
 .band-control__type {
@@ -378,13 +384,14 @@
 
 .type-selector {
   width: 100%;
-  padding: 4px 8px;
+  padding: 3px 4px;
+  background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.625rem;
   cursor: pointer;
+  font-family: var(--font-body);
 }
 
 .type-selector:focus {
@@ -446,6 +453,10 @@ anced PeqPanel Header Styles */
 .peq-panel__title-section h3 {
   margin: 0;
   flex: 1;
+  color: #f8fafc;
+  font-size: 1rem;
+  font-weight: 600;
+  font-family: var(--font-body);
 }
 
 /* Keyboard Shortcuts Help Styles */

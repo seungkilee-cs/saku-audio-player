@@ -1,10 +1,11 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { usePlayback } from '../../context/PlaybackContext';
-import Header from './Header';
-import Sidebar from './Sidebar';
 import AudioPlayer from '../AudioPlayer';
-import PeqPanel from '../PeqPanel';
 import Playlist from '../Playlist';
+import PeqPanel from '../PeqPanel';
+import Sidebar from './Sidebar';
+import Header from './Header';
+import useKeyboardShortcuts from '../../hooks/useKeyboardShortcuts';
 import { parseAudioFiles } from '../../assets/meta/tracks';
 import '../../styles/AppLayout.css';
 
@@ -21,8 +22,23 @@ const AppLayout = () => {
     activeSource,
   } = usePlayback();
 
-  const [leftSidebarOpen, setLeftSidebarOpen] = useState(true);
-  const [rightSidebarOpen, setRightSidebarOpen] = useState(true);
+  // Initialize sidebars based on screen width
+  const [leftSidebarOpen, setLeftSidebarOpen] = useState(() => window.innerWidth >= 1280);
+  const [rightSidebarOpen, setRightSidebarOpen] = useState(() => window.innerWidth >= 1280);
+  const playlistRef = useRef(null);
+
+  // Close sidebars on mobile when resizing
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth < 1280) {
+        setLeftSidebarOpen(false);
+        setRightSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const sourceLabels = {
     uploaded: 'Custom Uploads',
@@ -55,6 +71,15 @@ const AppLayout = () => {
     setRightSidebarOpen(prev => !prev);
   }, []);
 
+  const handleAddToPlaylist = useCallback(() => {
+    playlistRef.current?.triggerAdd();
+  }, []);
+
+  // Keyboard shortcuts for app-level actions
+  useKeyboardShortcuts({
+    addToPlaylist: handleAddToPlaylist
+  }, true);
+
   return (
     <div className="app-layout">
       <Header 
@@ -64,7 +89,7 @@ const AppLayout = () => {
         eqOpen={rightSidebarOpen}
       />
       
-      <main className={`app-main ${!leftSidebarOpen ? 'left-collapsed' : ''} ${!rightSidebarOpen ? 'right-collapsed' : ''}`}>
+      <main className={`app-main ${!leftSidebarOpen ? 'left-collapsed' : ''} ${!rightSidebarOpen ? 'right-collapsed' : ''} ${leftSidebarOpen || rightSidebarOpen ? 'has-open-sidebar' : ''}`}>
         {/* Left Sidebar: Playlist */}
         <Sidebar 
           position="left" 
@@ -73,6 +98,7 @@ const AppLayout = () => {
           title="Playlist"
         >
           <Playlist
+            ref={playlistRef}
             tracks={tracks}
             currentTrackIndex={currentTrackIndex}
             onTrackSelect={playTrackAt}

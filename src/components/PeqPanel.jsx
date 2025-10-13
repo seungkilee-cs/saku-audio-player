@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { usePlayback } from '../context/PlaybackContext';
-import { DEFAULT_PRESET } from '../utils/peqPresets';
+import { DEFAULT_PRESET, BUNDLED_PRESETS } from '../utils/peqPresets';
 import { loadPresetLibrary } from '../utils/presetLibrary';
 import BandControl from './BandControl';
 import PeqResponseChart from './PeqResponseChart';
@@ -17,49 +17,52 @@ const PeqPanel = () => {
     loadPeqPreset,
     togglePeqBypass,
     setPeqPreamp,
-    togglePeqPreampAuto,
-    clearPeqSettings
+    togglePeqPreampAuto
   } = usePlayback();
 
   const { peqBands, peqBypass, preampGain, preampAuto, currentPresetName, peqNodes } = peqState;
 
-  // Load preset library for keyboard shortcuts
+  // Load preset library for keyboard shortcuts (bundled + user presets)
   const presetLibrary = useMemo(() => {
     try {
-      return loadPresetLibrary();
+      const userPresets = loadPresetLibrary();
+      const bundledPresets = Object.values(BUNDLED_PRESETS);
+      return [...bundledPresets, ...userPresets];
     } catch (error) {
       console.warn('Could not load preset library:', error);
-      return [];
+      return Object.values(BUNDLED_PRESETS);
     }
   }, []);
+
+  // Preset cycling logic
+  const cyclePrevPreset = useCallback(() => {
+    if (presetLibrary.length === 0) return;
+    
+    const currentIndex = presetLibrary.findIndex(p => p.name === currentPresetName);
+    // If not found (-1) or at first preset (0), go to last preset
+    const prevIndex = (currentIndex <= 0) ? presetLibrary.length - 1 : currentIndex - 1;
+    loadPeqPreset(presetLibrary[prevIndex]);
+  }, [presetLibrary, currentPresetName, loadPeqPreset]);
+
+  const cycleNextPreset = useCallback(() => {
+    if (presetLibrary.length === 0) return;
+    
+    const currentIndex = presetLibrary.findIndex(p => p.name === currentPresetName);
+    // If not found (-1) or at last preset, go to first preset
+    const nextIndex = (currentIndex < 0 || currentIndex >= presetLibrary.length - 1) ? 0 : currentIndex + 1;
+    loadPeqPreset(presetLibrary[nextIndex]);
+  }, [presetLibrary, currentPresetName, loadPeqPreset]);
 
   // Keyboard shortcut actions
   const shortcutActions = useMemo(() => ({
     toggleBypass: () => togglePeqBypass(),
-    previousPreset: () => cyclePrevPreset(),
-    nextPreset: () => cycleNextPreset(),
+    previousPreset: cyclePrevPreset,
+    nextPreset: cycleNextPreset,
     resetToFlat: () => loadPeqPreset(DEFAULT_PRESET)
-  }), [togglePeqBypass, loadPeqPreset]);
-
-  // Preset cycling logic
-  const cyclePrevPreset = () => {
-    if (presetLibrary.length === 0) return;
-    
-    const currentIndex = presetLibrary.findIndex(p => p.name === currentPresetName);
-    const prevIndex = currentIndex <= 0 ? presetLibrary.length - 1 : currentIndex - 1;
-    loadPeqPreset(presetLibrary[prevIndex]);
-  };
-
-  const cycleNextPreset = () => {
-    if (presetLibrary.length === 0) return;
-    
-    const currentIndex = presetLibrary.findIndex(p => p.name === currentPresetName);
-    const nextIndex = currentIndex >= presetLibrary.length - 1 ? 0 : currentIndex + 1;
-    loadPeqPreset(presetLibrary[nextIndex]);
-  };
+  }), [togglePeqBypass, cyclePrevPreset, cycleNextPreset, loadPeqPreset]);
 
   // Enable keyboard shortcuts
-  const { shortcuts } = useKeyboardShortcuts(shortcutActions, true);
+  useKeyboardShortcuts(shortcutActions, true);
 
 
 
@@ -179,8 +182,8 @@ const PeqPanel = () => {
 
       <PresetLibrary />
 
-      {/* Keyboard Shortcuts Help */}
-      <div className="peq-panel__shortcuts-help">
+      {/* Keyboard Shortcuts Help - Moved to Header Modal */}
+      {/* <div className="peq-panel__shortcuts-help">
         <details>
           <summary>Keyboard Shortcuts</summary>
           <div className="shortcuts-help-content">
@@ -192,7 +195,7 @@ const PeqPanel = () => {
             ))}
           </div>
         </details>
-      </div>
+      </div> */}
     </div>
   );
 };

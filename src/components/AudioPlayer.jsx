@@ -1,4 +1,3 @@
-// src/components/AudioPlayer.jsx
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import Play from "../assets/img/play.svg?react";
 import Pause from "../assets/img/pause.svg?react";
@@ -47,6 +46,10 @@ const AudioPlayer = ({
     setPeqPreamp,
     togglePeqPreampAuto,
     loadPeqPreset,
+    repeatMode,
+    shuffleMode,
+    toggleRepeatMode,
+    toggleShuffle,
   } = usePlayback();
   const { peqBands, peqBypass, preampGain, preampAuto, peqNodes } = peqState;
   const [trackProgress, setTrackProgress] = useState(0);
@@ -659,6 +662,26 @@ const AudioPlayer = ({
         </div>
 
         <div className="audio-player__footer">
+          <div className="audio-player__playback-controls">
+            <button
+              type="button"
+              className={`audio-player__mode-btn ${shuffleMode ? 'active' : ''}`}
+              onClick={toggleShuffle}
+              title={shuffleMode ? 'Shuffle: On' : 'Shuffle: Off'}
+              aria-label="Toggle Shuffle"
+            >
+              🔀
+            </button>
+            <button
+              type="button"
+              className={`audio-player__mode-btn ${repeatMode !== 'off' ? 'active' : ''}`}
+              onClick={toggleRepeatMode}
+              title={`Repeat: ${repeatMode === 'off' ? 'Off' : repeatMode === 'all' ? 'All' : 'One'}`}
+              aria-label="Toggle Repeat Mode"
+            >
+              {repeatMode === 'one' ? '🔂' : '🔁'}
+            </button>
+          </div>
           <VolumeControl volume={volume} onVolumeChange={setVolume} />
         </div>
       </div>
