@@ -12,7 +12,7 @@ import { convertToPowerAmp } from '../utils/converters/powerampConverter';
 import { convertToQudelix } from '../utils/converters/qudelixConverter';
 import '../styles/PresetImportExport.css';
 
-const PresetImportExport = () => {
+const PresetImportExport = ({ onPresetAdded }) => {
   const { peqState, loadPeqPreset } = usePlayback();
   const { peqBands, preampGain, currentPresetName } = peqState;
   const fileInputRef = useRef(null);
@@ -95,6 +95,8 @@ const PresetImportExport = () => {
       // Save to library if it's not already there
       try {
         addPresetToLibrary(validation.preset);
+        // Notify parent that preset library has changed
+        onPresetAdded?.();
       } catch (error) {
         console.warn('Could not save to library:', error.message);
       }

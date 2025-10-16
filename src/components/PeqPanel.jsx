@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback, useState } from 'react';
 import { usePlayback } from '../context/PlaybackContext';
 import { DEFAULT_PRESET, BUNDLED_PRESETS } from '../utils/peqPresets';
 import { loadPresetLibrary } from '../utils/presetLibrary';
@@ -22,6 +22,9 @@ const PeqPanel = () => {
 
   const { peqBands, peqBypass, preampGain, preampAuto, currentPresetName, peqNodes } = peqState;
 
+  // State to trigger preset library refresh when presets are added/removed
+  const [presetLibraryVersion, setPresetLibraryVersion] = useState(0);
+
   // Load preset library for keyboard shortcuts (bundled + user presets)
   const presetLibrary = useMemo(() => {
     try {
@@ -32,12 +35,17 @@ const PeqPanel = () => {
       console.warn('Could not load preset library:', error);
       return Object.values(BUNDLED_PRESETS);
     }
+  }, [presetLibraryVersion]); // Fixed: Add dependency to trigger re-evaluation
+
+  // Function to refresh preset library when presets are added/removed
+  const refreshPresetLibrary = useCallback(() => {
+    setPresetLibraryVersion(prev => prev + 1);
   }, []);
 
   // Preset cycling logic
   const cyclePrevPreset = useCallback(() => {
     if (presetLibrary.length === 0) return;
-    
+
     const currentIndex = presetLibrary.findIndex(p => p.name === currentPresetName);
     // If not found (-1) or at first preset (0), go to last preset
     const prevIndex = (currentIndex <= 0) ? presetLibrary.length - 1 : currentIndex - 1;
@@ -46,7 +54,7 @@ const PeqPanel = () => {
 
   const cycleNextPreset = useCallback(() => {
     if (presetLibrary.length === 0) return;
-    
+
     const currentIndex = presetLibrary.findIndex(p => p.name === currentPresetName);
     // If not found (-1) or at last preset, go to first preset
     const nextIndex = (currentIndex < 0 || currentIndex >= presetLibrary.length - 1) ? 0 : currentIndex + 1;
@@ -91,7 +99,7 @@ const PeqPanel = () => {
             {currentPresetName}
           </div>
           <div className="peq-panel__preset-actions">
-            <button 
+            <button
               type="button"
               className="peq-panel__preset-nav"
               onClick={cyclePrevPreset}
@@ -100,7 +108,7 @@ const PeqPanel = () => {
             >
               ◀
             </button>
-            <button 
+            <button
               type="button"
               className="peq-panel__preset-nav"
               onClick={cycleNextPreset}
@@ -114,7 +122,7 @@ const PeqPanel = () => {
 
         {/* Quick Actions */}
         <div className="peq-panel__quick-actions">
-          <button 
+          <button
             type="button"
             className={`peq-bypass-btn ${peqBypass ? 'bypassed' : ''}`}
             onClick={() => togglePeqBypass()}
@@ -123,7 +131,7 @@ const PeqPanel = () => {
             {peqBypass ? 'Bypassed' : 'Active'}
           </button>
 
-          <button 
+          <button
             type="button"
             className="reset-btn"
             onClick={handleResetToFlat}
@@ -153,7 +161,7 @@ const PeqPanel = () => {
               onChange={handlePreampChange}
               style={{ flex: 1 }}
             />
-            <button 
+            <button
               type="button"
               className={`auto-toggle ${preampAuto ? 'active' : ''}`}
               onClick={() => togglePeqPreampAuto()}
@@ -178,9 +186,9 @@ const PeqPanel = () => {
         ))}
       </div>
 
-      <PresetImportExport />
+      <PresetImportExport onPresetAdded={refreshPresetLibrary} />
 
-      <PresetLibrary />
+      <PresetLibrary onPresetChanged={refreshPresetLibrary} />
 
       {/* Keyboard Shortcuts Help - Moved to Header Modal */}
       {/* <div className="peq-panel__shortcuts-help">

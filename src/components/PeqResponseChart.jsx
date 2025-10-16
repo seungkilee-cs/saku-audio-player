@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { usePlayback } from '../context/PlaybackContext';
 import '../styles/PeqResponseChart.css';
 
@@ -25,55 +25,146 @@ const PeqResponseChart = ({ height = 300 }) => {
     return frequencies;
   }, []);
 
-  // Calculate combined frequency response
+  // Memoize the band settings to prevent unnecessary recalculations
+  const bandSettings = useMemo(() => {
+    return peqBands.map(band => ({
+      frequency: band.frequency,
+      gain: band.gain,
+      Q: band.Q,
+      type: band.type
+    }));
+  }, [peqBands]);
+
+  // Calculate theoretical frequency response from EQ band settings
+  // This is independent of audio playback - shows what the EQ curve should look like
   const calculateFrequencyResponse = useCallback(() => {
-    console.log('PeqResponseChart: peqNodes:', peqNodes);
-    console.log('PeqResponseChart: peqNodes?.filters:', peqNodes?.filters);
+    console.log('PeqResponseChart: Calculating frequency response for', bandSettings?.length || 0, 'bands');
     
     const numPoints = 512;
     const frequencies = generateFrequencies(numPoints);
+    const magnitudeDb = new Array(numPoints).fill(0);
     
-    if (!peqNodes?.filters || peqNodes.filters.length === 0) {
-      console.log('PeqResponseChart: No peqNodes or filters available - showing flat response');
-      // Return flat response (0dB) when no audio nodes available
-      return {
-        frequencies: Array.from(frequencies),
-        magnitudeDb: new Array(numPoints).fill(0)
-      };
+    // Calculate response for each frequency point based on EQ bands
+    for (let i = 0; i < numPoints; i++) {
+      const freq = frequencies[i];
+      let totalGain = 0;
+      
+      // Sum contributions from all bands
+      bandSettings.forEach(band => {
+        if (!band || typeof band.gain !== 'number' || Math.abs(band.gain) < 0.001) {
+          return; // Skip flat bands
+        }
+        
+        const bandResponse = calculateBandResponse(freq, band);
+        totalGain += bandResponse;
+      });
+      
+      magnitudeDb[i] = Math.max(-48, Math.min(48, totalGain)); // Clamp to reasonable range
     }
     
-    console.log('PeqResponseChart: Calculating response with', peqNodes.filters.length, 'filters');
-
-    const magnitudeResponse = new Float32Array(numPoints);
-    const phaseResponse = new Float32Array(numPoints);
-    
-    // Initialize combined magnitude to 1.0 (0dB)
-    const combinedMagnitude = new Float32Array(numPoints).fill(1.0);
-    
-    // Multiply magnitude responses from all filters
-    peqNodes.filters.forEach(filter => {
-      try {
-        filter.getFrequencyResponse(frequencies, magnitudeResponse, phaseResponse);
-        
-        for (let i = 0; i < numPoints; i++) {
-          combinedMagnitude[i] *= magnitudeResponse[i];
-        }
-      } catch (error) {
-        console.warn('Failed to get frequency response from filter:', error);
-      }
-    });
-    
-    // Convert to dB and clamp extreme values
-    const magnitudeDb = Array.from(combinedMagnitude, mag => {
-      const db = 20 * Math.log10(Math.max(mag, 0.001)); // Prevent log(0)
-      return Math.max(-48, Math.min(48, db)); // Clamp to reasonable range
-    });
+    console.log('PeqResponseChart: Calculated response with max gain:', Math.max(...magnitudeDb), 'dB');
     
     return {
       frequencies: Array.from(frequencies),
       magnitudeDb
     };
-  }, [peqNodes, generateFrequencies]);
+  }, [bandSettings, generateFrequencies]);
+
+  // Calculate frequency response for a single EQ band using simplified but accurate bell curve math
+  const calculateBandResponse = (frequency, band) => {
+    const { frequency: centerFreq, gain, Q, type } = band;
+    
+    if (!centerFreq || !gain || Math.abs(gain) < 0.001) {
+      return 0;
+    }
+    
+    const qFactor = Q || 1.0;
+    
+    switch (type) {
+      case 'peaking': {
+        // Simple but accurate peaking EQ response using bell curve
+        // This creates the classic bell-shaped response curve
+        
+        // Calculate frequency ratio (how far we are from center frequency)
+        const ratio = frequency / centerFreq;
+        const logRatio = Math.log2(ratio);
+        
+        // Bandwidth calculation: higher Q = narrower bandwidth
+        // Q of 1.0 gives about 2 octave bandwidth, Q of 0.5 gives about 4 octaves
+        const bandwidth = 2.0 / qFactor; // octaves
+        
+        // Bell curve calculation using Gaussian-like function
+        // The response falls off as we move away from center frequency
+        const normalizedDistance = Math.abs(logRatio) / (bandwidth / 2);
+        
+        // Use a smooth bell curve that approaches the gain at center frequency
+        // and falls off smoothly on both sides
+        let response;
+        if (normalizedDistance <= 0.01) {
+          // Very close to center frequency - return full gain
+          response = 1.0;
+        } else {
+          // Bell curve falloff - this creates the smooth peaking response
+          response = 1.0 / (1.0 + Math.pow(normalizedDistance * 2, 2));
+        }
+        
+        return gain * response;
+      }
+      
+      case 'lowshelf': {
+        // Low shelf: full gain below cutoff, smooth transition above
+        const ratio = frequency / centerFreq;
+        if (ratio <= 1) {
+          return gain;
+        } else {
+          // Smooth rolloff above cutoff frequency
+          const octaves = Math.log2(ratio);
+          const rolloff = 1.0 / (1.0 + octaves * qFactor);
+          return gain * rolloff;
+        }
+      }
+      
+      case 'highshelf': {
+        // High shelf: full gain above cutoff, smooth transition below
+        const ratio = frequency / centerFreq;
+        if (ratio >= 1) {
+          return gain;
+        } else {
+          // Smooth rolloff below cutoff frequency
+          const octaves = Math.log2(1 / ratio);
+          const rolloff = 1.0 / (1.0 + octaves * qFactor);
+          return gain * rolloff;
+        }
+      }
+      
+      case 'lowpass': {
+        // Low pass filter response
+        const ratio = frequency / centerFreq;
+        if (ratio <= 1) {
+          return 0; // No change in passband
+        } else {
+          // Rolloff above cutoff
+          const octaves = Math.log2(ratio);
+          return -6 * octaves * qFactor; // 6dB/octave per Q
+        }
+      }
+      
+      case 'highpass': {
+        // High pass filter response
+        const ratio = frequency / centerFreq;
+        if (ratio >= 1) {
+          return 0; // No change in passband
+        } else {
+          // Rolloff below cutoff
+          const octaves = Math.log2(1 / ratio);
+          return -6 * octaves * qFactor; // 6dB/octave per Q
+        }
+      }
+      
+      default:
+        return 0;
+    }
+  };
 
   // Draw the frequency response chart
   const drawChart = useCallback(() => {
@@ -83,13 +174,19 @@ const PeqResponseChart = ({ height = 300 }) => {
       return;
     }
 
+    // Check if canvas is actually visible (not hidden by CSS)
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+      console.log('PeqResponseChart: Canvas not visible, skipping draw');
+      return;
+    }
+
     const ctx = canvas.getContext('2d');
     const { frequencies, magnitudeDb } = frequencyData;
     
-    console.log('PeqResponseChart: Drawing chart with', frequencies.length, 'points');
+    console.log('PeqResponseChart: Drawing chart with', frequencies.length, 'points, max dB:', Math.max(...magnitudeDb), 'min dB:', Math.min(...magnitudeDb));
     
     // Set canvas size for high DPI displays
-    const rect = canvas.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
@@ -107,14 +204,6 @@ const PeqResponseChart = ({ height = 300 }) => {
     const graphHeight = canvasHeight - 2 * padding;
     const dbRange = 24; // -12dB to +12dB visible range
     
-    // Test: Draw a simple line to verify canvas is working
-    ctx.strokeStyle = '#ff0000';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(padding, padding + graphHeight / 2);
-    ctx.lineTo(canvasWidth - padding, padding + graphHeight / 2);
-    ctx.stroke();
-    
     // Draw grid
     drawGrid(ctx, canvasWidth, canvasHeight, padding, graphWidth, graphHeight, dbRange);
     
@@ -124,14 +213,17 @@ const PeqResponseChart = ({ height = 300 }) => {
     ctx.beginPath();
     
     let firstPoint = true;
+    const logMin = Math.log10(20);
+    const logMax = Math.log10(20000);
+    
     frequencies.forEach((freq, i) => {
       // Logarithmic X position (20Hz to 20kHz)
-      const logMin = Math.log10(20);
-      const logMax = Math.log10(20000);
       const xPos = padding + ((Math.log10(freq) - logMin) / (logMax - logMin)) * graphWidth;
       
       // Linear Y position (dB) - flip Y axis so positive is up
-      const yPos = padding + graphHeight / 2 - (magnitudeDb[i] / dbRange) * graphHeight;
+      // Clamp Y position to stay within graph bounds
+      const dbValue = Math.max(-dbRange/2, Math.min(dbRange/2, magnitudeDb[i]));
+      const yPos = padding + graphHeight / 2 - (dbValue / dbRange) * graphHeight;
       
       if (firstPoint) {
         ctx.moveTo(xPos, yPos);
@@ -150,7 +242,10 @@ const PeqResponseChart = ({ height = 300 }) => {
       const logMin = Math.log10(20);
       const logMax = Math.log10(20000);
       const xPos = padding + ((Math.log10(band.frequency) - logMin) / (logMax - logMin)) * graphWidth;
-      const yPos = padding + graphHeight / 2 - (band.gain / dbRange) * graphHeight;
+      
+      // Clamp gain to visible range for marker position
+      const clampedGain = Math.max(-dbRange/2, Math.min(dbRange/2, band.gain));
+      const yPos = padding + graphHeight / 2 - (clampedGain / dbRange) * graphHeight;
       
       // Color based on gain
       ctx.fillStyle = band.gain > 0 ? '#4ade80' : '#f87171';
@@ -162,6 +257,15 @@ const PeqResponseChart = ({ height = 300 }) => {
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 1;
       ctx.stroke();
+      
+      // Add frequency label for active bands
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '9px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.textAlign = 'center';
+      const freqLabel = band.frequency >= 1000 ? 
+        `${(band.frequency / 1000).toFixed(1)}k` : 
+        `${Math.round(band.frequency)}`;
+      ctx.fillText(freqLabel, xPos, yPos - 8);
     });
     
   }, [frequencyData, peqBands]);
@@ -235,10 +339,30 @@ const PeqResponseChart = ({ height = 300 }) => {
     setFrequencyData(initialData);
   }, [calculateFrequencyResponse]);
 
-  // Update frequency data when bands or nodes change
+  // Update frequency data when band settings change
   useEffect(() => {
-    scheduleUpdate();
-  }, [peqBands, peqNodes, scheduleUpdate]);
+    console.log('PeqResponseChart: Band settings changed, updating chart');
+    // Only update if canvas is visible
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        scheduleUpdate();
+      } else {
+        console.log('PeqResponseChart: Canvas not visible, deferring update');
+        // Store the update for when canvas becomes visible
+        const checkVisibility = () => {
+          const newRect = canvas.getBoundingClientRect();
+          if (newRect.width > 0 && newRect.height > 0) {
+            scheduleUpdate();
+          } else {
+            requestAnimationFrame(checkVisibility);
+          }
+        };
+        requestAnimationFrame(checkVisibility);
+      }
+    }
+  }, [bandSettings, scheduleUpdate]);
 
   // Draw chart when frequency data changes
   useEffect(() => {
@@ -281,11 +405,7 @@ const PeqResponseChart = ({ height = 300 }) => {
           className="peq-response-chart__canvas"
           style={{ width: '100%', height: `${height}px` }}
         />
-        {!peqNodes?.filters && (
-          <div className="peq-response-chart__overlay">
-            <p>Start playing audio for live response</p>
-          </div>
-        )}
+
       </div>
     </div>
   );

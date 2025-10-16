@@ -1,0 +1,24 @@
+{
+  "name": "@saku/peq-10band",
+  "version": "0.0.1",
+  "description": "Standalone 10-band parametric EQ utilities extracted from Saku Audio Player",
+  "license": "MIT",
+  "type": "module",
+  "main": "src/index.js",
+  "module": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "files": [
+    "src"
+  ],
+  "keywords": [
+    "peq",
+    "equalizer",
+    "audio",
+    "web-audio",
+    "autoeq",
+    "parametric",
+    "biquad"
+  ]
+}

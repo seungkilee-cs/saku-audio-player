@@ -12,7 +12,7 @@ import {
 import { getStorageInfo } from '../utils/peqPersistence';
 import '../styles/PresetLibrary.css';
 
-const PresetLibrary = () => {
+const PresetLibrary = ({ onPresetChanged }) => {
   const { peqState, loadPeqPreset } = usePlayback();
   const { peqBands, preampGain, currentPresetName } = peqState;
   
@@ -69,6 +69,9 @@ const PresetLibrary = () => {
       // Refresh library
       setUserPresets(loadPresetLibrary());
       
+      // Notify parent that preset library has changed
+      onPresetChanged?.();
+      
       setSaveStatus({ 
         type: 'success', 
         message: `Saved "${savedPreset.name}" to library` 
@@ -115,6 +118,9 @@ const PresetLibrary = () => {
       
       removePresetFromLibrary(deleteConfirmation.presetId);
       setUserPresets(loadPresetLibrary());
+      
+      // Notify parent that preset library has changed
+      onPresetChanged?.();
       
       // If we deleted the currently applied preset, reset to flat
       if (isCurrentPreset) {
