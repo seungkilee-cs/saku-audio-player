@@ -9,6 +9,15 @@ export {
   cleanupPeqChain,
 } from './core/peqGraph.js';
 
+// Frequency response calculation utilities
+export {
+  generateFrequencies,
+  calculateBandResponse,
+  calculateFrequencyResponse,
+  calculateProcessorResponse,
+  getResponseAtFrequencies,
+} from './core/frequencyResponse.js';
+
 // Preset utilities
 export * from './presets/presetManager.js';
 
