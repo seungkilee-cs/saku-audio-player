@@ -53,11 +53,18 @@ const AppLayout = () => {
   const displaySource = sourceLabels[activeSource] ?? sourceLabels.default;
 
   const handleFilesSelected = useCallback(
-    async (fileList) => {
-      if (!fileList || fileList.length === 0) return;
+    async (fileListPromiseOrArray) => {
+      if (!fileListPromiseOrArray) return;
+
+      const resolvedFiles =
+        typeof fileListPromiseOrArray.then === "function"
+          ? await fileListPromiseOrArray
+          : fileListPromiseOrArray;
+
+      if (!resolvedFiles || resolvedFiles.length === 0) return;
 
       try {
-        const parsedTracks = await parseAudioFiles(fileList);
+        const parsedTracks = await parseAudioFiles(resolvedFiles);
         if (!parsedTracks.length) return;
 
         const shouldAppend = tracks.length > 0;

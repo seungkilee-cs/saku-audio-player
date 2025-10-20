@@ -28,6 +28,7 @@ import {
   BUNDLED_PRESETS,
   calculateRecommendedPreamp,
 } from "../utils/peqPresets";
+import { collectAudioFilesFromDataTransfer } from "../utils/filePickers";
 
 const AudioPlayer = ({
   tracks = [],
@@ -591,10 +592,19 @@ const AudioPlayer = ({
       event.stopPropagation();
       setIsDragOver(false);
 
-      const files = Array.from(event.dataTransfer.files);
-      if (files.length > 0 && onFilesDropped) {
-        onFilesDropped(files);
+      if (!onFilesDropped) {
+        return;
       }
+
+      collectAudioFilesFromDataTransfer(event.dataTransfer)
+        .then((files) => {
+          if (files.length > 0) {
+            onFilesDropped(files);
+          }
+        })
+        .catch((error) => {
+          console.warn("Failed to collect dropped files", error);
+        });
     },
     [onFilesDropped],
   );

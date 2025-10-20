@@ -1,4 +1,5 @@
 import React, { useRef, useState, useImperativeHandle, forwardRef } from "react";
+import { collectAudioFilesFromDataTransfer, filterSupportedAudioFiles } from "../utils/filePickers";
 import "../styles/Playlist.css";
 
 const Playlist = forwardRef(({ tracks, currentTrackIndex, onTrackSelect, onUpload, onReset }, ref) => {
@@ -7,9 +8,10 @@ const Playlist = forwardRef(({ tracks, currentTrackIndex, onTrackSelect, onUploa
   const fileInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
 
-  const emitUpload = (files) => {
-    if (files && files.length && typeof onUpload === "function") {
-      onUpload(files);
+  const emitUpload = (filesLike) => {
+    const audioFiles = filterSupportedAudioFiles(filesLike);
+    if (audioFiles.length > 0 && typeof onUpload === "function") {
+      onUpload(audioFiles);
     }
   };
 
@@ -50,7 +52,11 @@ const Playlist = forwardRef(({ tracks, currentTrackIndex, onTrackSelect, onUploa
   const handleDrop = (event) => {
     event.preventDefault();
     setIsDragging(false);
-    emitUpload(event.dataTransfer.files);
+    collectAudioFilesFromDataTransfer(event.dataTransfer).then((files) => {
+      if (files.length) {
+        emitUpload(files);
+      }
+    });
   };
 
   return (
@@ -61,6 +67,8 @@ const Playlist = forwardRef(({ tracks, currentTrackIndex, onTrackSelect, onUploa
           className="playlist__file-input"
           type="file"
           accept="audio/*"
+          webkitdirectory=""
+          directory=""
           multiple
           onChange={handleFileInputChange}
         />
