@@ -114,8 +114,17 @@ const AudioPlayer = ({
           return;
         }
 
+        if (repeatMode === "one") {
+          audio.currentTime = 0;
+          audio.play().catch((error) => {
+            console.warn("Failed to restart track in repeat-one mode", error);
+          });
+          startTimer();
+          return;
+        }
+
         if (onNext) {
-          onNext();
+          onNext({ source: "auto" });
         } else if (typeof onTrackChange === "function") {
           const nextIndex =
             currentTrackIndex < trackCount - 1 ? currentTrackIndex + 1 : 0;
@@ -480,7 +489,7 @@ const AudioPlayer = ({
   const toNextTrack = () => {
     if (trackCount === 0) return;
     if (onNext) {
-      onNext();
+      onNext({ source: "manual" });
     } else if (typeof onTrackChange === "function") {
       const nextIndex = (currentTrackIndex + 1) % trackCount;
       onTrackChange(nextIndex);

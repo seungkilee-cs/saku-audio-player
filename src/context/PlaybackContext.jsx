@@ -291,12 +291,13 @@ export const PlaybackProvider = ({ children }) => {
     [tracks],
   );
 
-  const playNext = useCallback(() => {
+  const playNext = useCallback((options = {}) => {
     if (tracks.length === 0) return;
-    
-    // Repeat one: replay current track
-    if (repeatMode === 'one') {
-      playTrackAt(currentTrackIndex);
+
+    const { source = "auto" } = options;
+
+    // Repeat one: only block auto-advance so manual next still works
+    if (repeatMode === 'one' && source === 'auto') {
       return;
     }
     
@@ -306,7 +307,7 @@ export const PlaybackProvider = ({ children }) => {
       const currentPos = shuffleOrder.indexOf(currentTrackIndex);
       if (currentPos === shuffleOrder.length - 1) {
         // At end of shuffle order
-        if (repeatMode === 'all') {
+        if (repeatMode === 'all' || source === 'manual') {
           nextIndex = shuffleOrder[0]; // Loop back to start
         } else {
           return; // Stop at end
@@ -318,7 +319,7 @@ export const PlaybackProvider = ({ children }) => {
       // Normal mode
       if (currentTrackIndex === tracks.length - 1) {
         // At last track
-        if (repeatMode === 'all') {
+        if (repeatMode === 'all' || source === 'manual') {
           nextIndex = 0; // Loop back to start
         } else {
           return; // Stop at end
