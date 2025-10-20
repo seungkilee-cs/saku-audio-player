@@ -1,5 +1,4 @@
 import * as mm from "music-metadata";
-import images from "../img";
 import audio from "../audio";
 
 export async function loadBundledTracks() {
@@ -9,7 +8,6 @@ export async function loadBundledTracks() {
       key,
       src,
       blobResolver: () => fetch(src).then((response) => response.blob()),
-      fallbackImage: images[key.toLowerCase()] || null,
       sourceType: "bundled",
     }),
   );
@@ -40,7 +38,6 @@ export async function parseAudioFiles(fileList) {
       key: file.name,
       src: URL.createObjectURL(file),
       blobResolver: () => file,
-      fallbackImage: null,
       sourceType: "uploaded",
     }),
   );
@@ -52,7 +49,7 @@ export async function parseAudioFiles(fileList) {
   return validTracks;
 }
 
-async function parseSource({ key, src, blobResolver, fallbackImage, sourceType }) {
+async function parseSource({ key, src, blobResolver, sourceType }) {
   try {
     const blob = await blobResolver();
     let metadata;
@@ -92,7 +89,7 @@ async function parseSource({ key, src, blobResolver, fallbackImage, sourceType }
     const imageData = metadata.common.picture?.[0];
     const image = imageData
       ? `data:${imageData.format};base64,${arrayBufferToBase64(imageData.data)}`
-      : fallbackImage;
+      : null;
 
     const bitrateKbps = metadata.format.bitrate
       ? Math.round(metadata.format.bitrate / 1000)

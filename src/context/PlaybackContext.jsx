@@ -196,6 +196,7 @@ export const PlaybackProvider = ({ children }) => {
   const [shuffleOrder, setShuffleOrder] = useState([]);
   const objectUrlsRef = useRef([]);
   const [peqState, dispatchPeq] = useReducer(peqReducer, initialPeqState);
+  const applyTracksRef = useRef(null);
 
   // Auto-save PEQ state changes to localStorage
   useEffect(() => {
@@ -262,12 +263,16 @@ export const PlaybackProvider = ({ children }) => {
     [cleanupObjectUrls, tracks],
   );
 
+  useEffect(() => {
+    applyTracksRef.current = applyTracks;
+  }, [applyTracks]);
+
   const initialize = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const defaultTracks = await loadBundledTracks();
-      applyTracks(defaultTracks, { startIndex: 0 });
+      applyTracksRef.current?.(defaultTracks, { startIndex: 0 });
     } catch (err) {
       console.error("Failed to load bundled tracks", err);
       setError("Failed to load bundled tracks.");
@@ -276,7 +281,11 @@ export const PlaybackProvider = ({ children }) => {
     } finally {
       setLoading(false);
     }
-  }, [applyTracks]);
+  }, []);
+
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
 
   useEffect(() => () => cleanupObjectUrls(objectUrlsRef.current), [cleanupObjectUrls]);
 
