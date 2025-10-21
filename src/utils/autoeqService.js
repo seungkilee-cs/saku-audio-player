@@ -8,6 +8,7 @@ const STORAGE_KEY_SETTINGS = "saku-autoeq-settings";
 
 const MIRRORS = [
   "https://raw.githubusercontent.com/jaakkopasanen/AutoEq/master/",
+  "https://cdn.jsdelivr.net/gh/jaakkopasanen/AutoEq@master/",
 ];
 
 const state = {
@@ -172,30 +173,52 @@ function addToCache(key, value) {
   }
 }
 
-function getAuthHeaders() {
-  const headers = { "User-Agent": "saku-audio-player" };
-  if (state.settings.githubToken) {
-    headers.Authorization = `Bearer ${state.settings.githubToken}`;
+function getEncodedPath(path) {
+  return path
+    .split("/")
+    .map((segment) => encodeURIComponent(segment))
+    .join("/");
+}
+
+async function fetchFromGithubApi(path, token) {
+  const encodedPath = getEncodedPath(path);
+  const apiUrl = `https://api.github.com/repos/jaakkopasanen/AutoEq/contents/${encodedPath}`;
+  const response = await fetch(apiUrl, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/vnd.github.v3.raw",
+    },
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    throw new Error(`GitHub API request failed (${response.status})`);
   }
-  return headers;
+  return response.text();
 }
 
 async function fetchWithMirrors(path) {
   const mirrors = Array.isArray(state.settings.mirrors) && state.settings.mirrors.length > 0
     ? state.settings.mirrors
     : MIRRORS;
+  const token = typeof state.settings.githubToken === "string" ? state.settings.githubToken.trim() : "";
   let lastError;
+
+  if (token) {
+    try {
+      return await fetchFromGithubApi(path, token);
+    } catch (error) {
+      lastError = error;
+    }
+  }
+
+  const encodedPath = getEncodedPath(path);
   for (const base of mirrors) {
-    const url = `${base}${path}`;
+    const separator = base.endsWith("/") ? "" : "/";
+    const url = `${base}${separator}${encodedPath}`;
     try {
       const response = await fetch(url, {
-        headers: getAuthHeaders(),
         cache: "no-store",
       });
-      if (response.status === 429 || response.status === 403) {
-        lastError = new Error(`Rate limited (${response.status})`);
-        continue;
-      }
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
       }
