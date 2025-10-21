@@ -24,6 +24,17 @@ import {
   isStorageAvailable,
   clearPeqState
 } from "../utils/peqPersistence";
+import {
+  fetchPreset,
+  fetchPresetText,
+  getAutoEqSettings,
+  updateAutoEqSettings,
+  searchPresets as searchAutoEqPresets,
+  getRecentSearches as getAutoEqRecentSearches,
+  clearAutoEqCache,
+  checkAutoEqAvailability,
+} from "../utils/autoeqService";
+import { addPresetToLibrary } from "../utils/presetLibrary";
 
 const normalizedDefaultPreset = normalizePreset(clonePreset(DEFAULT_PRESET));
 
@@ -437,12 +448,36 @@ export const PlaybackProvider = ({ children }) => {
     showWaveform: true,
     showAmbientGlow: true,
   });
+  const [autoEqState, setAutoEqState] = useState({
+    loading: false,
+    error: null,
+    availability: true,
+  });
 
   const toggleVisualSetting = useCallback((key) => {
     setVisualSettings((previous) => ({
       ...previous,
       [key]: !previous[key],
     }));
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    checkAutoEqAvailability()
+      .then((available) => {
+        if (!cancelled) {
+          setAutoEqState((prev) => ({ ...prev, availability: available }));
+        }
+      })
+      .catch((error) => {
+        console.warn("AutoEQ availability check failed", error);
+        if (!cancelled) {
+          setAutoEqState((prev) => ({ ...prev, availability: false }));
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const updatePeqBand = useCallback(
@@ -489,6 +524,55 @@ export const PlaybackProvider = ({ children }) => {
     },
     [dispatchPeq],
   );
+
+  const importAutoEqPreset = useCallback(
+    async (entry, { saveToLibrary = false } = {}) => {
+      setAutoEqState((prev) => ({ ...prev, loading: true, error: null }));
+      try {
+        const { preset } = await fetchPreset(entry);
+        loadPeqPreset({
+          ...preset,
+          name: preset.name ?? entry.name ?? "AutoEQ Preset",
+        });
+        if (saveToLibrary) {
+          addPresetToLibrary({
+            ...preset,
+            name: preset.name ?? entry.name ?? "AutoEQ Preset",
+            source: preset.source ?? entry.source ?? "autoeq",
+            target: preset.target ?? entry.target ?? null,
+            deviceType: preset.deviceType ?? entry.type ?? null,
+          });
+        }
+        setAutoEqState((prev) => ({ ...prev, loading: false }));
+        return preset;
+      } catch (error) {
+        console.error("Failed to import AutoEQ preset", error);
+        setAutoEqState((prev) => ({
+          ...prev,
+          loading: false,
+          error: error instanceof Error ? error.message : String(error),
+        }));
+        throw error;
+      }
+    },
+    [loadPeqPreset],
+  );
+
+  const autoEqSearch = useCallback((params) => {
+    return searchAutoEqPresets(params);
+  }, []);
+
+  const autoEqFetchRaw = useCallback((entry) => fetchPresetText(entry), []);
+
+  const autoEqGetSettings = useCallback(() => getAutoEqSettings(), []);
+
+  const autoEqUpdateSettings = useCallback((partial) => {
+    updateAutoEqSettings(partial);
+    clearAutoEqCache();
+    setAutoEqState((prev) => ({ ...prev }));
+  }, []);
+
+  const autoEqGetRecentSearches = useCallback(() => getAutoEqRecentSearches(), []);
 
   const storePeqNodes = useCallback(
     (nodes) => {
@@ -549,6 +633,13 @@ export const PlaybackProvider = ({ children }) => {
       storePeqNodes,
       setPeqEnabled,
       clearPeqSettings,
+      importAutoEqPreset,
+      autoEqSearch,
+      autoEqFetchRaw,
+      autoEqGetSettings,
+      autoEqUpdateSettings,
+      autoEqGetRecentSearches,
+      autoEqState,
     }),
     [
       appendTracks,
@@ -579,6 +670,13 @@ export const PlaybackProvider = ({ children }) => {
       togglePeqPreampAuto,
       updateAllPeqBands,
       updatePeqBand,
+      importAutoEqPreset,
+      autoEqFetchRaw,
+      autoEqGetSettings,
+      autoEqGetRecentSearches,
+      autoEqSearch,
+      autoEqState,
+      autoEqUpdateSettings,
     ],
   );
 

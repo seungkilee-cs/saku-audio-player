@@ -7,6 +7,7 @@ import PeqResponseChart from './PeqResponseChart';
 import PresetImportExport from './PresetImportExport';
 import PresetLibrary from './PresetLibrary';
 import ClippingMonitor from './ClippingMonitor';
+import AutoEqSearchPanel from './AutoEqSearchPanel';
 import useKeyboardShortcuts from '../hooks/useKeyboardShortcuts';
 import '../styles/PeqPanel.css';
 
@@ -17,13 +18,15 @@ const PeqPanel = () => {
     loadPeqPreset,
     togglePeqBypass,
     setPeqPreamp,
-    togglePeqPreampAuto
+    togglePeqPreampAuto,
+    autoEqState,
   } = usePlayback();
 
   const { peqBands, peqBypass, preampGain, preampAuto, currentPresetName, peqNodes } = peqState;
 
   // State to trigger preset library refresh when presets are added/removed
   const [presetLibraryVersion, setPresetLibraryVersion] = useState(0);
+  const [activeTab, setActiveTab] = useState('bands');
 
   // Load preset library for keyboard shortcuts (bundled + user presets)
   const presetLibrary = useMemo(() => {
@@ -173,22 +176,72 @@ const PeqPanel = () => {
         </div>
       </div>
 
-      <PeqResponseChart height={250} />
+      <nav className="peq-panel__tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'bands'}
+          className={activeTab === 'bands' ? 'active' : ''}
+          onClick={() => setActiveTab('bands')}
+        >
+          Bands
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'library'}
+          className={activeTab === 'library' ? 'active' : ''}
+          onClick={() => setActiveTab('library')}
+        >
+          Library
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'import'}
+          className={activeTab === 'import' ? 'active' : ''}
+          onClick={() => setActiveTab('import')}
+        >
+          Import
+        </button>
+      </nav>
 
-      <div className="peq-panel__bands">
-        {peqBands.map((band, index) => (
-          <BandControl
-            key={index}
-            band={band}
-            index={index}
-            onChange={(updates) => updatePeqBand(index, updates)}
-          />
-        ))}
+      <div className="peq-panel__tab-content">
+        {activeTab === 'bands' ? (
+          <section role="tabpanel" className="peq-panel__tab-section">
+            <PeqResponseChart height={250} />
+            <div className="peq-panel__bands">
+              {peqBands.map((band, index) => (
+                <BandControl
+                  key={index}
+                  band={band}
+                  index={index}
+                  onChange={(updates) => updatePeqBand(index, updates)}
+                />
+              ))}
+            </div>
+          </section>
+        ) : null}
+
+        {activeTab === 'library' ? (
+          <section role="tabpanel" className="peq-panel__tab-section">
+            <PresetLibrary onPresetChanged={refreshPresetLibrary} />
+          </section>
+        ) : null}
+
+        {activeTab === 'import' ? (
+          <section role="tabpanel" className="peq-panel__tab-section">
+            <AutoEqSearchPanel onPresetImported={refreshPresetLibrary} />
+            <details className="peq-panel__manual" open={false}>
+              <summary>Manual upload</summary>
+              <PresetImportExport onPresetAdded={refreshPresetLibrary} />
+            </details>
+            {autoEqState.error ? (
+              <p className="peq-panel__auto-eq-warning">{autoEqState.error}</p>
+            ) : null}
+          </section>
+        ) : null}
       </div>
-
-      <PresetImportExport onPresetAdded={refreshPresetLibrary} />
-
-      <PresetLibrary onPresetChanged={refreshPresetLibrary} />
 
       {/* Keyboard Shortcuts Help - Moved to Header Modal */}
       {/* <div className="peq-panel__shortcuts-help">
