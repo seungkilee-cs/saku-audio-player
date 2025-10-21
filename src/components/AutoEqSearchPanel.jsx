@@ -13,6 +13,8 @@ const EMPTY_RESULTS = Object.freeze({
   targets: [],
 });
 
+const DEVICE_TYPE_OPTIONS = ["in-ear", "over-ear"];
+
 export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
   const {
     autoEqState,
@@ -27,7 +29,6 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
   const [query, setQuery] = useState("");
   const [sourceFilter, setSourceFilter] = useState("all");
   const [typeFilter, setTypeFilter] = useState("all");
-  const [targetFilter, setTargetFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [results, setResults] = useState(EMPTY_RESULTS);
   const [loading, setLoading] = useState(false);
@@ -36,7 +37,7 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
   const [saveToLibrary, setSaveToLibrary] = useState(true);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [tokenInput, setTokenInput] = useState("");
-  const [availableTargets, setAvailableTargets] = useState([]);
+  const [compactView, setCompactView] = useState(true);
 
   const { availability } = autoEqState;
 
@@ -59,7 +60,6 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
         query,
         source: sourceFilter === "all" ? null : sourceFilter,
         type: typeFilter === "all" ? null : typeFilter,
-        target: targetFilter === "all" ? null : targetFilter,
         page,
         pageSize: PAGE_SIZE,
       })
@@ -73,7 +73,6 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
             types: data.types,
             targets: data.targets,
           });
-          setAvailableTargets(data.targets ?? []);
         })
         .catch((err) => {
           if (cancelled) return;
@@ -91,7 +90,7 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
       cancelled = true;
       clearTimeout(timer);
     };
-  }, [autoEqSearch, page, query, sourceFilter, targetFilter, typeFilter]);
+  }, [autoEqSearch, page, query, sourceFilter, typeFilter]);
 
   const handleImport = useCallback(
     async (entry) => {
@@ -142,7 +141,8 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
         <div className="autoeq-panel__heading">
           <h4>AutoEQ Library</h4>
           <p className="autoeq-panel__subtitle">
-            Showing {filteredTotal.toLocaleString()} preset{filteredTotal === 1 ? "" : "s"} · Library includes {libraryTotal.toLocaleString()} entries
+            {filteredTotal.toLocaleString()} result{filteredTotal === 1 ? "" : "s"}
+            {libraryTotal !== filteredTotal ? ` • Library total ${libraryTotal.toLocaleString()}` : ""}
           </p>
         </div>
         {recentSearches.length > 0 ? (
@@ -188,6 +188,14 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
             />
             <span>Save to library after import</span>
           </label>
+          <label className="autoeq-panel__checkbox autoeq-panel__checkbox--compact">
+            <input
+              type="checkbox"
+              checked={compactView}
+              onChange={(event) => setCompactView(event.target.checked)}
+            />
+            <span>Compact cards</span>
+          </label>
         </div>
 
         <div className="autoeq-panel__filters">
@@ -221,28 +229,9 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
               aria-label="Filter by device type"
             >
               <option value="all">All types</option>
-              {results.types.map((typeOption) => (
+              {DEVICE_TYPE_OPTIONS.map((typeOption) => (
                 <option key={typeOption} value={typeOption}>
                   {typeOption === "over-ear" ? "Over-ear" : "In-ear"}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <label className="autoeq-panel__filter">
-            <span>Target</span>
-            <select
-              value={targetFilter}
-              onChange={(event) => {
-                setTargetFilter(event.target.value);
-                setPage(1);
-              }}
-              aria-label="Filter by target"
-            >
-              <option value="all">All targets</option>
-              {availableTargets.map((targetOption) => (
-                <option key={targetOption} value={targetOption}>
-                  {targetOption}
                 </option>
               ))}
             </select>
@@ -255,7 +244,6 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
               setQuery("");
               setSourceFilter("all");
               setTypeFilter("all");
-              setTargetFilter("all");
               setPage(1);
             }}
           >
@@ -324,51 +312,62 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
 
         {!loading && results.results.length > 0 ? (
           <>
-            <ul className="autoeq-panel__list" role="list">
-              {results.results.map((preset) => (
-                <li key={preset.id} className="autoeq-panel__item">
-                  <div className="autoeq-panel__item-info">
-                    <h5>{preset.name}</h5>
-                    <div className="autoeq-panel__item-meta">
-                      <span className="badge badge--source">{preset.source}</span>
-                      <span className="badge badge--type">{preset.type}</span>
-                      <span className="badge badge--target">{preset.target}</span>
+            <ul className={`autoeq-panel__list${compactView ? " autoeq-panel__list--compact" : ""}`} role="list">
+              {results.results.map((preset) => {
+                const normalizedType = preset.type === "over-ear" ? "over-ear" : "in-ear";
+                const typeLabel = normalizedType === "over-ear" ? "Over-ear" : "In-ear";
+
+                return (
+                  <li
+                    key={preset.id}
+                    className={`autoeq-panel__item${compactView ? " autoeq-panel__item--compact" : ""}`}
+                  >
+                    <div className="autoeq-card__content">
+                      <header className="autoeq-card__header">
+                        <h5 className="autoeq-card__title">{preset.name}</h5>
+                      </header>
+                      <div className="autoeq-card__body">
+                        <div className="autoeq-card__meta">
+                          <span className="autoeq-chip autoeq-chip--source">{preset.source}</span>
+                          <span className="autoeq-chip autoeq-chip--type">{typeLabel}</span>
+                        </div>
+                        <div className="autoeq-card__actions">
+                          <button
+                            type="button"
+                            className="autoeq-card__button autoeq-card__button--primary"
+                            onClick={() => handleImport(preset)}
+                            disabled={importingId === preset.id || autoEqState.loading}
+                          >
+                            {importingId === preset.id ? "Importing…" : "Import preset"}
+                          </button>
+                          <button
+                            type="button"
+                            className="autoeq-card__button autoeq-card__button--ghost"
+                            onClick={async () => {
+                              try {
+                                const text = await autoEqFetchRaw(preset);
+                                const blob = new Blob([text], { type: "text/plain" });
+                                const url = URL.createObjectURL(blob);
+                                const anchor = document.createElement("a");
+                                anchor.href = url;
+                                anchor.download = `${preset.name} ParametricEQ.txt`;
+                                document.body.appendChild(anchor);
+                                anchor.click();
+                                document.body.removeChild(anchor);
+                                URL.revokeObjectURL(url);
+                              } catch (err) {
+                                setError(err instanceof Error ? err.message : String(err));
+                              }
+                            }}
+                          >
+                            Download TXT
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="autoeq-panel__item-actions">
-                    <button
-                      type="button"
-                      className="autoeq-panel__action autoeq-panel__action--primary"
-                      onClick={() => handleImport(preset)}
-                      disabled={importingId === preset.id || autoEqState.loading}
-                    >
-                      {importingId === preset.id ? "Importing…" : "Import"}
-                    </button>
-                    <button
-                      type="button"
-                      className="autoeq-panel__action autoeq-panel__action--secondary"
-                      onClick={async () => {
-                        try {
-                          const text = await autoEqFetchRaw(preset);
-                          const blob = new Blob([text], { type: "text/plain" });
-                          const url = URL.createObjectURL(blob);
-                          const anchor = document.createElement("a");
-                          anchor.href = url;
-                          anchor.download = `${preset.name} ParametricEQ.txt`;
-                          document.body.appendChild(anchor);
-                          anchor.click();
-                          document.body.removeChild(anchor);
-                          URL.revokeObjectURL(url);
-                        } catch (err) {
-                          setError(err instanceof Error ? err.message : String(err));
-                        }
-                      }}
-                    >
-                      Download
-                    </button>
-                  </div>
-                </li>
-              ))}
+                  </li>
+                );
+              })}
             </ul>
 
             <div className="autoeq-panel__pagination">
@@ -381,7 +380,7 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
                 Previous
               </button>
               <span>
-                Page {page} of {Math.max(1, Math.ceil(results.total / PAGE_SIZE))} ({results.total} results)
+                Page {page} / {Math.max(1, Math.ceil(results.total / PAGE_SIZE))}
               </span>
               <button
                 type="button"

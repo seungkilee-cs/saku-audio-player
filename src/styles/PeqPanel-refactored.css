@@ -51,41 +51,40 @@
   --peq-shadow-hover: 0 4px 14px rgba(10, 132, 255, 0.2);
 }
 
-/* Dark Theme Overrides - Matches global theme.css dark palette */
-[data-theme="dark"] .peq-panel,
+/* Dark Theme Overrides */
 [data-theme="flux-night"] .peq-panel {
-  /* Surface Colors - aligned with global theme */
-  --peq-surface-primary: rgba(24, 30, 48, 0.92);    /* --color-surface-raised */
-  --peq-surface-secondary: rgba(18, 24, 38, 0.82);  /* --color-surface-muted */
-  --peq-surface-tertiary: rgba(14, 18, 32, 0.72);   /* --color-surface-subtle */
+  /* Surface Colors */
+  --peq-surface-primary: rgba(0, 0, 0, 0.2);
+  --peq-surface-secondary: rgba(15, 23, 42, 0.4);
+  --peq-surface-tertiary: rgba(15, 23, 42, 0.45);
   
-  /* Borders - aligned with global theme */
-  --peq-border-subtle: rgba(62, 73, 107, 0.45);     /* --color-border */
-  --peq-border-medium: rgba(92, 104, 148, 0.6);     /* --color-border-strong */
+  /* Borders */
+  --peq-border-subtle: rgba(255, 255, 255, 0.05);
+  --peq-border-medium: rgba(255, 255, 255, 0.1);
   
-  /* Text Colors - aligned with global theme */
-  --peq-text-primary: rgba(248, 251, 255, 0.98);    /* --color-text-light */
-  --peq-text-secondary: rgba(158, 175, 210, 0.78);  /* --color-text-muted */
-  --peq-text-tertiary: rgba(135, 149, 189, 0.6);    /* --color-text-soft */
+  /* Text Colors */
+  --peq-text-primary: #f8fafc;
+  --peq-text-secondary: rgba(203, 213, 225, 0.85);
+  --peq-text-tertiary: rgba(226, 232, 240, 0.6);
   
-  /* Interactive Colors - aligned with global theme */
-  --peq-primary: #3d7cff;                           /* --color-primary */
-  --peq-primary-hover: rgba(61, 124, 255, 0.12);
-  --peq-primary-active: rgba(61, 124, 255, 0.18);
-  --peq-primary-border: rgba(61, 124, 255, 0.45);
+  /* Interactive Colors */
+  --peq-primary: #a5b4fc;
+  --peq-primary-hover: rgba(99, 102, 241, 0.12);
+  --peq-primary-active: rgba(255, 255, 255, 0.08);
+  --peq-primary-border: rgba(99, 102, 241, 0.4);
   
-  /* Status Colors - consistent with dark theme aesthetic */
+  /* Status Colors */
   --peq-success: #4ade80;
   --peq-success-bg: rgba(74, 222, 128, 0.15);
-  --peq-success-border: rgba(74, 222, 128, 0.35);
+  --peq-success-border: rgba(74, 222, 128, 0.3);
   
-  --peq-error: #ff6b6b;
-  --peq-error-bg: rgba(255, 107, 107, 0.15);
-  --peq-error-border: rgba(255, 107, 107, 0.35);
+  --peq-error: #fca5a5;
+  --peq-error-bg: rgba(239, 68, 68, 0.15);
+  --peq-error-border: rgba(239, 68, 68, 0.3);
   
-  /* Shadows - aligned with global theme */
-  --peq-shadow-soft: 0 22px 44px rgba(5, 8, 22, 0.7);     /* --shadow-soft */
-  --peq-shadow-hover: 0 28px 55px rgba(49, 46, 129, 0.55); /* --shadow-soft-hover */
+  /* Shadows */
+  --peq-shadow-soft: none;
+  --peq-shadow-hover: 0 4px 12px rgba(99, 102, 241, 0.15);
 }
 
 /* ============================================================================
@@ -219,7 +218,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: var(--font-body);
 }
 
 .peq-panel__preset-actions {
@@ -543,7 +541,6 @@
   min-width: 45px;
   text-align: center;
   font-family: var(--font-body);
-  white-space: nowrap;
 }
 
 .band-control__q {

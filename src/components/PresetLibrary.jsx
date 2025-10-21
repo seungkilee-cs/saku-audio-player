@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { usePlayback } from '../context/PlaybackContext';
 import { BUNDLED_PRESETS } from '../utils/peqPresets';
 import {
@@ -10,6 +10,10 @@ import {
   getFavoritePresets
 } from '../utils/presetLibrary';
 import { getStorageInfo } from '../utils/peqPersistence';
+import { EXPORT_FORMATS } from '../utils/formatDefinitions';
+import { exportPresetAsJSON } from '../utils/peqIO';
+import { convertToPowerAmp } from '../utils/converters/powerampConverter';
+import { convertToQudelix } from '../utils/converters/qudelixConverter';
 import '../styles/PresetLibrary.css';
 
 const PresetLibrary = ({ onPresetChanged }) => {
@@ -24,6 +28,10 @@ const PresetLibrary = ({ onPresetChanged }) => {
   const [saveStatus, setSaveStatus] = useState({ type: 'idle', message: '' });
   const [storageInfo, setStorageInfo] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState(null); // { presetId, presetName }
+  const [exportDialogPreset, setExportDialogPreset] = useState(null);
+  const [exportFormat, setExportFormat] = useState('autoeq-text');
+
+  const exportFormatOptions = useMemo(() => Object.values(EXPORT_FORMATS), []);
 
   // ESC key to close modals
   useEffect(() => {
@@ -31,11 +39,12 @@ const PresetLibrary = ({ onPresetChanged }) => {
       if (e.key === 'Escape') {
         if (showSaveDialog) setShowSaveDialog(false);
         if (deleteConfirmation) setDeleteConfirmation(null);
+        if (exportDialogPreset) setExportDialogPreset(null);
       }
     };
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
-  }, [showSaveDialog, deleteConfirmation]);
+  }, [showSaveDialog, deleteConfirmation, exportDialogPreset]);
 
   // Load user presets and storage info on mount
   useEffect(() => {
@@ -162,6 +171,127 @@ const PresetLibrary = ({ onPresetChanged }) => {
   // Cancel deletion
   const cancelDelete = useCallback(() => {
     setDeleteConfirmation(null);
+  }, []);
+
+  const normalizePresetForExport = useCallback((preset) => {
+    const safeBands = (preset.bands || []).map((band, index) => {
+      const frequency = typeof band.frequency === 'number' ? band.frequency : band.freq ?? 0;
+      const gain = typeof band.gain === 'number' ? band.gain : 0;
+      const Q = typeof band.Q === 'number' ? band.Q : band.q ?? 1;
+      const type = band.type || 'peaking';
+      return {
+        index,
+        frequency,
+        gain,
+        Q,
+        type
+      };
+    });
+
+    return {
+      name: preset.name || 'Preset',
+      description: preset.description || '',
+      preamp: typeof preset.preamp === 'number' ? preset.preamp : (preset.preampGain ?? 0),
+      bands: safeBands
+    };
+  }, []);
+
+  const downloadBlob = useCallback((content, filename, mimeType) => {
+    const blob = new Blob([content], { type: mimeType });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+    URL.revokeObjectURL(url);
+  }, []);
+
+  const sanitizeFilename = useCallback((name) => {
+    return (name || 'preset')
+      .replace(/[^a-z0-9\s-_]/gi, '_')
+      .trim()
+      .replace(/\s+/g, '_')
+      || 'preset';
+  }, []);
+
+  const handleOpenExportDialog = useCallback((preset) => {
+    setExportDialogPreset(preset);
+    setExportFormat('autoeq-text');
+  }, []);
+
+  const handleConfirmExport = useCallback(async () => {
+    if (!exportDialogPreset) return;
+
+    try {
+      const normalized = normalizePresetForExport(exportDialogPreset);
+      const format = exportFormatOptions.find((option) => option.id === exportFormat);
+
+      if (!format) {
+        throw new Error('Unknown export format');
+      }
+
+      const baseFilename = sanitizeFilename(normalized.name);
+
+      if (exportFormat === 'native' || exportFormat === 'autoeq' || exportFormat === 'autoeq-text') {
+        const exportPayload = {
+          ...normalized,
+          bands: normalized.bands.map(({ frequency, gain, Q, type }) => ({
+            frequency,
+            gain,
+            Q,
+            type
+          }))
+        };
+        exportPresetAsJSON(exportPayload, exportFormat);
+      } else if (exportFormat === 'poweramp') {
+        const conversionPreset = {
+          name: normalized.name,
+          preampGain: normalized.preamp,
+          bands: normalized.bands.map(({ frequency, gain, Q, type }) => ({
+            freq: frequency,
+            gain,
+            q: Q,
+            type
+          }))
+        };
+        const xmlContent = convertToPowerAmp(conversionPreset);
+        downloadBlob(xmlContent, `${baseFilename}.xml`, 'application/xml');
+      } else if (exportFormat === 'qudelix') {
+        const conversionPreset = {
+          name: normalized.name,
+          description: normalized.description,
+          preampGain: normalized.preamp,
+          bands: normalized.bands.map(({ frequency, gain, Q, type }) => ({
+            freq: frequency,
+            gain,
+            q: Q,
+            type
+          }))
+        };
+        const qudelixContent = convertToQudelix(conversionPreset);
+        downloadBlob(qudelixContent, `${baseFilename}.json`, 'application/json');
+      } else {
+        throw new Error('Unsupported export format');
+      }
+
+      setSaveStatus({
+        type: 'success',
+        message: `Exported "${normalized.name}" as ${format.name}`
+      });
+      setTimeout(() => setSaveStatus({ type: 'idle', message: '' }), 2000);
+      setExportDialogPreset(null);
+    } catch (error) {
+      setSaveStatus({
+        type: 'error',
+        message: `Export failed: ${error instanceof Error ? error.message : String(error)}`
+      });
+    }
+  }, [downloadBlob, exportDialogPreset, exportFormat, exportFormatOptions, normalizePresetForExport, sanitizeFilename, setSaveStatus]);
+
+  const handleCloseExportDialog = useCallback(() => {
+    setExportDialogPreset(null);
   }, []);
 
   // Toggle favorite status
@@ -295,6 +425,49 @@ const PresetLibrary = ({ onPresetChanged }) => {
         </div>
       )}
 
+      {/* Export Dialog */}
+      {exportDialogPreset && (
+        <div className="preset-library__modal-overlay">
+          <div className="preset-library__modal preset-library__export-modal">
+            <h5>Export "{exportDialogPreset.name}"</h5>
+            <label className="preset-library__export-label" htmlFor="preset-export-format">
+              Format
+            </label>
+            <select
+              id="preset-export-format"
+              className="preset-library__export-select"
+              value={exportFormat}
+              onChange={(event) => setExportFormat(event.target.value)}
+            >
+              {exportFormatOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.name}
+                </option>
+              ))}
+            </select>
+            <p className="preset-library__export-hint">
+              Choose a format to download this preset. Exported files use sanitized filenames for compatibility.
+            </p>
+            <div className="preset-library__modal-actions">
+              <button
+                type="button"
+                className="preset-library__modal-btn preset-library__modal-btn--cancel"
+                onClick={handleCloseExportDialog}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="preset-library__modal-btn preset-library__modal-btn--save"
+                onClick={handleConfirmExport}
+              >
+                Export Preset
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* User Presets */}
       <div className="preset-library__section">
         <h5>Your Presets</h5>
@@ -355,6 +528,14 @@ const PresetLibrary = ({ onPresetChanged }) => {
                     onClick={() => handleLoadPreset(preset)}
                   >
                     Load
+                  </button>
+                  <button
+                    type="button"
+                    className="preset-library__export-btn"
+                    onClick={() => handleOpenExportDialog(preset)}
+                    title="Export preset"
+                  >
+                    Export
                   </button>
                   <button
                     type="button"
