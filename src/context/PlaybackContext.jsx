@@ -377,21 +377,19 @@ export const PlaybackProvider = ({ children }) => {
     [applyTracks],
   );
 
-  const resetToDefault = useCallback(async () => {
-    // Clear current playlist first
-    setTracks([]);
-    setCurrentTrackIndex(0);
-    // Then load default tracks
-    await initialize();
-  }, [initialize]);
-
   const clearPlaylist = useCallback(() => {
+    cleanupObjectUrls(objectUrlsRef.current);
+    objectUrlsRef.current = [];
     setTracks([]);
     setCurrentTrackIndex(0);
     setActiveSource("none");
     setLoading(false);
     setError(null);
-  }, []);
+  }, [cleanupObjectUrls]);
+
+  const resetToDefault = useCallback(() => {
+    clearPlaylist();
+  }, [clearPlaylist]);
 
   // Shuffle functionality
   const toggleShuffle = useCallback(() => {

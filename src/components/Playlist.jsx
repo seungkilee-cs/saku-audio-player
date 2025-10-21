@@ -6,6 +6,7 @@ const Playlist = forwardRef(({ tracks, currentTrackIndex, onTrackSelect, onUploa
   const hasTracks = tracks.length > 0;
   const bodyRef = useRef(null);
   const fileInputRef = useRef(null);
+  const folderInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
 
   const emitUpload = (filesLike) => {
@@ -22,8 +23,24 @@ const Playlist = forwardRef(({ tracks, currentTrackIndex, onTrackSelect, onUploa
     }
   };
 
-  const handleAddClick = () => {
-    fileInputRef.current?.click();
+  const handleFolderInputChange = (event) => {
+    emitUpload(event.target.files);
+    if (folderInputRef.current) {
+      folderInputRef.current.value = "";
+    }
+  };
+
+  const handleAddClick = (event) => {
+    const shouldSelectFolder =
+      event?.nativeEvent?.altKey ||
+      event?.nativeEvent?.shiftKey ||
+      event?.nativeEvent?.metaKey;
+
+    if (shouldSelectFolder) {
+      folderInputRef.current?.click();
+    } else {
+      fileInputRef.current?.click();
+    }
   };
 
   // Expose handleAddClick to parent via ref
@@ -34,7 +51,7 @@ const Playlist = forwardRef(({ tracks, currentTrackIndex, onTrackSelect, onUploa
   const handleBodyKeyDown = (event) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      handleAddClick();
+      handleAddClick(event);
     }
   };
 
@@ -67,10 +84,18 @@ const Playlist = forwardRef(({ tracks, currentTrackIndex, onTrackSelect, onUploa
           className="playlist__file-input"
           type="file"
           accept="audio/*"
+          multiple
+          onChange={handleFileInputChange}
+        />
+        <input
+          ref={folderInputRef}
+          className="playlist__file-input"
+          type="file"
+          accept="audio/*"
           webkitdirectory=""
           directory=""
           multiple
-          onChange={handleFileInputChange}
+          onChange={handleFolderInputChange}
         />
 
         <div
@@ -85,7 +110,7 @@ const Playlist = forwardRef(({ tracks, currentTrackIndex, onTrackSelect, onUploa
           onKeyDown={handleBodyKeyDown}
         >
           <div className="playlist__body-controls">
-            <button type="button" className="playlist__browse" onClick={handleAddClick}>
+            <button type="button" className="playlist__browse" onClick={handleAddClick} title="Click to select files. Hold Alt/Shift to pick a folder.">
               Add
             </button>
             {onReset ? (
