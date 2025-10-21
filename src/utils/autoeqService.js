@@ -81,33 +81,52 @@ function normalizeIndexEntry(entry) {
 }
 
 async function fetchIndex() {
-  if (state.index) {
-    return state.index;
-  }
   if (!state.indexPromise) {
     state.indexPromise = (async () => {
       const cached = loadJson(STORAGE_KEY_INDEX, null);
-      if (cached?.version && cached?.headphones) {
+      if (cached?.version && Array.isArray(cached?.headphones)) {
         state.index = cached;
-        return cached;
       }
-      const response = await fetch(INDEX_URL, { cache: "no-store" });
-      if (!response.ok) {
-        throw new Error(`Failed to load AutoEQ index (${response.status})`);
+
+      try {
+        const response = await fetch(INDEX_URL, { cache: "no-store" });
+        if (!response.ok) {
+          throw new Error(`Failed to load AutoEQ index (${response.status})`);
+        }
+
+        const json = await response.json();
+        const normalized = {
+          version: json.version ?? new Date().toISOString(),
+          total: typeof json.total === "number"
+            ? json.total
+            : Array.isArray(json.headphones)
+              ? json.headphones.length
+              : 0,
+          sources: json.sources ?? [],
+          types: json.types ?? [],
+          targets: json.targets ?? [],
+          headphones: Array.isArray(json.headphones)
+            ? json.headphones.map(normalizeIndexEntry)
+            : [],
+        };
+
+        const hasChanged =
+          !state.index ||
+          state.index.version !== normalized.version ||
+          state.index.total !== normalized.total;
+
+        state.index = normalized;
+        if (hasChanged) {
+          saveJson(STORAGE_KEY_INDEX, state.index);
+        }
+        return state.index;
+      } catch (error) {
+        if (state.index) {
+          console.warn("AutoEQ index fetch failed, using cached copy", error);
+          return state.index;
+        }
+        throw error;
       }
-      const json = await response.json();
-      state.index = {
-        version: json.version ?? new Date().toISOString(),
-        total: Array.isArray(json.headphones) ? json.headphones.length : 0,
-        sources: json.sources ?? [],
-        types: json.types ?? [],
-        targets: json.targets ?? [],
-        headphones: Array.isArray(json.headphones)
-          ? json.headphones.map(normalizeIndexEntry)
-          : [],
-      };
-      saveJson(STORAGE_KEY_INDEX, state.index);
-      return state.index;
     })();
   }
   return state.indexPromise;

@@ -7,6 +7,7 @@ const PAGE_SIZE = 20;
 const EMPTY_RESULTS = Object.freeze({
   results: [],
   total: 0,
+  libraryTotal: 0,
   sources: [],
   types: [],
   targets: [],
@@ -67,6 +68,7 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
           setResults({
             results: data.results,
             total: data.total,
+            libraryTotal: data.libraryTotal ?? data.total,
             sources: data.sources,
             types: data.types,
             targets: data.targets,
@@ -120,6 +122,8 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
   }, [autoEqUpdateSettings]);
 
   const recentSearches = autoEqGetRecentSearches();
+  const libraryTotal = results.libraryTotal ?? results.total;
+  const filteredTotal = results.total;
 
   if (!availability) {
     return (
@@ -135,15 +139,15 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
   return (
     <div className="autoeq-panel">
       <header className="autoeq-panel__header">
-        <div>
-          <h4>AutoEQ Database</h4>
+        <div className="autoeq-panel__heading">
+          <h4>AutoEQ Library</h4>
           <p className="autoeq-panel__subtitle">
-            Search {results.total.toLocaleString()} presets from community sources.
+            Showing {filteredTotal.toLocaleString()} preset{filteredTotal === 1 ? "" : "s"} · Library includes {libraryTotal.toLocaleString()} entries
           </p>
         </div>
         {recentSearches.length > 0 ? (
           <div className="autoeq-panel__recent" aria-label="recent searches">
-            <span>Recent:</span>
+            <span className="autoeq-panel__recent-label">Recent</span>
             <div className="autoeq-panel__chips">
               {recentSearches.map((term) => (
                 <button
@@ -187,53 +191,62 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
         </div>
 
         <div className="autoeq-panel__filters">
-          <select
-            value={sourceFilter}
-            onChange={(event) => {
-              setSourceFilter(event.target.value);
-              setPage(1);
-            }}
-            aria-label="Filter by source"
-          >
-            <option value="all">All sources</option>
-            {results.sources.map((source) => (
-              <option key={source} value={source}>
-                {source}
-              </option>
-            ))}
-          </select>
+          <label className="autoeq-panel__filter">
+            <span>Source</span>
+            <select
+              value={sourceFilter}
+              onChange={(event) => {
+                setSourceFilter(event.target.value);
+                setPage(1);
+              }}
+              aria-label="Filter by source"
+            >
+              <option value="all">All sources</option>
+              {results.sources.map((source) => (
+                <option key={source} value={source}>
+                  {source}
+                </option>
+              ))}
+            </select>
+          </label>
 
-          <select
-            value={typeFilter}
-            onChange={(event) => {
-              setTypeFilter(event.target.value);
-              setPage(1);
-            }}
-            aria-label="Filter by device type"
-          >
-            <option value="all">All types</option>
-            {results.types.map((typeOption) => (
-              <option key={typeOption} value={typeOption}>
-                {typeOption === "over-ear" ? "Over-ear" : "In-ear"}
-              </option>
-            ))}
-          </select>
+          <label className="autoeq-panel__filter">
+            <span>Type</span>
+            <select
+              value={typeFilter}
+              onChange={(event) => {
+                setTypeFilter(event.target.value);
+                setPage(1);
+              }}
+              aria-label="Filter by device type"
+            >
+              <option value="all">All types</option>
+              {results.types.map((typeOption) => (
+                <option key={typeOption} value={typeOption}>
+                  {typeOption === "over-ear" ? "Over-ear" : "In-ear"}
+                </option>
+              ))}
+            </select>
+          </label>
 
-          <select
-            value={targetFilter}
-            onChange={(event) => {
-              setTargetFilter(event.target.value);
-              setPage(1);
-            }}
-            aria-label="Filter by target"
-          >
-            <option value="all">All targets</option>
-            {availableTargets.map((targetOption) => (
-              <option key={targetOption} value={targetOption}>
-                {targetOption}
-              </option>
-            ))}
-          </select>
+          <label className="autoeq-panel__filter">
+            <span>Target</span>
+            <select
+              value={targetFilter}
+              onChange={(event) => {
+                setTargetFilter(event.target.value);
+                setPage(1);
+              }}
+              aria-label="Filter by target"
+            >
+              <option value="all">All targets</option>
+              {availableTargets.map((targetOption) => (
+                <option key={targetOption} value={targetOption}>
+                  {targetOption}
+                </option>
+              ))}
+            </select>
+          </label>
 
           <button
             type="button"
@@ -325,6 +338,7 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
                   <div className="autoeq-panel__item-actions">
                     <button
                       type="button"
+                      className="autoeq-panel__action autoeq-panel__action--primary"
                       onClick={() => handleImport(preset)}
                       disabled={importingId === preset.id || autoEqState.loading}
                     >
@@ -332,6 +346,7 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
                     </button>
                     <button
                       type="button"
+                      className="autoeq-panel__action autoeq-panel__action--secondary"
                       onClick={async () => {
                         try {
                           const text = await autoEqFetchRaw(preset);

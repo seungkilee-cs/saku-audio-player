@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const DEFAULT_INPUT_DIR = path.resolve(__dirname, "../../data/AutoEq/results");
+const DEFAULT_INPUT_DIR = path.resolve(__dirname, "../data/AutoEq/results");
 const OUTPUT_PATH = path.join(__dirname, "../public/autoeq-index.json");
 
 const PARAMETRIC_FILE_PATTERN = /ParametricEQ\.txt$/i;
@@ -16,7 +16,7 @@ const DEBUG = process.env.DEBUG === "true";
 
 function debug(...args) {
   if (DEBUG) {
-    console.log("[DEBUG]", ...args);
+    console.log("[DEBUG]", new Date().toISOString(), ...args);
   }
 }
 
@@ -132,7 +132,7 @@ function collectParametricFilesLocal(rootDir) {
 
 function buildIndex(entries) {
   const startTime = Date.now();
-  debug(`Building index from ${entries.length} entries...`);
+  console.log(`\nBuilding index from ${entries.length} files...`);
   
   const records = entries.map((entry) => ({
     id: toId(entry),
@@ -143,7 +143,7 @@ function buildIndex(entries) {
     path: entry.path,
   }));
   
-  debug(`Parsed ${records.length} valid entries`);
+  debug(`Parsed ${records.length} valid entries (${entries.length - records.length} filtered)`);
   
   records.sort((a, b) => a.name.localeCompare(b.name));
   
@@ -151,9 +151,9 @@ function buildIndex(entries) {
   const types = Array.from(new Set(records.map((item) => item.type))).sort();
   const targets = Array.from(new Set(records.map((item) => item.target))).sort();
   
-  debug(`Sources: ${sources.join(", ")}`);
-  debug(`Types: ${types.join(", ")}`);
-  debug(`Targets: ${targets.join(", ")}`);
+  console.log(`  Sources: ${sources.join(", ")}`);
+  console.log(`  Types: ${types.join(", ")}`);
+  console.log(`  Targets: ${targets.length} unique`);
   
   const elapsed = Date.now() - startTime;
   debug(`Index built in ${elapsed}ms`);
@@ -179,18 +179,55 @@ function ensureOutputDir() {
 async function main() {
   const totalStart = Date.now();
   
+  console.log("╔════════════════════════════════════════════════════════════╗");
+  console.log("║         AutoEQ Index Generator (Local File System)        ║");
+  console.log("╚════════════════════════════════════════════════════════════╝\n");
+  
   try {
     const inputDir = process.argv[2] ? path.resolve(process.argv[2]) : DEFAULT_INPUT_DIR;
+    
     if (!existsSync(inputDir)) {
-      throw new Error(`Input directory not found: ${inputDir}`);
+      throw new Error(
+        `Input directory not found: ${inputDir}\n\n` +
+        `Please ensure the AutoEq repository is cloned:\n` +
+        `  npm run autoeq:sync\n\n` +
+        `Or manually:\n` +
+        `  git clone --filter=blob:none --sparse --no-checkout \\\n` +
+        `    https://github.com/jaakkopasanen/AutoEq.git data/AutoEq\n` +
+        `  cd data/AutoEq\n` +
+        `  git sparse-checkout init --no-cone\n` +
+        `  git sparse-checkout set "results/**/*ParametricEQ.txt"\n` +
+        `  git checkout master`
+      );
     }
 
-    console.log(`Generating AutoEQ index from ${inputDir} ...`);
+    console.log(`Input path:  ${inputDir}`);
+    console.log(`Output path: ${OUTPUT_PATH}`);
+    
+    // Show limits if any are configured
+    if (SOURCE_LIMIT > 0 || TYPE_LIMIT > 0 || MODEL_LIMIT > 0) {
+      console.log("\nLimits configured:");
+      if (SOURCE_LIMIT > 0) console.log(`  Max sources: ${SOURCE_LIMIT}`);
+      if (TYPE_LIMIT > 0) console.log(`  Max types:   ${TYPE_LIMIT}`);
+      if (MODEL_LIMIT > 0) console.log(`  Max models:  ${MODEL_LIMIT}`);
+    }
+    
+    console.log("\n📂 Scanning for *ParametricEQ.txt files...");
     const entries = collectParametricFilesLocal(inputDir);
-    console.log(`Discovered ${entries.length} ParametricEQ entries, building index...`);
+    console.log(`✓ Found ${entries.length} ParametricEQ files`);
+    
+    if (entries.length === 0) {
+      throw new Error(
+        `No ParametricEQ.txt files found in ${inputDir}\n\n` +
+        `Verify sparse-checkout configuration:\n` +
+        `  cd data/AutoEq\n` +
+        `  git sparse-checkout list`
+      );
+    }
     
     const index = buildIndex(entries);
     
+    console.log(`\n📝 Writing to ${OUTPUT_PATH}...`);
     ensureOutputDir();
     
     const jsonStart = Date.now();
@@ -198,11 +235,28 @@ async function main() {
     debug(`JSON written in ${Date.now() - jsonStart}ms`);
     
     const totalElapsed = Date.now() - totalStart;
-    console.log(`✓ Saved index with ${index.total} presets to ${OUTPUT_PATH}`);
-    console.log(`✓ Total execution time: ${totalElapsed}ms (${(totalElapsed / 1000).toFixed(2)}s)`);
+    
+    console.log("\n╔════════════════════════════════════════════════════════════╗");
+    console.log("║                    ✓ SUCCESS                               ║");
+    console.log("╚════════════════════════════════════════════════════════════╝");
+    console.log(`Presets:         ${index.total}`);
+    console.log(`Sources:         ${index.sources.length} (${index.sources.join(", ")})`);
+    console.log(`Types:           ${index.types.length} (${index.types.join(", ")})`);
+    console.log(`Output:          ${OUTPUT_PATH}`);
+    console.log(`Timestamp:       ${index.version}`);
+    console.log(`Execution time:  ${totalElapsed}ms (${(totalElapsed / 1000).toFixed(2)}s)\n`);
     
   } catch (error) {
-    console.error("Failed to generate AutoEQ index:", error);
+    console.error("\n╔════════════════════════════════════════════════════════════╗");
+    console.error("║                    ✗ FAILED                                ║");
+    console.error("╚════════════════════════════════════════════════════════════╝");
+    console.error(`Error: ${error.message}\n`);
+    
+    if (DEBUG) {
+      console.error("Stack trace:");
+      console.error(error.stack);
+    }
+    
     process.exitCode = 1;
   }
 }
