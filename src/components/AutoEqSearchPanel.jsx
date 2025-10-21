@@ -13,8 +13,6 @@ const EMPTY_RESULTS = Object.freeze({
   targets: [],
 });
 
-const DEVICE_TYPE_OPTIONS = ["in-ear", "over-ear"];
-
 export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
   const {
     autoEqState,
@@ -123,6 +121,17 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
   const recentSearches = autoEqGetRecentSearches();
   const libraryTotal = results.libraryTotal ?? results.total;
   const filteredTotal = results.total;
+  const availableTypes = results.types && results.types.length > 0
+    ? results.types
+    : ["in-ear", "over-ear", "other"];
+
+  const formatTypeLabel = useCallback((value) => {
+    if (!value) return "All types";
+    if (value === "in-ear") return "In-ear";
+    if (value === "over-ear") return "Over-ear";
+    if (value === "other") return "Other";
+    return value.replace(/\b\w/g, (char) => char.toUpperCase());
+  }, []);
 
   if (!availability) {
     return (
@@ -229,9 +238,9 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
               aria-label="Filter by device type"
             >
               <option value="all">All types</option>
-              {DEVICE_TYPE_OPTIONS.map((typeOption) => (
+              {availableTypes.map((typeOption) => (
                 <option key={typeOption} value={typeOption}>
-                  {typeOption === "over-ear" ? "Over-ear" : "In-ear"}
+                  {formatTypeLabel(typeOption)}
                 </option>
               ))}
             </select>
@@ -314,8 +323,9 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
           <>
             <ul className={`autoeq-panel__list${compactView ? " autoeq-panel__list--compact" : ""}`} role="list">
               {results.results.map((preset) => {
-                const normalizedType = preset.type === "over-ear" ? "over-ear" : "in-ear";
-                const typeLabel = normalizedType === "over-ear" ? "Over-ear" : "In-ear";
+                const normalizedType = preset.deviceType ?? preset.type;
+                const typeKey = normalizedType ? normalizedType.toLowerCase() : "other";
+                const typeLabel = formatTypeLabel(typeKey);
 
                 return (
                   <li
@@ -377,10 +387,10 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
                 disabled={page === 1}
                 aria-label="Previous page"
               >
-                Previous
+                ‹
               </button>
               <span>
-                Page {page} / {Math.max(1, Math.ceil(results.total / PAGE_SIZE))}
+                {page} / {Math.max(1, Math.ceil(results.total / PAGE_SIZE))}
               </span>
               <button
                 type="button"
@@ -388,7 +398,7 @@ export default function AutoEqSearchPanel({ onPresetImported = () => {} }) {
                 disabled={page >= Math.ceil(results.total / PAGE_SIZE)}
                 aria-label="Next page"
               >
-                Next
+                ›
               </button>
             </div>
           </>

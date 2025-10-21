@@ -2,11 +2,11 @@
 
 > 咲く, Let your music bloom
 
-A web-based audio player with autoEq compatible 10 band parametric equalizer, built with Reactjs.
+A web based audio player with AutoEq compatible 10 band parametric equalizer, built with ReactJS.
 
 ## Screenshots
 
-### Playser
+### Player
 
 |                   Audio Player                   |                       Playlist                       |
 | :----------------------------------------------: | :--------------------------------------------------: |
@@ -30,6 +30,10 @@ Building it showed another gap as well. The npm ecosystem still lacks a light 10
 In a world where access keeps drifting toward subscriptions and remote servers, I would rather keep the listening chain local. Saku is a bring your own music solution that puts control of the audio stack back in the listener’s hands.
 
 ## Features
+
+### Update
+- Now support all 8,850 AutoEq Parametric EQ presets search and download via Github API! No longer have to parse through the AutoEq Github repository manually.
+- Directory drag and drop addition support added.
 
 ### Audio Playback
 
@@ -74,15 +78,11 @@ In a world where access keeps drifting toward subscriptions and remote servers, 
   - [x] PEQ Panel theme consistency and font consistency
   - [x] Playlist margin and track item handling
 
-- [ ] UX Revamp for more consistent experience on both Mobile and Browser
-
+- [x] UX Revamp for more consistent experience on both Mobile and Browser
   - [x] playlist responsive
   - [x] PEQ responsive
-  - [ ] Panel Control Mobile support
   - [x] Keyboard shortcut modal
-  - [ ] Player responsive (vertical)
-
-- [ ] Memory leak testing and optimization
+  - [x] Player responsive (vertical)
 
 ### Features
 
@@ -91,25 +91,15 @@ In a world where access keeps drifting toward subscriptions and remote servers, 
   - [ ] remove individual track
   - [ ] drag and move track order
   - [x] Repeat modes (currently repeat all by default)
+  - [x] Drag and Drop directory addition for tracks
 
 - [ ] Consolidate PEQ import
-
-- [ ] AutoEq Search Integration
-
-  - [ ] [Oratory1990](https://github.com/jaakkopasanen/AutoEq/tree/master/results/oratory1990) integration
-  - [ ] General AutoEq.app integration
+- [x] AutoEq Search Integration
+I went through with general AutoEq Github API integration. Initially was going to use full tree scan for the AutoEq directory, but instead just went with local index generation with spare cloned repo, and only use the API for import/download.
 
 ### Expansions
 
 - [ ] Mobile Support
-
-- [ ] Streaming Service Integration
-  - [ ] YT Music
-  - [ ] Spotify
-- [ ] Browser Extension Integration
-
-  - [ ] Chrome / Edge / Brave
-  - [ ] Firefox / Zen
 
 - [ ] PEQ modularization
   - [ ] Extract PEQ to a separate library

@@ -29,6 +29,8 @@
   --preset-save-text: #4ade80;
   --preset-save-bg: rgba(74, 222, 128, 0.15);
   --preset-save-bg-hover: rgba(74, 222, 128, 0.25);
+  --preset-modal-bg: rgba(24, 30, 48, 0.95);
+  --preset-modal-border: rgba(92, 104, 148, 0.6);
 }
 
 [data-theme="light"] .preset-library,
@@ -353,7 +355,7 @@
 
 .preset-library__modal {
   background: var(--preset-modal-bg, rgba(255, 255, 255, 0.98));
-  border: 1px solid var(--preset-border, rgba(142, 152, 168, 0.18));
+  border: 1px solid var(--preset-modal-border, var(--preset-border, rgba(142, 152, 168, 0.18)));
   border-radius: 12px;
   padding: 24px;
   min-width: 320px;
@@ -406,7 +408,7 @@
 .preset-library__modal-btn--cancel {
   border-color: var(--preset-border, rgba(142, 152, 168, 0.18));
   background: var(--preset-card-bg, var(--color-surface-raised));
-  color: var(--preset-text-secondary, rgba(26, 29, 36, 0.55));
+  color: var(--preset-text-primary, #1a1d24);
 }
 
 .preset-library__modal-btn--cancel:hover {

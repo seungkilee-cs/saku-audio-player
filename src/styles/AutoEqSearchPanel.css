@@ -222,16 +222,25 @@
 }
 
 .autoeq-panel__advanced-toggle {
-  align-self: flex-start;
-  border: none;
-  background: none;
-  color: var(--primary-color, #1463ff);
+  align-self: flex-end;
+  border: 1px solid var(--autoeq-border-strong);
+  background: var(--autoeq-button-ghost);
+  color: var(--autoeq-text-color);
   cursor: pointer;
-  font-size: 0.92rem;
+  font-size: 0.85rem;
   font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
+  padding: 0.48rem 0.9rem;
+  border-radius: 6px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin-top: 0.35rem;
+}
+
+.autoeq-panel__advanced-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(61, 124, 255, 0.18);
 }
 
 .autoeq-panel__advanced {
@@ -398,13 +407,19 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.45rem 0.85rem;
-  border-radius: var(--radius-pill, 999px);
-  font-size: 0.78rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 8px;
+  font-size: clamp(0.7rem, 1.4vw, 0.78rem);
   font-weight: 600;
-  line-height: 1;
+  line-height: 1.15;
   letter-spacing: 0.01em;
   transition: background 0.2s ease;
+  max-width: 100%;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  flex-wrap: wrap;
 }
 
 .autoeq-chip--source {
@@ -487,9 +502,9 @@
 .autoeq-panel__pagination {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 0.85rem 1rem;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
   border-top: 1px solid var(--autoeq-border);
   background: var(--autoeq-control-bg);
   border-radius: 12px;
@@ -497,8 +512,9 @@
 }
 
 .autoeq-panel__pagination button {
-  padding: 0.5rem 1.1rem;
-  border-radius: 999px;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 8px;
   border: 1px solid var(--autoeq-border-strong);
   background: var(--autoeq-chip-bg);
   color: var(--autoeq-chip-text);
@@ -507,6 +523,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 600;
+  font-size: 1rem;
 }
 
 .autoeq-panel__pagination button:disabled {
@@ -516,6 +533,6 @@
 }
 
 .autoeq-panel__pagination span {
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   color: var(--autoeq-text-muted);
 }

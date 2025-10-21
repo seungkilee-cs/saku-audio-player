@@ -202,7 +202,7 @@ const PeqPanel = () => {
           className={activeTab === 'import' ? 'active' : ''}
           onClick={() => setActiveTab('import')}
         >
-          Import
+          AutoEQ Search
         </button>
       </nav>
 
@@ -226,16 +226,16 @@ const PeqPanel = () => {
         {activeTab === 'library' ? (
           <section role="tabpanel" className="peq-panel__tab-section">
             <PresetLibrary onPresetChanged={refreshPresetLibrary} />
+            <details className="peq-panel__manual" open={false}>
+              <summary>Manual upload</summary>
+              <PresetImportExport onPresetAdded={refreshPresetLibrary} />
+            </details>
           </section>
         ) : null}
 
         {activeTab === 'import' ? (
           <section role="tabpanel" className="peq-panel__tab-section">
             <AutoEqSearchPanel onPresetImported={refreshPresetLibrary} />
-            <details className="peq-panel__manual" open={false}>
-              <summary>Manual upload</summary>
-              <PresetImportExport onPresetAdded={refreshPresetLibrary} />
-            </details>
             {autoEqState.error ? (
               <p className="peq-panel__auto-eq-warning">{autoEqState.error}</p>
             ) : null}

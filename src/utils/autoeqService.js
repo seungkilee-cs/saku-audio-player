@@ -11,6 +11,8 @@ const MIRRORS = [
   "https://cdn.jsdelivr.net/gh/jaakkopasanen/AutoEq@master/",
 ];
 
+const DEVICE_TYPE_ORDER = ["in-ear", "over-ear", "other"];
+
 const state = {
   indexPromise: null,
   index: null,
@@ -70,14 +72,59 @@ export async function checkAutoEqAvailability() {
   }
 }
 
+function deriveDeviceType(rawType) {
+  if (!rawType) return "other";
+  const value = String(rawType).toLowerCase();
+
+  if (value.includes("over-ear") || value.includes("over ear") || value.includes("headphone")) {
+    return "over-ear";
+  }
+
+  if (
+    value.includes("in-ear") ||
+    value.includes("inear") ||
+    value.includes("in ear") ||
+    value.includes("earbud") ||
+    value.includes("iem") ||
+    value.includes("canal")
+  ) {
+    return "in-ear";
+  }
+
+  return "other";
+}
+
 function normalizeIndexEntry(entry) {
+  if (!entry) return null;
+  const rawType = entry.rawType ?? entry.type ?? null;
+  const deviceType = deriveDeviceType(entry.deviceType ?? rawType);
+
   return {
-    id: entry.id,
-    name: entry.name,
-    source: entry.source,
-    type: entry.type,
-    target: entry.target,
-    path: entry.path,
+    ...entry,
+    rawType,
+    deviceType,
+  };
+}
+
+function aggregateAvailableTypes(headphones = []) {
+  const typeSet = new Set(headphones.map((item) => item?.deviceType).filter(Boolean));
+  const ordered = DEVICE_TYPE_ORDER.filter((value) => typeSet.has(value));
+  const extras = Array.from(typeSet).filter((value) => !DEVICE_TYPE_ORDER.includes(value));
+  return [...ordered, ...extras];
+}
+
+function upgradeIndexData(index) {
+  if (!index) return null;
+  const headphones = Array.isArray(index.headphones)
+    ? index.headphones
+        .map(normalizeIndexEntry)
+        .filter(Boolean)
+    : [];
+
+  return {
+    ...index,
+    headphones,
+    types: aggregateAvailableTypes(headphones),
   };
 }
 
@@ -86,7 +133,7 @@ async function fetchIndex() {
     state.indexPromise = (async () => {
       const cached = loadJson(STORAGE_KEY_INDEX, null);
       if (cached?.version && Array.isArray(cached?.headphones)) {
-        state.index = cached;
+        state.index = upgradeIndexData(cached);
       }
 
       try {
@@ -96,7 +143,7 @@ async function fetchIndex() {
         }
 
         const json = await response.json();
-        const normalized = {
+        const baseIndex = {
           version: json.version ?? new Date().toISOString(),
           total: typeof json.total === "number"
             ? json.total
@@ -104,12 +151,13 @@ async function fetchIndex() {
               ? json.headphones.length
               : 0,
           sources: json.sources ?? [],
-          types: json.types ?? [],
           targets: json.targets ?? [],
           headphones: Array.isArray(json.headphones)
             ? json.headphones.map(normalizeIndexEntry)
             : [],
         };
+
+        const normalized = upgradeIndexData(baseIndex);
 
         const hasChanged =
           !state.index ||
@@ -137,11 +185,12 @@ export async function searchPresets({ query = "", source = null, type = null, ta
   const index = await fetchIndex();
   const loweredQuery = query.trim().toLowerCase();
   const filtered = index.headphones.filter((item) => {
+    const normalizedType = item.deviceType ?? deriveDeviceType(item.type);
     const matchesQuery = !loweredQuery || item.name.toLowerCase().includes(loweredQuery);
     const matchesSource = !source || item.source === source;
-    const matchesType = !type || item.type === type;
+    const matchesType = !type || normalizedType === type;
     const matchesTarget = !target || item.target === target;
-    return matchesQuery && matchesSource && matchesType && matchesTarget;
+    return matchesQuery && matchesSource && matchesTarget;
   });
   const total = filtered.length;
   const start = Math.max(0, (page - 1) * pageSize);
