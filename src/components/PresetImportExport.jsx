@@ -9,7 +9,7 @@ import { addPresetToLibrary } from '../utils/presetLibrary';
 import '../styles/PresetImportExport.css';
 
 const PresetImportExport = ({ onPresetAdded }) => {
-  const { peqState, loadPeqPreset } = usePlayback();
+  const { loadPeqPreset } = usePlayback();
   const fileInputRef = useRef(null);
   const [importStatus, setImportStatus] = useState({ type: 'idle', message: '' });
 

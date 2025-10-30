@@ -7,7 +7,7 @@ const PeqResponseChart = ({ height = 300 }) => {
   const animationFrameRef = useRef(null);
   const [frequencyData, setFrequencyData] = useState(null);
   const { peqState } = usePlayback();
-  const { peqBands, peqNodes } = peqState;
+  const { peqBands } = peqState;
 
   // Generate logarithmic frequency points from 20Hz to 20kHz
   const generateFrequencies = useCallback((numPoints = 512) => {

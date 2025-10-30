@@ -3,11 +3,11 @@ import audio from "../audio";
 
 export async function loadBundledTracks() {
   const entries = Object.entries(audio);
-  const trackPromises = entries.map(async ([key, src]) =>
+  const trackPromises = entries.map(async ([key, url]) =>
     parseSource({
       key,
-      src,
-      blobResolver: () => fetch(src).then((response) => response.blob()),
+      src: url,
+      blobResolver: () => fetch(url).then((response) => response.blob()),
       sourceType: "bundled",
     }),
   );

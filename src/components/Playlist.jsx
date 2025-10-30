@@ -1,8 +1,13 @@
 import React, { useRef, useState, useImperativeHandle, forwardRef } from "react";
 import { collectAudioFilesFromDataTransfer, filterSupportedAudioFiles } from "../utils/filePickers";
 import "../styles/Playlist.css";
+import { handlePlaylistItemKeyDown } from "./playlistKeydown";
 
-const Playlist = forwardRef(({ tracks, currentTrackIndex, onTrackSelect, onUpload, onReset }, ref) => {
+const Playlist = forwardRef(
+  (
+    { tracks, currentTrackIndex, onTrackSelect, onUpload, onReset, onRemoveTrack },
+    ref,
+  ) => {
   const hasTracks = tracks.length > 0;
   const bodyRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -130,13 +135,16 @@ const Playlist = forwardRef(({ tracks, currentTrackIndex, onTrackSelect, onUploa
                       className={`playlist__item${isActive ? " is-active" : ""}`}
                       role="button"
                       tabIndex={0}
+                      data-testid={`playlist-item-${index}`}
                       onClick={() => onTrackSelect(index)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          onTrackSelect(index);
-                        }
-                      }}
+                      onKeyDown={(event) =>
+                        handlePlaylistItemKeyDown({
+                          event,
+                          index,
+                          onSelect: onTrackSelect,
+                          onRemove: onRemoveTrack,
+                        })
+                      }
                     >
                       <div className="playlist__item-index">{String(index + 1).padStart(2, "0")}</div>
                       <div className="playlist__item-body">
@@ -149,6 +157,19 @@ const Playlist = forwardRef(({ tracks, currentTrackIndex, onTrackSelect, onUploa
                         <div className="playlist__item-length">
                           {Number.isFinite(track.length) && track.length > 0 ? formatLength(track.length) : "—"}
                         </div>
+                        {typeof onRemoveTrack === "function" ? (
+                          <button
+                            type="button"
+                            className="playlist__remove-button"
+                            aria-label={`Remove ${track.title || "track"}`}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              onRemoveTrack(index);
+                            }}
+                          >
+                            ×
+                          </button>
+                        ) : null}
                       </div>
                     </li>
                   );
@@ -173,6 +194,6 @@ const formatLength = (seconds) => {
   return `${mins}:${secs.toString().padStart(2, "0")}`;
 };
 
-Playlist.displayName = 'Playlist';
+Playlist.displayName = "Playlist";
 
 export default Playlist;

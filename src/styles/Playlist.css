@@ -219,7 +219,7 @@
 
 .playlist__item-body {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto auto;
   gap: 0.625rem;
   align-items: center;
   min-width: 0;
@@ -283,6 +283,29 @@
   display: flex;
   align-items: center;
   padding-right: 0.125rem;
+}
+
+.playlist__remove-button {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.25rem 0.4rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.playlist__remove-button:hover,
+.playlist__remove-button:focus-visible {
+  background: rgba(255, 255, 255, 0.16);
+  color: #ffffff;
+  outline: none;
+}
+
+.playlist__remove-button:focus-visible {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35);
 }
 
 .playlist__empty {

@@ -2,19 +2,19 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import svgr from "vite-plugin-svgr";
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [react(), svgr()],
   build: {
     outDir: "dist",
   },
-  base: "/saku-audio-player/",
+  base: command === "serve" ? "/" : "/saku-audio-player/",
   optimizeDeps: {
     include: [
-      'music-metadata'
+      "music-metadata",
     ],
     exclude: [
-      'music-metadata/lib/parsers'
-    ]
+      "music-metadata/lib/parsers",
+    ],
   },
   esbuild: {
     loader: "jsx",
@@ -26,4 +26,8 @@ export default defineConfig({
       "node_modules/**/*.jsx",
     ],
   },
-});
+  test: {
+    environment: "jsdom",
+    setupFiles: "./src/setupTests.js",
+  },
+}));

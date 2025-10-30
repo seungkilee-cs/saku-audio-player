@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Path to sparse AutoEq clone
-const AUTOEQ_REPO_PATH = path.join(__dirname, "../../data/AutoEq");
+const AUTOEQ_REPO_PATH = path.join(__dirname, "../../AutoEq");
 const RESULTS_PATH = path.join(AUTOEQ_REPO_PATH, "results");
 const OUTPUT_PATH = path.join(__dirname, "../public/autoeq-index.json");
 

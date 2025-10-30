@@ -3,6 +3,7 @@
 # Vite
 dist
 exclude/
+exclude/*
 
 # dependencies
 /node_modules

@@ -20,6 +20,8 @@ const AppLayout = () => {
     appendTracks,
     resetToDefault,
     activeSource,
+    removeTrackAt,
+    removeCurrentTrack,
   } = usePlayback();
 
   // Initialize sidebars based on screen width
@@ -125,6 +127,7 @@ const AppLayout = () => {
             onTrackSelect={playTrackAt}
             onUpload={handleFilesSelected}
             onReset={resetToDefault}
+            onRemoveTrack={removeTrackAt}
           />
         </Sidebar>
 
@@ -142,6 +145,7 @@ const AppLayout = () => {
             onFilesDropped={handleFilesSelected}
             onToggleEqModal={toggleRightSidebar}
             onTogglePlaylistModal={toggleLeftSidebar}
+            removeCurrentTrack={removeCurrentTrack}
           />
         </div>
 

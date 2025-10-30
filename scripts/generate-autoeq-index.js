@@ -5,7 +5,7 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const DEFAULT_INPUT_DIR = path.resolve(__dirname, "../data/AutoEq/results");
+const DEFAULT_INPUT_DIR = path.resolve(__dirname, "../../AutoEq/results");
 const OUTPUT_PATH = path.join(__dirname, "../public/autoeq-index.json");
 
 const PARAMETRIC_FILE_PATTERN = /ParametricEQ\.txt$/i;

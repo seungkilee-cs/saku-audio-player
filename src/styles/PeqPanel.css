@@ -497,9 +497,10 @@
 }
 
 .gain-slider {
-  writing-mode: bt-lr;
-  -webkit-appearance: slider-vertical;
-  appearance: slider-vertical;
+  writing-mode: vertical-lr;
+  direction: rtl;
+  -webkit-appearance: none;
+  appearance: none;
   width: 18px;
   height: 100px;
   background: rgba(142, 152, 168, 0.15);

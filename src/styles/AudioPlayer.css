@@ -39,8 +39,31 @@
 
 .audio-player__extra-actions {
   display: flex;
+  gap: 0.5rem;
   align-items: center;
-  gap: 0.3rem;
+}
+
+.audio-player__extra-button {
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.85);
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.audio-player__extra-button:hover,
+.audio-player__extra-button:focus-visible {
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  outline: none;
+}
+
+.audio-player__extra-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .audio-player__ambient-glow {

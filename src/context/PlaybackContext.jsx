@@ -11,6 +11,13 @@ import React, {
 } from "react";
 import { loadBundledTracks } from "../assets/meta/tracks";
 import {
+  insertTracksState,
+  moveTrackState,
+  rebuildShuffleOrder,
+  removeTrackAtState,
+  removeTracksState,
+} from "./playlistActions";
+import {
   DEFAULT_PRESET,
   calculateRecommendedPreamp,
   clonePreset,
@@ -37,6 +44,7 @@ import {
 import { addPresetToLibrary } from "../utils/presetLibrary";
 
 const normalizedDefaultPreset = normalizePreset(clonePreset(DEFAULT_PRESET));
+const OBJECT_URL_REVOKE_DELAY_MS = 750;
 
 function deriveAutoPreamp(enabled, bands, fallback) {
   if (!enabled) {
@@ -187,9 +195,7 @@ function sanitizeTracks(tracks) {
 
   const sanitized = tracks.map((track) => {
     const { objectUrl, ...rest } = track;
-    if (objectUrl) {
-      objectUrls.push(objectUrl);
-    }
+    objectUrls.push(objectUrl ?? null);
     return rest;
   });
 
@@ -206,6 +212,7 @@ export const PlaybackProvider = ({ children }) => {
   const [shuffleMode, setShuffleMode] = useState(false);
   const [shuffleOrder, setShuffleOrder] = useState([]);
   const objectUrlsRef = useRef([]);
+  const pendingUrlRevocationsRef = useRef(new Set());
   const [peqState, dispatchPeq] = useReducer(peqReducer, initialPeqState);
   const applyTracksRef = useRef(null);
 
@@ -221,10 +228,24 @@ export const PlaybackProvider = ({ children }) => {
   }, [peqState.peqBands, peqState.preampGain, peqState.preampAuto, peqState.peqBypass, peqState.currentPresetName]);
 
   const cleanupObjectUrls = useCallback((urls) => {
-    urls?.forEach((url) => {
-      if (url) {
-        URL.revokeObjectURL(url);
+    if (!urls) {
+      return;
+    }
+    const list = Array.isArray(urls) ? urls : [urls];
+    list.forEach((url) => {
+      if (!url || pendingUrlRevocationsRef.current.has(url)) {
+        return;
       }
+      pendingUrlRevocationsRef.current.add(url);
+      window.setTimeout(() => {
+        try {
+          URL.revokeObjectURL(url);
+        } catch (error) {
+          console.warn('Failed to revoke object URL', error);
+        } finally {
+          pendingUrlRevocationsRef.current.delete(url);
+        }
+      }, OBJECT_URL_REVOKE_DELAY_MS);
     });
   }, []);
 
@@ -388,12 +409,197 @@ export const PlaybackProvider = ({ children }) => {
     [applyTracks],
   );
 
+  const applyRemovalResult = useCallback(
+    (result) => {
+      if (!result?.didRemove) {
+        return false;
+      }
+
+      objectUrlsRef.current = result.objectUrls ?? [];
+
+      if (Array.isArray(result.revokedUrls) && result.revokedUrls.length > 0) {
+        cleanupObjectUrls(result.revokedUrls);
+      }
+
+      setTracks(result.tracks);
+      setCurrentTrackIndex(result.currentTrackIndex);
+      setActiveSource(result.activeSource ?? "none");
+      setShuffleOrder(result.shuffleOrder ?? []);
+
+      if (result.tracks.length === 0) {
+        setShuffleMode(false);
+      }
+
+      if (result.shouldPause) {
+        setLoading(false);
+      }
+
+      setError(null);
+
+      return true;
+    },
+    [cleanupObjectUrls],
+  );
+
+  const removeTrackAt = useCallback(
+    (index) => {
+      if (!tracks.length) {
+        return false;
+      }
+
+      const result = removeTrackAtState(
+        {
+          tracks,
+          objectUrls: objectUrlsRef.current,
+          currentTrackIndex,
+          shuffleOrder,
+          shuffleMode,
+          repeatMode,
+          activeSource,
+        },
+        index,
+      );
+
+      return applyRemovalResult(result);
+    },
+    [
+      tracks,
+      currentTrackIndex,
+      shuffleOrder,
+      shuffleMode,
+      repeatMode,
+      activeSource,
+      applyRemovalResult,
+    ],
+  );
+
+  const removeTracks = useCallback(
+    (indices) => {
+      if (!Array.isArray(indices) || indices.length === 0) {
+        return false;
+      }
+
+      if (!tracks.length) {
+        return false;
+      }
+
+      const result = removeTracksState(
+        {
+          tracks,
+          objectUrls: objectUrlsRef.current,
+          currentTrackIndex,
+          shuffleOrder,
+          shuffleMode,
+          repeatMode,
+          activeSource,
+        },
+        indices,
+      );
+
+      return applyRemovalResult(result);
+    },
+    [
+      tracks,
+      currentTrackIndex,
+      shuffleOrder,
+      shuffleMode,
+      repeatMode,
+      activeSource,
+      applyRemovalResult,
+    ],
+  );
+
+  const removeCurrentTrack = useCallback(() => {
+    if (tracks.length === 0) {
+      return false;
+    }
+    return removeTrackAt(currentTrackIndex);
+  }, [tracks, currentTrackIndex, removeTrackAt]);
+
+  const applyMoveResult = useCallback(
+    (result) => {
+      if (!result?.didMove) {
+        return false;
+      }
+
+      objectUrlsRef.current = result.objectUrls ?? [];
+      setTracks(result.tracks);
+      setCurrentTrackIndex(result.currentTrackIndex);
+      setActiveSource(result.activeSource ?? "none");
+      setShuffleOrder(result.shuffleOrder ?? []);
+      setError(null);
+      return true;
+    },
+    [],
+  );
+
+  const moveTrack = useCallback(
+    ({ fromIndex, toIndex }) => {
+      if (!tracks.length) {
+        return false;
+      }
+
+      const result = moveTrackState(
+        {
+          tracks,
+          objectUrls: objectUrlsRef.current,
+          currentTrackIndex,
+          shuffleMode,
+        },
+        { fromIndex, toIndex },
+      );
+
+      return applyMoveResult(result);
+    },
+    [tracks, currentTrackIndex, shuffleMode, applyMoveResult],
+  );
+
+  const insertTracksAt = useCallback(
+    (index, incomingTracks) => {
+      if (!Array.isArray(incomingTracks) || incomingTracks.length === 0) {
+        return false;
+      }
+
+      const { sanitized, objectUrls } = sanitizeTracks(incomingTracks);
+
+      const result = insertTracksState(
+        {
+          tracks,
+          objectUrls: objectUrlsRef.current,
+          currentTrackIndex,
+          shuffleMode,
+        },
+        {
+          index,
+          tracks: sanitized,
+          objectUrls,
+        },
+      );
+
+      if (!result.didInsert) {
+        return false;
+      }
+
+      objectUrlsRef.current = result.objectUrls ?? [];
+      setTracks(result.tracks);
+      setCurrentTrackIndex(result.currentTrackIndex);
+      setActiveSource(result.activeSource ?? "none");
+      setShuffleOrder(result.shuffleOrder ?? []);
+      setError(null);
+
+      return true;
+    },
+    [tracks, currentTrackIndex, shuffleMode],
+  );
+
   const clearPlaylist = useCallback(() => {
     cleanupObjectUrls(objectUrlsRef.current);
     objectUrlsRef.current = [];
     setTracks([]);
     setCurrentTrackIndex(0);
     setActiveSource("none");
+    setShuffleOrder([]);
+    setShuffleMode(false);
     setLoading(false);
     setError(null);
   }, [cleanupObjectUrls]);
@@ -404,22 +610,8 @@ export const PlaybackProvider = ({ children }) => {
 
   // Shuffle functionality
   const toggleShuffle = useCallback(() => {
-    if (!shuffleMode) {
-      // Enabling shuffle: create shuffle order
-      const indices = tracks.map((_, i) => i);
-      const otherIndices = indices.filter(i => i !== currentTrackIndex);
-      // Fisher-Yates shuffle
-      for (let i = otherIndices.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [otherIndices[i], otherIndices[j]] = [otherIndices[j], otherIndices[i]];
-      }
-      setShuffleOrder([currentTrackIndex, ...otherIndices]);
-    } else {
-      // Disabling shuffle: clear order
-      setShuffleOrder([]);
-    }
-    setShuffleMode(!shuffleMode);
-  }, [shuffleMode, tracks, currentTrackIndex]);
+    setShuffleMode((previous) => !previous);
+  }, []);
 
   // Repeat mode cycling: off -> all -> one -> off
   const toggleRepeatMode = useCallback(() => {
@@ -432,16 +624,23 @@ export const PlaybackProvider = ({ children }) => {
 
   // Update shuffle order when tracks change
   useEffect(() => {
-    if (shuffleMode && tracks.length > 0) {
-      const indices = tracks.map((_, i) => i);
-      const otherIndices = indices.filter(i => i !== currentTrackIndex);
-      for (let i = otherIndices.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [otherIndices[i], otherIndices[j]] = [otherIndices[j], otherIndices[i]];
-      }
-      setShuffleOrder([currentTrackIndex, ...otherIndices]);
+    if (!shuffleMode) {
+      setShuffleOrder([]);
+      return;
     }
-  }, [tracks.length]); // Only when track count changes
+
+    if (tracks.length === 0) {
+      setShuffleOrder([]);
+      return;
+    }
+
+    setShuffleOrder((previousOrder) => {
+      if (previousOrder.length === tracks.length) {
+        return previousOrder;
+      }
+      return rebuildShuffleOrder({ tracks, currentTrackIndex });
+    });
+  }, [shuffleMode, tracks, currentTrackIndex]);
 
   const [visualSettings, setVisualSettings] = useState({
     showPetals: true,
@@ -621,6 +820,7 @@ export const PlaybackProvider = ({ children }) => {
       clearPlaylist,
       repeatMode,
       shuffleMode,
+      shuffleOrder,
       toggleRepeatMode,
       toggleShuffle,
       peqState,
@@ -640,6 +840,9 @@ export const PlaybackProvider = ({ children }) => {
       autoEqUpdateSettings,
       autoEqGetRecentSearches,
       autoEqState,
+      removeTrackAt,
+      removeTracks,
+      removeCurrentTrack,
     }),
     [
       appendTracks,
@@ -658,6 +861,7 @@ export const PlaybackProvider = ({ children }) => {
       activeSource,
       repeatMode,
       shuffleMode,
+      shuffleOrder,
       toggleRepeatMode,
       toggleShuffle,
       peqState,
@@ -677,6 +881,9 @@ export const PlaybackProvider = ({ children }) => {
       autoEqSearch,
       autoEqState,
       autoEqUpdateSettings,
+      removeTrackAt,
+      removeTracks,
+      removeCurrentTrack,
     ],
   );
 

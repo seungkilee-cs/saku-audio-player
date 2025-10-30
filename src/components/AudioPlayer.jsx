@@ -44,6 +44,7 @@ const AudioPlayer = ({
   onFilesDropped, // New prop for handling dropped files
   onToggleEqModal, // New prop for EQ modal toggle
   onTogglePlaylistModal, // New prop for playlist modal toggle
+  removeCurrentTrack,
 }) => {
   const {
     peqState,
@@ -645,10 +646,42 @@ const AudioPlayer = ({
   const totalTimeLabel = duration ? formatTime(duration) : "—";
   const displayTitle = title || "Awaiting your first track";
   const displayArtist = artist || "Upload audio to begin.";
+  const shouldRenderWaveform = false;
   const metaSummary = [album, codec, bitrate ? `${bitrate} kbps` : null]
     .filter(Boolean)
     .join(" • ");
   const isControlsDisabled = !currentTrack;
+
+  const canRemoveCurrent = typeof removeCurrentTrack === "function" && Boolean(currentTrack);
+  const overflowActions = useMemo(() => {
+    if (!canRemoveCurrent) {
+      return extraActions;
+    }
+
+    const removeButton = (
+      <button
+        type="button"
+        className="audio-player__extra-button"
+        onClick={() => removeCurrentTrack()}
+        disabled={!currentTrack}
+        title="Remove current track"
+        aria-label="Remove current track"
+      >
+        🗑
+      </button>
+    );
+
+    if (!extraActions) {
+      return removeButton;
+    }
+
+    return (
+      <>
+        {extraActions}
+        {removeButton}
+      </>
+    );
+  }, [canRemoveCurrent, extraActions, removeCurrentTrack, currentTrack]);
 
   return (
     <section
@@ -659,13 +692,13 @@ const AudioPlayer = ({
       onDrop={handleDrop}
     >
       <div className="audio-player__card">
-        {(sourceLabel || extraActions) && (
+        {(sourceLabel || overflowActions) && (
           <div className="audio-player__topbar">
             {sourceLabel ? (
               <span className="audio-player__source">{sourceLabel}</span>
             ) : null}
-            {extraActions ? (
-              <div className="audio-player__extra-actions">{extraActions}</div>
+            {overflowActions ? (
+              <div className="audio-player__extra-actions">{overflowActions}</div>
             ) : null}
           </div>
         )}
@@ -749,7 +782,7 @@ const AudioPlayer = ({
         </div>
 
         <div className="audio-player__progress">
-          {currentTrack && showWaveform ? (
+          {shouldRenderWaveform ? (
             <WaveformCanvas
               src={audioSrc}
               progress={duration > 0 ? trackProgress / duration : 0}

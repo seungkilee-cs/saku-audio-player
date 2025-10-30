@@ -178,6 +178,17 @@ export default function WaveformCanvas({
       try {
         const response = await fetch(src, { signal: controller.signal });
         const arrayBuffer = await response.arrayBuffer();
+        
+        // Ensure AudioContext is running
+        if (context.state === 'suspended') {
+          try {
+            await context.resume();
+          } catch (resumeError) {
+            console.warn('Could not resume AudioContext for waveform generation', resumeError);
+            return;
+          }
+        }
+        
         const audioBuffer = await context.decodeAudioData(arrayBuffer);
         const rawPeaks = extractPeaks(audioBuffer);
         const normalized = normalizePeaks(rawPeaks);

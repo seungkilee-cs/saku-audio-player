@@ -190,7 +190,7 @@ export async function searchPresets({ query = "", source = null, type = null, ta
     const matchesSource = !source || item.source === source;
     const matchesType = !type || normalizedType === type;
     const matchesTarget = !target || item.target === target;
-    return matchesQuery && matchesSource && matchesTarget;
+    return matchesQuery && matchesSource && matchesType && matchesTarget;
   });
   const total = filtered.length;
   const start = Math.max(0, (page - 1) * pageSize);

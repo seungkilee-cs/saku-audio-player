@@ -9,8 +9,8 @@
     "esbuild": "^0.25.0",
     "gh-pages": "^6.3.0",
     "minimatch": "^10.0.1",
-    "node-fetch": "^3.3.2",
     "music-metadata": "11.0.0",
+    "node-fetch": "^3.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
@@ -24,6 +24,7 @@
     "deploy": "gh-pages -d dist",
     "build": "vite build",
     "lint": "eslint src --ext js,jsx",
+    "test": "vitest",
     "format": "prettier --write src",
     "preview": "vite preview"
   },
@@ -41,12 +42,17 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.37.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.0.0-beta.1",
+    "@testing-library/user-event": "^14.5.2",
     "@vitejs/plugin-react": "^4.3.2",
     "eslint": "^9.37.0",
     "eslint-plugin-react-hooks": "^6.1.1",
     "eslint-plugin-react-refresh": "^0.4.23",
     "globals": "^16.4.0",
+    "jsdom": "^27.0.1",
     "vite": "^7.1.11",
-    "vite-plugin-svgr": "^4.3.0"
+    "vite-plugin-svgr": "^4.3.0",
+    "vitest": "^2.1.4"
   }
 }
