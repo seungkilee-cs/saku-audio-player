@@ -86,10 +86,10 @@ In a world where access keeps drifting toward subscriptions and remote servers, 
 
 ### Features
 
-- [ ] Playlist management enhancements
+- [x] Playlist management enhancements
 
-  - [ ] remove individual track
-  - [ ] drag and move track order
+  - [x] remove individual track
+  - [x] drag and move track order
   - [x] Repeat modes (currently repeat all by default)
   - [x] Drag and Drop directory addition for tracks
 
@@ -169,6 +169,30 @@ npm run deploy
 ```
 
 Deploys to GitHub Pages using the configured homepage URL.
+
+## Testing
+
+Refer to the full regression strategy in [`docs/test/regression-testing.md`](./docs/test/regression-testing.md).
+
+### Unit & Integration Tests
+
+```bash
+npm run test
+```
+
+Runs Vitest/Jest-based suites (React Testing Library, MSW mocks). Use `npm run test -- --watch` for incremental feedback.
+
+### End-to-End Tests
+
+```bash
+npx playwright test
+```
+
+Executes Playwright scenarios across Chromium and Firefox. Ensure the dev server is running (`npm run dev`) or configure the Playwright `webServer` setting.
+
+### Continuous Integration
+
+Add GitHub Actions workflow steps to execute both commands above (`npm run test`, `npx playwright test`) on each pull request for regression coverage.
 
 ## Usage
 

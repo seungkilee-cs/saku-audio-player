@@ -843,6 +843,8 @@ export const PlaybackProvider = ({ children }) => {
       removeTrackAt,
       removeTracks,
       removeCurrentTrack,
+      moveTrack,
+      insertTracksAt,
     }),
     [
       appendTracks,
@@ -884,6 +886,8 @@ export const PlaybackProvider = ({ children }) => {
       removeTrackAt,
       removeTracks,
       removeCurrentTrack,
+      moveTrack,
+      insertTracksAt,
     ],
   );
 

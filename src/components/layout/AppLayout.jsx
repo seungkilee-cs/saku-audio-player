@@ -22,6 +22,8 @@ const AppLayout = () => {
     activeSource,
     removeTrackAt,
     removeCurrentTrack,
+    moveTrack,
+    insertTracksAt,
   } = usePlayback();
 
   // Initialize sidebars based on screen width
@@ -55,7 +57,7 @@ const AppLayout = () => {
   const displaySource = sourceLabels[activeSource] ?? sourceLabels.default;
 
   const handleFilesSelected = useCallback(
-    async (fileListPromiseOrArray) => {
+    async (fileListPromiseOrArray, { insertIndex = null } = {}) => {
       if (!fileListPromiseOrArray) return;
 
       const resolvedFiles =
@@ -69,6 +71,11 @@ const AppLayout = () => {
         const parsedTracks = await parseAudioFiles(resolvedFiles);
         if (!parsedTracks.length) return;
 
+        if (Number.isInteger(insertIndex)) {
+          insertTracksAt(insertIndex, parsedTracks);
+          return;
+        }
+
         const shouldAppend = tracks.length > 0;
         const apply = shouldAppend ? appendTracks : replaceTracks;
         await apply(parsedTracks, {
@@ -78,7 +85,17 @@ const AppLayout = () => {
         console.error("Failed to parse uploaded files", error);
       }
     },
-    [tracks.length, appendTracks, replaceTracks],
+    [tracks.length, appendTracks, replaceTracks, insertTracksAt],
+  );
+
+  const handleInsertTracks = useCallback(
+    (files, insertIndex) => {
+      if (!files || insertIndex == null) {
+        return;
+      }
+      handleFilesSelected(files, { insertIndex });
+    },
+    [handleFilesSelected],
   );
 
   const toggleLeftSidebar = useCallback(() => {
@@ -128,6 +145,8 @@ const AppLayout = () => {
             onUpload={handleFilesSelected}
             onReset={resetToDefault}
             onRemoveTrack={removeTrackAt}
+            onMoveTrack={moveTrack}
+            onInsertTracks={handleInsertTracks}
           />
         </Sidebar>
 

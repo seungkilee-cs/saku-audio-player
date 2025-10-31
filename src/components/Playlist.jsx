@@ -1,11 +1,32 @@
-import React, { useRef, useState, useImperativeHandle, forwardRef } from "react";
+import React, {
+  useRef,
+  useState,
+  useImperativeHandle,
+  forwardRef,
+  useCallback,
+} from "react";
 import { collectAudioFilesFromDataTransfer, filterSupportedAudioFiles } from "../utils/filePickers";
 import "../styles/Playlist.css";
 import { handlePlaylistItemKeyDown } from "./playlistKeydown";
 
+const INTERNAL_DRAG_TYPE = "application/x-saku-track-index";
+const DROP_POSITIONS = {
+  BEFORE: "before",
+  AFTER: "after",
+};
+
 const Playlist = forwardRef(
   (
-    { tracks, currentTrackIndex, onTrackSelect, onUpload, onReset, onRemoveTrack },
+    {
+      tracks,
+      currentTrackIndex,
+      onTrackSelect,
+      onUpload,
+      onReset,
+      onRemoveTrack,
+      onMoveTrack,
+      onInsertTracks,
+    },
     ref,
   ) => {
   const hasTracks = tracks.length > 0;
@@ -13,6 +34,8 @@ const Playlist = forwardRef(
   const fileInputRef = useRef(null);
   const folderInputRef = useRef(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [draggedIndex, setDraggedIndex] = useState(null);
+  const [dropTarget, setDropTarget] = useState({ index: null, position: null });
 
   const emitUpload = (filesLike) => {
     const audioFiles = filterSupportedAudioFiles(filesLike);
@@ -60,26 +83,83 @@ const Playlist = forwardRef(
     }
   };
 
-  const handleDragOver = (event) => {
-    event.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (event) => {
-    if (!bodyRef.current?.contains(event.relatedTarget)) {
-      setIsDragging(false);
-    }
-  };
-
-  const handleDrop = (event) => {
-    event.preventDefault();
+  const resetDragState = useCallback(() => {
     setIsDragging(false);
-    collectAudioFilesFromDataTransfer(event.dataTransfer).then((files) => {
-      if (files.length) {
-        emitUpload(files);
+    setDraggedIndex(null);
+    setDropTarget({ index: null, position: null });
+  }, []);
+
+  const handleDragOver = useCallback((event) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((event) => {
+    if (!bodyRef.current?.contains(event.relatedTarget)) {
+      resetDragState();
+    }
+  }, [resetDragState]);
+
+  const handleDrop = useCallback(
+    (event) => {
+      event.preventDefault();
+      const dataTransfer = event.dataTransfer;
+
+      if (dataTransfer.types.includes(INTERNAL_DRAG_TYPE)) {
+        const fromIndex = Number.parseInt(dataTransfer.getData(INTERNAL_DRAG_TYPE), 10);
+        if (Number.isInteger(fromIndex) && dropTarget.index !== null && onMoveTrack) {
+          const targetIndex = dropTarget.position === DROP_POSITIONS.AFTER ? dropTarget.index + 1 : dropTarget.index;
+          const adjustedTarget = targetIndex > fromIndex ? targetIndex - 1 : targetIndex;
+          onMoveTrack({ fromIndex, toIndex: adjustedTarget });
+        }
+        resetDragState();
+        return;
       }
-    });
-  };
+
+      collectAudioFilesFromDataTransfer(dataTransfer).then((files) => {
+        if (files.length) {
+          if (dropTarget.index !== null && typeof onInsertTracks === "function") {
+            const insertIndex = dropTarget.position === DROP_POSITIONS.AFTER ? dropTarget.index + 1 : dropTarget.index;
+            onInsertTracks(files, insertIndex);
+          } else {
+            emitUpload(files);
+          }
+        }
+        resetDragState();
+      });
+    },
+    [dropTarget, onMoveTrack, onInsertTracks, emitUpload, resetDragState],
+  );
+
+  const handleDragStart = useCallback((event, index) => {
+    if (!Number.isInteger(index)) {
+      return;
+    }
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData(INTERNAL_DRAG_TYPE, String(index));
+    setDraggedIndex(index);
+  }, []);
+
+  const handleDragEnterItem = useCallback((event, index) => {
+    event.preventDefault();
+    const boundingRect = event.currentTarget.getBoundingClientRect();
+    const offsetY = event.clientY - boundingRect.top;
+    const position = offsetY > boundingRect.height / 2 ? DROP_POSITIONS.AFTER : DROP_POSITIONS.BEFORE;
+    setDropTarget({ index, position });
+  }, []);
+
+  const getDropIndicatorClass = useCallback(
+    (index) => {
+      if (dropTarget.index !== index) {
+        return "";
+      }
+      return dropTarget.position === DROP_POSITIONS.AFTER
+        ? " playlist__drop-indicator--after"
+        : " playlist__drop-indicator--before";
+    },
+    [dropTarget],
+  );
 
   return (
     <aside className="playlist">
@@ -129,13 +209,28 @@ const Playlist = forwardRef(
               <ul className="playlist__list" role="list">
                 {tracks.map((track, index) => {
                   const isActive = currentTrackIndex === index;
+                  const itemClasses = [
+                    "playlist__item",
+                    isActive ? "is-active" : "",
+                    draggedIndex === index ? "playlist__item--dragging" : "",
+                    getDropIndicatorClass(index),
+                  ]
+                    .filter(Boolean)
+                    .join(" ");
+
                   return (
                     <li
                       key={track.id || `${track.title}-${index}`}
-                      className={`playlist__item${isActive ? " is-active" : ""}`}
+                      className={itemClasses}
                       role="button"
                       tabIndex={0}
                       data-testid={`playlist-item-${index}`}
+                      draggable={typeof onMoveTrack === "function"}
+                      onDragStart={(event) => handleDragStart(event, index)}
+                      onDragEnter={(event) => handleDragEnterItem(event, index)}
+                      onDragOver={(event) => handleDragEnterItem(event, index)}
+                      onDragEnd={resetDragState}
+                      aria-grabbed={typeof onMoveTrack === "function" ? draggedIndex === index : undefined}
                       onClick={() => onTrackSelect(index)}
                       onKeyDown={(event) =>
                         handlePlaylistItemKeyDown({
