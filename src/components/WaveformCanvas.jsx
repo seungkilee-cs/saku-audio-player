@@ -62,69 +62,6 @@ function generatePlaceholderPeaks(count = 96) {
   return peaks;
 }
 
-function getAudioContext() {
-  if (typeof window === "undefined") {
-    return null;
-  }
-  if (!getAudioContext.instance) {
-    try {
-      getAudioContext.instance = new (window.AudioContext || window.webkitAudioContext)();
-    } catch (error) {
-      console.warn("AudioContext could not be created", error);
-      getAudioContext.instance = null;
-    }
-  }
-  return getAudioContext.instance;
-}
-
-function extractPeaks(audioBuffer, buckets = 160) {
-  if (!audioBuffer) {
-    return [];
-  }
-  const channelData = [];
-  for (let i = 0; i < audioBuffer.numberOfChannels; i += 1) {
-    channelData.push(audioBuffer.getChannelData(i));
-  }
-
-  const sampleSize = Math.max(1, Math.floor(audioBuffer.length / buckets));
-  const peaks = new Float32Array(buckets);
-
-  for (let i = 0; i < buckets; i += 1) {
-    const start = i * sampleSize;
-    const end = Math.min(start + sampleSize, audioBuffer.length);
-    let sumSquares = 0;
-    let count = 0;
-
-    for (let j = start; j < end; j += 1) {
-      let value = 0;
-      for (let channel = 0; channel < channelData.length; channel += 1) {
-        value += channelData[channel][j] || 0;
-      }
-      value /= channelData.length || 1;
-      sumSquares += value * value;
-      count += 1;
-    }
-    const rms = count > 0 ? Math.sqrt(sumSquares / count) : 0;
-    peaks[i] = rms;
-  }
-
-  return peaks;
-}
-
-function normalizePeaks(peaks) {
-  if (!peaks || peaks.length === 0) {
-    return [];
-  }
-  const max = Math.max(...peaks);
-  if (!Number.isFinite(max) || max === 0) {
-    return Array.from(peaks).map(() => 0.1);
-  }
-  return Array.from(peaks).map((value) => {
-    const normalized = value / max;
-    const shaped = Math.pow(normalized, 1.3);
-    return Math.min(1, Math.max(0, shaped));
-  });
-}
 
 export default function WaveformCanvas({
   src,
@@ -161,53 +98,36 @@ export default function WaveformCanvas({
       return undefined;
     }
 
-    let isActive = true;
     const cached = waveformCache.get(src);
     if (cached) {
       setPeaks(cached);
       return undefined;
     }
 
-    const controller = new AbortController();
-    const context = getAudioContext();
-    if (!context) {
-      return undefined;
-    }
+    let active = true;
+    const worker = new Worker(
+      new URL("../workers/waveformDecoder.worker.js", import.meta.url),
+      { type: "module" },
+    );
 
-    const loadWaveform = async () => {
-      try {
-        const response = await fetch(src, { signal: controller.signal });
-        const arrayBuffer = await response.arrayBuffer();
-        
-        // Ensure AudioContext is running
-        if (context.state === 'suspended') {
-          try {
-            await context.resume();
-          } catch (resumeError) {
-            console.warn('Could not resume AudioContext for waveform generation', resumeError);
-            return;
-          }
-        }
-        
-        const audioBuffer = await context.decodeAudioData(arrayBuffer);
-        const rawPeaks = extractPeaks(audioBuffer);
-        const normalized = normalizePeaks(rawPeaks);
-        if (isActive) {
-          waveformCache.set(src, normalized);
-          setPeaks(normalized);
-        }
-      } catch (error) {
-        if (error.name !== "AbortError") {
-          console.warn("Failed to generate waveform", error);
-        }
+    worker.onmessage = ({ data }) => {
+      if (!active) return;
+      if (data.peaks) {
+        waveformCache.set(src, data.peaks);
+        setPeaks(data.peaks);
       }
+      worker.terminate();
     };
 
-    loadWaveform();
+    worker.onerror = () => {
+      worker.terminate();
+    };
+
+    worker.postMessage({ src, buckets: 160 });
 
     return () => {
-      isActive = false;
-      controller.abort();
+      active = false;
+      worker.terminate();
     };
   }, [prefersReducedMotion, src]);
 

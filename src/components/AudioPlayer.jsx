@@ -283,12 +283,6 @@ const AudioPlayer = ({
       return;
     }
 
-    console.log(
-      "AudioPlayer: audioSrc changed from",
-      currentAudioSrcRef.current,
-      "to",
-      audioSrc,
-    );
     currentAudioSrcRef.current = audioSrc;
 
     if (!audioSrc) {
@@ -646,7 +640,7 @@ const AudioPlayer = ({
   const totalTimeLabel = duration ? formatTime(duration) : "—";
   const displayTitle = title || "Awaiting your first track";
   const displayArtist = artist || "Upload audio to begin.";
-  const shouldRenderWaveform = false;
+  const shouldRenderWaveform = showWaveform && Boolean(currentTrack);
   const metaSummary = [album, codec, bitrate ? `${bitrate} kbps` : null]
     .filter(Boolean)
     .join(" • ");

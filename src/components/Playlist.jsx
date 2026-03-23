@@ -1,6 +1,7 @@
 import React, {
   useRef,
   useState,
+  useEffect,
   useImperativeHandle,
   forwardRef,
   useCallback,
@@ -31,8 +32,13 @@ const Playlist = forwardRef(
   ) => {
   const hasTracks = tracks.length > 0;
   const bodyRef = useRef(null);
+  const activeItemRef = useRef(null);
   const fileInputRef = useRef(null);
   const folderInputRef = useRef(null);
+
+  useEffect(() => {
+    activeItemRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }, [currentTrackIndex]);
   const [isDragging, setIsDragging] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState(null);
   const [dropTarget, setDropTarget] = useState({ index: null, position: null });
@@ -220,6 +226,7 @@ const Playlist = forwardRef(
 
                   return (
                     <li
+                      ref={isActive ? activeItemRef : null}
                       key={track.id || `${track.title}-${index}`}
                       className={itemClasses}
                       role="button"
